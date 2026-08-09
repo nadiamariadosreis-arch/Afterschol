@@ -1,0 +1,165 @@
+import { notFound } from "next/navigation";
+import { createClient } from "@/lib/supabase/server";
+import { Card } from "@/components/ui/Card";
+import { Button } from "@/components/ui/Button";
+import { Badge } from "@/components/ui/Badge";
+import { SectionHeading } from "@/components/ui/SectionHeading";
+import type { Virtue, Week } from "@/lib/supabase/types";
+import { createWeekAction, updateWeekAction } from "../actions";
+
+type WeekWithVirtue = Week & { virtues: Pick<Virtue, "name" | "number"> | null };
+
+export default async function TrackWeeksAdminPage({
+  params,
+}: {
+  params: Promise<{ trackSlug: string }>;
+}) {
+  const { trackSlug } = await params;
+  const supabase = await createClient();
+
+  const { data: track } = await supabase
+    .from("tracks")
+    .select("*")
+    .eq("slug", trackSlug)
+    .maybeSingle();
+  if (!track) notFound();
+
+  const [{ data: weeks }, { data: virtues }] = await Promise.all([
+    supabase
+      .from("weeks")
+      .select("*, virtues(name, number)")
+      .eq("track_id", track.id)
+      .order("week_number")
+      .returns<WeekWithVirtue[]>(),
+    supabase.from("virtues").select("*").order("number"),
+  ]);
+
+  return (
+    <div>
+      <SectionHeading eyebrow="Trilhas e Semanas" title={track.name} />
+
+      <div className="flex flex-col gap-4 mb-10">
+        {(weeks ?? []).map((week) => (
+          <Card key={week.id}>
+            <div className="flex items-center justify-between gap-4 flex-wrap mb-4">
+              <h3 className="font-heading font-semibold text-[20px] text-ink">
+                Semana {week.week_number} — {week.virtues?.name}
+              </h3>
+              <Badge tone={week.activity_pdf_path ? "moss" : "terracotta"}>
+                {week.activity_pdf_path ? "Atividade enviada" : "Sem atividade"}
+              </Badge>
+            </div>
+
+            <form
+              action={updateWeekAction}
+              className="grid md:grid-cols-[1fr_1.5fr_1.5fr_auto] gap-3 items-end"
+            >
+              <input type="hidden" name="weekId" value={week.id} />
+              <input type="hidden" name="trackSlug" value={trackSlug} />
+              <label className="flex flex-col gap-2">
+                <span className="text-[14px] text-ink/70">Data de liberação</span>
+                <input
+                  type="date"
+                  name="releaseDate"
+                  defaultValue={week.release_date}
+                  required
+                  className="border border-line bg-parchment rounded-sm px-3 py-2 font-body text-ink outline-none focus:border-moss"
+                />
+              </label>
+              <label className="flex flex-col gap-2">
+                <span className="text-[14px] text-ink/70">Vídeo-aula (URL)</span>
+                <input
+                  type="url"
+                  name="videoUrl"
+                  defaultValue={week.video_url ?? ""}
+                  placeholder="https://..."
+                  className="border border-line bg-parchment rounded-sm px-3 py-2 font-body text-ink outline-none focus:border-moss"
+                />
+              </label>
+              <label className="flex flex-col gap-2">
+                <span className="text-[14px] text-ink/70">Atividade (PDF)</span>
+                <input type="file" name="activity" accept="application/pdf" className="text-[14px]" />
+              </label>
+              <Button type="submit" variant="secondary">
+                Salvar
+              </Button>
+            </form>
+          </Card>
+        ))}
+
+        {(weeks ?? []).length === 0 ? (
+          <p className="text-ink/60">Nenhuma semana cadastrada nesta trilha ainda.</p>
+        ) : null}
+      </div>
+
+      <Card>
+        <h3 className="font-heading font-semibold text-[20px] text-ink mb-4">
+          Adicionar nova semana
+        </h3>
+        <form
+          action={createWeekAction}
+          className="grid md:grid-cols-2 gap-4"
+        >
+          <input type="hidden" name="trackId" value={track.id} />
+          <input type="hidden" name="trackSlug" value={trackSlug} />
+
+          <label className="flex flex-col gap-2">
+            <span className="text-[14px] text-ink/70">Nº da semana (nesta trilha)</span>
+            <input
+              type="number"
+              name="weekNumber"
+              min={1}
+              required
+              className="border border-line bg-parchment rounded-sm px-3 py-2 font-body text-ink outline-none focus:border-moss"
+            />
+          </label>
+
+          <label className="flex flex-col gap-2">
+            <span className="text-[14px] text-ink/70">Virtude</span>
+            <select
+              name="virtueId"
+              required
+              className="border border-line bg-parchment rounded-sm px-3 py-2 font-body text-ink outline-none focus:border-moss"
+            >
+              <option value="">Selecione…</option>
+              {(virtues ?? []).map((v) => (
+                <option key={v.id} value={v.id}>
+                  {v.number}. {v.name}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="flex flex-col gap-2">
+            <span className="text-[14px] text-ink/70">Data de liberação</span>
+            <input
+              type="date"
+              name="releaseDate"
+              required
+              className="border border-line bg-parchment rounded-sm px-3 py-2 font-body text-ink outline-none focus:border-moss"
+            />
+          </label>
+
+          <label className="flex flex-col gap-2">
+            <span className="text-[14px] text-ink/70">Vídeo-aula (URL, opcional)</span>
+            <input
+              type="url"
+              name="videoUrl"
+              placeholder="https://..."
+              className="border border-line bg-parchment rounded-sm px-3 py-2 font-body text-ink outline-none focus:border-moss"
+            />
+          </label>
+
+          <label className="flex flex-col gap-2 md:col-span-2">
+            <span className="text-[14px] text-ink/70">Atividades (PDF, opcional)</span>
+            <input type="file" name="activity" accept="application/pdf" className="text-[14px]" />
+          </label>
+
+          <Button type="submit" variant="primary" className="md:col-span-2">
+            Adicionar semana
+          </Button>
+        </form>
+      </Card>
+    </div>
+  );
+}
