@@ -8,7 +8,7 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { PdfViewer } from "@/components/member/PdfViewer";
 import { Button } from "@/components/ui/Button";
 import type { ProductCode, Week } from "@/lib/supabase/types";
-import { toggleProgressAction } from "./actions";
+import { toggleProgressAction } from "@/lib/progress-actions";
 
 type WeekWithVirtue = Week & {
   virtues: { name: string; number: number; booklet_pdf_path: string | null } | null;

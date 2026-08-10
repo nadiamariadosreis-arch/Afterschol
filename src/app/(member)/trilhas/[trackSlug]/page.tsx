@@ -4,10 +4,12 @@ import { requireFamily } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveChildProfileId } from "@/lib/active-profile";
 import { hasAccessToTrack } from "@/lib/entitlements";
-import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
+import { Button } from "@/components/ui/Button";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { Cover } from "@/components/member/Cover";
 import type { ProductCode, Week } from "@/lib/supabase/types";
+import { toggleProgressAction } from "@/lib/progress-actions";
 
 type WeekWithVirtue = Week & { virtues: { name: string; number: number } | null };
 
@@ -58,53 +60,86 @@ export default async function TrackPage({
   );
 
   const today = new Date().toISOString().slice(0, 10);
+  const releasedWeeks = (weeks ?? []).filter((w) => w.release_date <= today);
+  const completedCount = releasedWeeks.filter((w) => completedWeekIds.has(w.id)).length;
+  const pct = releasedWeeks.length > 0 ? Math.round((completedCount / releasedWeeks.length) * 100) : 0;
 
   return (
     <div>
       <SectionHeading eyebrow="Trilha" title={track.name} />
 
-      <div className="flex flex-col gap-4">
+      {releasedWeeks.length > 0 ? (
+        <div className="mb-8 max-w-sm">
+          <div className="h-2 bg-parchment-dark rounded-full overflow-hidden border border-line">
+            <div className="h-full bg-moss" style={{ width: `${pct}%` }} />
+          </div>
+          <p className="text-ink/60 text-[14px] mt-2">
+            {completedCount} de {releasedWeeks.length} semanas concluídas · {pct}%
+          </p>
+        </div>
+      ) : null}
+
+      <div className="grid md:grid-cols-2 gap-5">
         {(weeks ?? []).map((week) => {
           const released = week.release_date <= today;
           const completed = completedWeekIds.has(week.id);
           const virtue = week.virtues;
 
           return (
-            <Card
+            <div
               key={week.id}
-              className={`flex items-center justify-between gap-4 ${
+              className={`flex gap-4 bg-card border border-line rounded-sm overflow-hidden ${
                 released ? "" : "opacity-50"
               }`}
             >
-              <div>
-                <div className="text-[13px] tracking-[0.15em] uppercase text-moss mb-1">
-                  Semana {week.week_number}
-                </div>
-                <h3 className="font-heading font-semibold text-[20px] text-ink">
-                  {virtue?.name ?? "Virtude"}
-                </h3>
-                {!released ? (
-                  <p className="text-ink/50 text-[14px] mt-1">
-                    Libera em{" "}
-                    {new Date(week.release_date + "T00:00:00").toLocaleDateString("pt-BR")}
-                  </p>
-                ) : null}
-              </div>
+              <Cover
+                trackSlug={track.slug}
+                mark={String(virtue?.number ?? week.week_number)}
+                className="w-28 shrink-0"
+              />
 
-              <div className="flex items-center gap-4">
-                <Badge tone={completed ? "moss" : "muted"}>
-                  {completed ? "Concluído" : "Pendente"}
-                </Badge>
+              <div className="py-4 pr-5 flex flex-col gap-2 flex-1 min-w-0">
+                <div>
+                  <div className="text-[12px] tracking-[0.15em] uppercase text-moss mb-1">
+                    Semana {week.week_number}
+                  </div>
+                  <h3 className="font-heading font-semibold text-[19px] text-ink truncate">
+                    {virtue?.name ?? "Virtude"}
+                  </h3>
+                  {!released ? (
+                    <p className="text-ink/50 text-[13px] mt-1">
+                      Libera em{" "}
+                      {new Date(week.release_date + "T00:00:00").toLocaleDateString("pt-BR")}
+                    </p>
+                  ) : null}
+                </div>
+
                 {released ? (
-                  <Link
-                    href={`/trilhas/${track.slug}/semanas/${week.week_number}`}
-                    className="text-navy underline underline-offset-4 text-[15px]"
-                  >
-                    Abrir
-                  </Link>
-                ) : null}
+                  <div className="flex items-center gap-3 mt-auto flex-wrap">
+                    <Link
+                      href={`/trilhas/${track.slug}/semanas/${week.week_number}`}
+                      className="text-navy underline underline-offset-4 text-[14px]"
+                    >
+                      Abrir
+                    </Link>
+                    <form action={toggleProgressAction}>
+                      <input type="hidden" name="weekId" value={week.id} />
+                      <input type="hidden" name="trackSlug" value={track.slug} />
+                      <input type="hidden" name="currentlyCompleted" value={String(completed)} />
+                      <Button
+                        type="submit"
+                        variant={completed ? "secondary" : "ghost"}
+                        className="!px-3 !py-1 !text-[13px]"
+                      >
+                        {completed ? "✓ Concluído" : "Concluir"}
+                      </Button>
+                    </form>
+                  </div>
+                ) : (
+                  <Badge tone="muted">Em breve</Badge>
+                )}
               </div>
-            </Card>
+            </div>
           );
         })}
 

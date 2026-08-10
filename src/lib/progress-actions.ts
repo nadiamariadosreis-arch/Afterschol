@@ -4,10 +4,14 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveChildProfileId } from "@/lib/active-profile";
 
+/**
+ * Shared by the week detail page and the week/track cards on the
+ * dashboard — both need to flip a week's completion state for the
+ * active child and see the change reflected immediately.
+ */
 export async function toggleProgressAction(formData: FormData) {
   const weekId = String(formData.get("weekId") ?? "");
   const trackSlug = String(formData.get("trackSlug") ?? "");
-  const weekNumber = String(formData.get("weekNumber") ?? "");
   const currentlyCompleted = formData.get("currentlyCompleted") === "true";
 
   const childProfileId = await getActiveChildProfileId();
@@ -26,7 +30,6 @@ export async function toggleProgressAction(formData: FormData) {
       { onConflict: "child_profile_id,week_id" },
     );
 
-  revalidatePath(`/trilhas/${trackSlug}/semanas/${weekNumber}`);
-  revalidatePath(`/trilhas/${trackSlug}`);
+  if (trackSlug) revalidatePath(`/trilhas/${trackSlug}`, "layout");
   revalidatePath("/dashboard");
 }
