@@ -26,15 +26,15 @@ export default async function LandingPage() {
     <>
       <header className="px-6 md:px-[8vw] pt-16 pb-10 border-b border-line">
         <div className="font-body text-[13px] tracking-[0.28em] uppercase text-moss mb-4">
-          Afterschooling Católico
+          Afterschooling e formação de virtudes
         </div>
         <h1 className="font-display italic font-semibold text-[40px] md:text-[56px] text-ink max-w-3xl">
-          O Universo dos Livros Vivos
+          Trilha das Virtudes
         </h1>
         <p className="text-[19px] text-ink/70 max-w-xl mt-4">
-          Uma coleção de 20 livrinhos infantis sobre virtudes — com atividades
-          pedagógicas que integram fé e virtude, entregues semana a semana
-          para sua família.
+          Histórias que formam virtudes, fortalecem bons hábitos e despertam
+          o prazer de aprender — uma coleção de 20 livrinhos infantis com
+          atividades pedagógicas, entregues semana a semana para sua família.
         </p>
         <div className="mt-8 flex flex-wrap gap-4">
           <LinkButton href="#trilhas" variant="primary">

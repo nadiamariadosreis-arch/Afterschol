@@ -13,6 +13,13 @@ const LEVEL_LABEL: Record<Track["level"], string> = {
   avancado: "Nível avançado",
 };
 
+type NextUp = {
+  trackSlug: string;
+  trackName: string;
+  weekNumber: number;
+  virtueName: string | null;
+};
+
 export default async function DashboardPage() {
   const profile = await requireFamily();
   const activeChildId = await getActiveChildProfileId();
@@ -71,23 +78,45 @@ export default async function DashboardPage() {
   const overallTotal = trackStats.reduce((sum, t) => sum + t.total, 0);
   const overallCompleted = trackStats.reduce((sum, t) => sum + t.completed, 0);
   const overallPct = overallTotal > 0 ? Math.round((overallCompleted / overallTotal) * 100) : 0;
+  const activeTracks = trackStats.filter((t) => t.accessible).length;
 
-  const nextUp = trackStats.find((t) => t.accessible && t.nextWeekNumber !== null);
+  const nextUpStat = trackStats.find((t) => t.accessible && t.nextWeekNumber !== null);
+
+  let nextUp: NextUp | null = null;
+  if (nextUpStat) {
+    const { data: week } = await supabase
+      .from("weeks")
+      .select("virtues(name)")
+      .eq("track_id", nextUpStat.track.id)
+      .eq("week_number", nextUpStat.nextWeekNumber!)
+      .returns<{ virtues: { name: string } | null }[]>()
+      .maybeSingle();
+
+    nextUp = {
+      trackSlug: nextUpStat.track.slug,
+      trackName: nextUpStat.track.name,
+      weekNumber: nextUpStat.nextWeekNumber!,
+      virtueName: week?.virtues?.name ?? null,
+    };
+  }
+
+  const hasAnyAccess = trackStats.some((t) => t.accessible);
 
   return (
     <div className="flex flex-col gap-10">
-      <WelcomeBanner
-        childName={child.name}
-        overallTotal={overallTotal}
-        overallCompleted={overallCompleted}
-        overallPct={overallPct}
-        nextUp={
-          nextUp
-            ? { trackSlug: nextUp.track.slug, trackName: nextUp.track.name, weekNumber: nextUp.nextWeekNumber! }
-            : null
-        }
-        hasAnyAccess={trackStats.some((t) => t.accessible)}
-      />
+      <WelcomeBanner childName={child.name} hasAnyAccess={hasAnyAccess} />
+
+      {hasAnyAccess ? (
+        <StatsRow
+          overallTotal={overallTotal}
+          overallCompleted={overallCompleted}
+          overallPct={overallPct}
+          activeTracks={activeTracks}
+          totalTracks={trackStats.length}
+        />
+      ) : null}
+
+      {nextUp ? <ContinueCard nextUp={nextUp} /> : null}
 
       <div>
         <h2 className="font-heading font-semibold text-[24px] text-ink mb-5">Suas trilhas</h2>
@@ -110,17 +139,9 @@ export default async function DashboardPage() {
 
 function WelcomeBanner({
   childName,
-  overallTotal,
-  overallCompleted,
-  overallPct,
-  nextUp,
   hasAnyAccess,
 }: {
   childName: string;
-  overallTotal: number;
-  overallCompleted: number;
-  overallPct: number;
-  nextUp: { trackSlug: string; trackName: string; weekNumber: number } | null;
   hasAnyAccess: boolean;
 }) {
   return (
@@ -135,41 +156,77 @@ function WelcomeBanner({
         <h1 className="font-display italic font-semibold text-[36px] md:text-[42px] text-parchment">
           Olá, {childName}!
         </h1>
+        <p className="text-parchment/70 mt-4 text-[17px]">
+          {hasAnyAccess
+            ? "Histórias que formam virtudes, fortalecem bons hábitos e despertam o prazer de aprender."
+            : "Assim que uma trilha for liberada para sua família, ela aparece aqui."}
+        </p>
+      </div>
+    </div>
+  );
+}
 
-        {!hasAnyAccess ? (
-          <p className="text-parchment/70 mt-4 text-[17px]">
-            Assim que uma trilha for liberada para sua família, ela aparece
-            aqui.
-          </p>
-        ) : overallTotal === 0 ? (
-          <p className="text-parchment/70 mt-4 text-[17px]">
-            As primeiras semanas ainda serão liberadas — volte em breve.
-          </p>
-        ) : (
-          <>
-            <p className="text-parchment/70 mt-4 text-[17px]">
-              {overallCompleted} de {overallTotal} semanas concluídas
-              {overallPct === 100 ? " — tudo em dia! 🎉" : "."}
-            </p>
-            <div className="h-2 bg-parchment/20 rounded-full overflow-hidden mt-4 max-w-sm">
-              <div className="h-full bg-gold" style={{ width: `${overallPct}%` }} />
-            </div>
+function StatsRow({
+  overallTotal,
+  overallCompleted,
+  overallPct,
+  activeTracks,
+  totalTracks,
+}: {
+  overallTotal: number;
+  overallCompleted: number;
+  overallPct: number;
+  activeTracks: number;
+  totalTracks: number;
+}) {
+  const stats = [
+    { label: "Semanas concluídas", value: `${overallCompleted} de ${overallTotal}` },
+    { label: "Trilhas em andamento", value: `${activeTracks} de ${totalTracks}` },
+    { label: "Progresso geral", value: `${overallPct}%` },
+  ];
 
-            {nextUp ? (
-              <LinkButton
-                href={`/trilhas/${nextUp.trackSlug}/semanas/${nextUp.weekNumber}`}
-                variant="primary"
-                className="mt-7 !bg-gold !border-gold !text-ink"
-              >
-                Continuar em {nextUp.trackName} — Semana {nextUp.weekNumber}
-              </LinkButton>
-            ) : (
-              <p className="text-parchment/70 mt-6 text-[15px]">
-                Todas as semanas liberadas já foram concluídas. 🎉
-              </p>
-            )}
-          </>
-        )}
+  return (
+    <div className="grid sm:grid-cols-3 gap-4 -mt-14 relative mx-2 sm:mx-6">
+      {stats.map((s) => (
+        <div
+          key={s.label}
+          className="bg-card border border-line rounded-sm px-6 py-5 shadow-sm"
+        >
+          <div className="text-[13px] tracking-[0.1em] uppercase text-moss mb-1">{s.label}</div>
+          <div className="font-display italic font-semibold text-[26px] text-ink">{s.value}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ContinueCard({ nextUp }: { nextUp: NextUp }) {
+  return (
+    <div>
+      <h2 className="font-heading font-semibold text-[24px] text-ink mb-5">
+        Continue de onde parou
+      </h2>
+      <div className="flex flex-col sm:flex-row gap-5 bg-card border border-line rounded-sm overflow-hidden">
+        <Cover
+          trackSlug={nextUp.trackSlug}
+          mark={String(nextUp.weekNumber)}
+          className="sm:w-56 h-40 sm:h-auto shrink-0"
+        />
+        <div className="p-6 flex flex-col gap-2 justify-center">
+          <div className="text-[13px] tracking-[0.15em] uppercase text-moss">
+            {nextUp.trackName} · Semana {nextUp.weekNumber}
+          </div>
+          <h3 className="font-heading font-semibold text-[24px] text-ink">
+            {nextUp.virtueName ?? "Próxima virtude"}
+          </h3>
+          <LinkButton
+            href={`/trilhas/${nextUp.trackSlug}/semanas/${nextUp.weekNumber}`}
+            variant="primary"
+            className="mt-3 self-start"
+          >
+            Continuar
+          </LinkButton>
+        </div>
       </div>
     </div>
   );

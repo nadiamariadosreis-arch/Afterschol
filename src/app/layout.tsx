@@ -23,9 +23,9 @@ const ebGaramond = EB_Garamond({
 });
 
 export const metadata: Metadata = {
-  title: "Afterschool Católico | Livros Vivos das Virtudes",
+  title: "Trilha das Virtudes",
   description:
-    "Plataforma de área de membros com material de afterschooling católico organizado por semana, integrando fé e virtude para famílias.",
+    "Histórias que formam virtudes, fortalecem bons hábitos e despertam o prazer de aprender — material de afterschooling organizado por semana, para famílias.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

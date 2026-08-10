@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getActiveChildProfileId } from "@/lib/active-profile";
 import { hasAccessToTrack } from "@/lib/entitlements";
 import { Badge } from "@/components/ui/Badge";
-import { Button } from "@/components/ui/Button";
+import { Button, LinkButton } from "@/components/ui/Button";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Cover } from "@/components/member/Cover";
 import type { ProductCode, Week } from "@/lib/supabase/types";
@@ -64,6 +64,10 @@ export default async function TrackPage({
   const completedCount = releasedWeeks.filter((w) => completedWeekIds.has(w.id)).length;
   const pct = releasedWeeks.length > 0 ? Math.round((completedCount / releasedWeeks.length) * 100) : 0;
 
+  const allWeeksCount = (weeks ?? []).length;
+  const allCompletedCount = (weeks ?? []).filter((w) => completedWeekIds.has(w.id)).length;
+  const isFullyComplete = allWeeksCount > 0 && allCompletedCount === allWeeksCount;
+
   return (
     <div>
       <SectionHeading eyebrow="Trilha" title={track.name} />
@@ -76,6 +80,22 @@ export default async function TrackPage({
           <p className="text-ink/60 text-[14px] mt-2">
             {completedCount} de {releasedWeeks.length} semanas concluídas · {pct}%
           </p>
+        </div>
+      ) : null}
+
+      {isFullyComplete ? (
+        <div className="mb-8 flex items-center justify-between flex-wrap gap-4 bg-card border border-gold rounded-sm px-6 py-5">
+          <div>
+            <p className="font-heading font-semibold text-[20px] text-ink">
+              🎓 Trilha concluída!
+            </p>
+            <p className="text-ink/60 text-[14px]">
+              Todas as semanas desta trilha foram concluídas — baixe o certificado.
+            </p>
+          </div>
+          <LinkButton href={`/api/certificado/${track.slug}`} variant="secondary">
+            Baixar certificado
+          </LinkButton>
         </div>
       ) : null}
 

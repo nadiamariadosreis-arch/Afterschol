@@ -25,7 +25,7 @@ export function SidebarShell({
       {/* Mobile top bar */}
       <div className="md:hidden flex items-center justify-between px-6 py-4 border-b border-line">
         <Link href="/dashboard" className="font-display italic font-semibold text-[20px] text-ink">
-          Livros Vivos
+          Trilha das Virtudes
         </Link>
         <button
           type="button"
@@ -44,7 +44,7 @@ export function SidebarShell({
           <div className="absolute left-0 top-0 bottom-0 w-72 bg-parchment border-r border-line p-6 overflow-y-auto">
             <div className="flex items-center justify-between mb-8">
               <span className="font-display italic font-semibold text-[20px] text-ink">
-                Livros Vivos
+                Trilha das Virtudes
               </span>
               <button
                 type="button"
@@ -66,7 +66,7 @@ export function SidebarShell({
           href="/dashboard"
           className="font-display italic font-semibold text-[22px] text-ink mb-10"
         >
-          Livros Vivos
+          Trilha das Virtudes
         </Link>
         {nav}
       </aside>
@@ -96,6 +96,14 @@ function NavContent({
           }`}
         >
           Início
+        </Link>
+        <Link
+          href="/biblioteca"
+          className={`px-3 py-2 rounded-sm ${
+            isActive("/biblioteca") ? "bg-moss text-parchment" : "text-ink/80 hover:bg-parchment-dark"
+          }`}
+        >
+          Biblioteca
         </Link>
       </div>
 
