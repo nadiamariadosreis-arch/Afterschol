@@ -133,57 +133,13 @@ export default async function WeekPage({
         </nav>
       </aside>
 
-      <div className="order-1 md:order-2 flex flex-col gap-10">
+      <div className="order-1 md:order-2 flex flex-col gap-6">
         <SectionHeading
           eyebrow={`${track.name} · Semana ${week.week_number}`}
           title={virtue?.name ?? "Virtude da semana"}
         />
 
-        {virtue?.booklet_pdf_path ? (
-          <section>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-heading font-semibold text-[20px] text-ink">
-                Livrinho da virtude
-              </h3>
-              <a
-                href={`/api/pdf/${week.id}?type=booklet&mode=download`}
-                className="text-navy underline underline-offset-4 text-[15px]"
-              >
-                Baixar PDF
-              </a>
-            </div>
-            <PdfViewer src={`/api/pdf/${week.id}?type=booklet`} title="Livrinho da virtude" />
-          </section>
-        ) : null}
-
-        {week.activity_pdf_path ? (
-          <section>
-            <div className="flex items-center justify-between mb-3">
-              <h3 className="font-heading font-semibold text-[20px] text-ink">Atividades</h3>
-              <a
-                href={`/api/pdf/${week.id}?type=activity&mode=download`}
-                className="text-navy underline underline-offset-4 text-[15px]"
-              >
-                Baixar PDF
-              </a>
-            </div>
-            <PdfViewer src={`/api/pdf/${week.id}?type=activity`} title="Atividades da semana" />
-          </section>
-        ) : null}
-
-        {week.video_url ? (
-          <section>
-            <h3 className="font-heading font-semibold text-[20px] text-ink mb-3">Vídeo-aula</h3>
-            <div className="aspect-video border border-line rounded-sm overflow-hidden">
-              <iframe
-                src={toEmbedUrl(week.video_url)}
-                title="Vídeo-aula"
-                className="w-full h-full"
-                allowFullScreen
-              />
-            </div>
-          </section>
-        ) : null}
+        <ContentSections week={week} virtue={virtue} />
 
         <form action={toggleProgressAction} className="flex justify-center">
           <input type="hidden" name="weekId" value={week.id} />
@@ -195,6 +151,85 @@ export default async function WeekPage({
           </Button>
         </form>
       </div>
+    </div>
+  );
+}
+
+function ContentSections({
+  week,
+  virtue,
+}: {
+  week: WeekWithVirtue;
+  virtue: WeekWithVirtue["virtues"];
+}) {
+  const items: { title: string; description: string; action?: React.ReactNode; body: React.ReactNode }[] = [];
+
+  if (week.video_url) {
+    items.push({
+      title: "Vídeo-aula",
+      description: "Assista antes de começar a atividade da semana.",
+      body: (
+        <div className="aspect-video rounded-sm overflow-hidden border border-line">
+          <iframe
+            src={toEmbedUrl(week.video_url)}
+            title="Vídeo-aula"
+            className="w-full h-full"
+            allowFullScreen
+          />
+        </div>
+      ),
+    });
+  }
+
+  if (virtue?.booklet_pdf_path) {
+    items.push({
+      title: "Livrinho da virtude",
+      description: `A história desta semana: ${virtue.name}.`,
+      action: (
+        <a
+          href={`/api/pdf/${week.id}?type=booklet&mode=download`}
+          className="text-navy underline underline-offset-4 text-[14px] shrink-0"
+        >
+          Baixar PDF
+        </a>
+      ),
+      body: <PdfViewer src={`/api/pdf/${week.id}?type=booklet`} title="Livrinho da virtude" />,
+    });
+  }
+
+  if (week.activity_pdf_path) {
+    items.push({
+      title: "Atividades",
+      description: "Exercícios para praticar o que foi lido.",
+      action: (
+        <a
+          href={`/api/pdf/${week.id}?type=activity&mode=download`}
+          className="text-navy underline underline-offset-4 text-[14px] shrink-0"
+        >
+          Baixar PDF
+        </a>
+      ),
+      body: <PdfViewer src={`/api/pdf/${week.id}?type=activity`} title="Atividades da semana" />,
+    });
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      {items.map((item, index) => (
+        <section key={item.title} className="border border-line rounded-sm bg-card overflow-hidden">
+          <div className="flex items-start gap-4 p-5 border-b border-line">
+            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-moss text-parchment text-[14px] font-semibold shrink-0">
+              {index + 1}
+            </span>
+            <div className="flex-1 min-w-0">
+              <h3 className="font-heading font-semibold text-[18px] text-ink">{item.title}</h3>
+              <p className="text-ink/60 text-[14px] mt-0.5">{item.description}</p>
+            </div>
+            {item.action}
+          </div>
+          <div className="p-5">{item.body}</div>
+        </section>
+      ))}
     </div>
   );
 }
