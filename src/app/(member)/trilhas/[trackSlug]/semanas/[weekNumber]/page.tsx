@@ -9,9 +9,9 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { PdfViewer } from "@/components/member/PdfViewer";
 import { GuideContent } from "@/components/member/GuideContent";
 import { Button } from "@/components/ui/Button";
-import type { ProductCode, Week } from "@/lib/supabase/types";
+import type { ProductCode, Week, WeekDay } from "@/lib/supabase/types";
 import { toggleProgressAction } from "@/lib/progress-actions";
-import { WeekTabs } from "./WeekTabs";
+import { WeekTabs, type WeekTab } from "./WeekTabs";
 
 type WeekWithVirtue = Week & {
   virtues: { name: string; number: number; booklet_pdf_path: string | null } | null;
@@ -33,7 +33,6 @@ export default async function WeekPage({
 }) {
   const { trackSlug, weekNumber } = await params;
   const { tab } = await searchParams;
-  const initialTab = tab === "guia" ? "guia" : "conteudo";
   const profile = await requireFamily();
   const activeChildId = await getActiveChildProfileId();
   if (!activeChildId) redirect("/perfis");
@@ -75,11 +74,30 @@ export default async function WeekPage({
   const today = new Date().toISOString().slice(0, 10);
   if (week.release_date > today) redirect(`/trilhas/${trackSlug}`);
 
+  const { data: days } = await supabase
+    .from("week_days")
+    .select("*")
+    .eq("week_id", week.id)
+    .order("day_number")
+    .returns<WeekDay[]>();
+
   const virtue = week.virtues;
   const completedWeekIds = new Set(
     (progressRows ?? []).filter((p) => p.completed_at).map((p) => p.week_id),
   );
   const completed = completedWeekIds.has(week.id);
+
+  const tabs: WeekTab[] = [
+    { key: "conteudo", label: "Conteúdo", content: <ContentSections week={week} virtue={virtue} /> },
+    ...(days ?? []).map((day) => ({
+      key: `dia-${day.id}`,
+      label: day.label,
+      content: <DayContent day={day} />,
+    })),
+    ...(week.description
+      ? [{ key: "guia", label: "Guia dos Pais", content: <GuideContent markdown={week.description} /> }]
+      : []),
+  ];
 
   return (
     <div className="grid md:grid-cols-[280px_1fr] gap-8 items-start">
@@ -145,11 +163,7 @@ export default async function WeekPage({
           title={virtue?.name ?? "Virtude da semana"}
         />
 
-        <WeekTabs
-          initialTab={initialTab}
-          contentTab={<ContentSections week={week} virtue={virtue} />}
-          guideTab={week.description ? <GuideContent markdown={week.description} /> : null}
-        />
+        <WeekTabs tabs={tabs} initialTab={tab} />
 
         <form action={toggleProgressAction} className="flex justify-center">
           <input type="hidden" name="weekId" value={week.id} />
@@ -226,6 +240,33 @@ function ContentSections({
           <div className="p-5">{item.body}</div>
         </section>
       ))}
+    </div>
+  );
+}
+
+function DayContent({ day }: { day: WeekDay }) {
+  if (!day.content && !day.pdf_path) {
+    return <p className="text-ink/50 text-[14px]">Conteúdo deste dia ainda será publicado.</p>;
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      {day.content ? <GuideContent markdown={day.content} /> : null}
+
+      {day.pdf_path ? (
+        <section className="border border-line rounded-sm bg-card overflow-hidden">
+          <div className="flex items-start gap-4 p-5 border-b border-line">
+            <div className="flex-1 min-w-0">
+              <h3 className="font-heading font-semibold text-[18px] text-ink">Atividade do dia</h3>
+              <p className="text-ink/60 text-[14px] mt-0.5">Material para {day.label}.</p>
+            </div>
+            <DownloadButton href={`/api/pdf-dia/${day.id}?mode=download`} />
+          </div>
+          <div className="p-5">
+            <PdfViewer src={`/api/pdf-dia/${day.id}`} title={`Atividade — ${day.label}`} />
+          </div>
+        </section>
+      ) : null}
     </div>
   );
 }

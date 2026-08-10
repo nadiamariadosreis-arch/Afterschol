@@ -2,31 +2,31 @@
 
 import { useState, type ReactNode } from "react";
 
-export function WeekTabs({
-  contentTab,
-  guideTab,
-  initialTab = "conteudo",
-}: {
-  contentTab: ReactNode;
-  guideTab: ReactNode | null;
-  initialTab?: "conteudo" | "guia";
-}) {
-  const [tab, setTab] = useState<"conteudo" | "guia">(guideTab ? initialTab : "conteudo");
+export type WeekTab = {
+  key: string;
+  label: string;
+  content: ReactNode;
+};
 
-  if (!guideTab) return <>{contentTab}</>;
+export function WeekTabs({ tabs, initialTab }: { tabs: WeekTab[]; initialTab?: string }) {
+  const initial = tabs.find((t) => t.key === initialTab)?.key ?? tabs[0]?.key;
+  const [tab, setTab] = useState<string | undefined>(initial);
+
+  if (tabs.length <= 1) return <>{tabs[0]?.content ?? null}</>;
+
+  const active = tabs.find((t) => t.key === tab) ?? tabs[0];
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex gap-2 border-b border-line">
-        <TabButton active={tab === "conteudo"} onClick={() => setTab("conteudo")}>
-          Conteúdo
-        </TabButton>
-        <TabButton active={tab === "guia"} onClick={() => setTab("guia")}>
-          Guia dos Pais
-        </TabButton>
+      <div className="flex gap-2 border-b border-line overflow-x-auto">
+        {tabs.map((t) => (
+          <TabButton key={t.key} active={t.key === active.key} onClick={() => setTab(t.key)}>
+            {t.label}
+          </TabButton>
+        ))}
       </div>
 
-      {tab === "conteudo" ? contentTab : guideTab}
+      {active.content}
     </div>
   );
 }
@@ -44,7 +44,7 @@ function TabButton({
     <button
       type="button"
       onClick={onClick}
-      className={`px-4 py-2.5 text-[15px] font-medium border-b-2 -mb-px transition-colors ${
+      className={`px-4 py-2.5 text-[15px] font-medium border-b-2 -mb-px transition-colors whitespace-nowrap ${
         active ? "border-moss text-ink" : "border-transparent text-ink/50 hover:text-ink"
       }`}
     >

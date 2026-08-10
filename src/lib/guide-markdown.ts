@@ -34,7 +34,12 @@ export function parseGuideMarkdown(markdown: string): ParsedGuide {
   }
 
   let subtitle: string | null = null;
-  if (lines[i] !== undefined && lines[i].trim() !== "" && !/^(#|>|-|\*|\|)/.test(lines[i].trim())) {
+  if (
+    title !== null &&
+    lines[i] !== undefined &&
+    lines[i].trim() !== "" &&
+    !/^(#|>|-|\*|\|)/.test(lines[i].trim())
+  ) {
     subtitle = lines[i].trim();
     i++;
   }

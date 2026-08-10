@@ -79,6 +79,16 @@ export type Progress = {
   completed_at: string | null;
 };
 
+export type WeekDay = {
+  id: string;
+  week_id: string;
+  day_number: number;
+  label: string;
+  content: string | null;
+  pdf_path: string | null;
+  created_at: string;
+};
+
 type Relationships = { Relationships: [] };
 
 export type Database = {
@@ -123,6 +133,11 @@ export type Database = {
         Row: Progress;
         Insert: Omit<Progress, "id">;
         Update: Partial<Progress>;
+      } & Relationships;
+      week_days: {
+        Row: WeekDay;
+        Insert: Partial<WeekDay>;
+        Update: Partial<WeekDay>;
       } & Relationships;
     };
     Views: Record<string, never>;

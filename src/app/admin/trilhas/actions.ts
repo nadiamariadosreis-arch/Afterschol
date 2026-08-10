@@ -93,6 +93,102 @@ async function uploadActivity(weekId: string, file: File) {
   await admin.from("weeks").update({ activity_pdf_path: path }).eq("id", weekId);
 }
 
+export async function createWeekDayAction(formData: FormData) {
+  await requireAdmin();
+
+  const weekId = String(formData.get("weekId") ?? "");
+  const trackSlug = String(formData.get("trackSlug") ?? "");
+  const dayNumber = Number(formData.get("dayNumber"));
+  const label = String(formData.get("label") ?? "").trim();
+  const content = String(formData.get("content") ?? "").trim();
+  const file = formData.get("pdf") as File | null;
+
+  if (!weekId || !dayNumber || !label) return;
+
+  const supabase = await createClient();
+  const { data: day, error } = await supabase
+    .from("week_days")
+    .insert({
+      week_id: weekId,
+      day_number: dayNumber,
+      label,
+      content: content || null,
+    })
+    .select("id")
+    .single();
+
+  if (error || !day) {
+    redirect(
+      `/admin/trilhas/${trackSlug}?error=${encodeURIComponent(
+        error?.message ?? "Não foi possível criar o dia.",
+      )}`,
+    );
+  }
+
+  if (file && file.size > 0) {
+    await uploadWeekDayPdf(day.id, file);
+  }
+
+  revalidatePath(`/admin/trilhas/${trackSlug}`);
+  revalidatePath(`/trilhas/${trackSlug}`);
+}
+
+export async function updateWeekDayAction(formData: FormData) {
+  await requireAdmin();
+
+  const dayId = String(formData.get("dayId") ?? "");
+  const trackSlug = String(formData.get("trackSlug") ?? "");
+  const label = String(formData.get("label") ?? "").trim();
+  const content = String(formData.get("content") ?? "").trim();
+  const file = formData.get("pdf") as File | null;
+
+  if (!dayId || !label) return;
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("week_days")
+    .update({ label, content: content || null })
+    .eq("id", dayId);
+
+  if (error) {
+    redirect(`/admin/trilhas/${trackSlug}?error=${encodeURIComponent(error.message)}`);
+  }
+
+  if (file && file.size > 0) {
+    await uploadWeekDayPdf(dayId, file);
+  }
+
+  revalidatePath(`/admin/trilhas/${trackSlug}`);
+  revalidatePath(`/trilhas/${trackSlug}`);
+}
+
+export async function deleteWeekDayAction(formData: FormData) {
+  await requireAdmin();
+
+  const dayId = String(formData.get("dayId") ?? "");
+  const trackSlug = String(formData.get("trackSlug") ?? "");
+  if (!dayId) return;
+
+  const supabase = await createClient();
+  await supabase.from("week_days").delete().eq("id", dayId);
+
+  revalidatePath(`/admin/trilhas/${trackSlug}`);
+  revalidatePath(`/trilhas/${trackSlug}`);
+}
+
+async function uploadWeekDayPdf(dayId: string, file: File) {
+  const admin = createAdminClient();
+  const path = `dias/${dayId}.pdf`;
+  const bytes = new Uint8Array(await file.arrayBuffer());
+
+  await admin.storage.from("content").upload(path, bytes, {
+    contentType: "application/pdf",
+    upsert: true,
+  });
+
+  await admin.from("week_days").update({ pdf_path: path }).eq("id", dayId);
+}
+
 const IMAGE_EXTENSION: Record<string, string> = {
   "image/jpeg": "jpg",
   "image/png": "png",
