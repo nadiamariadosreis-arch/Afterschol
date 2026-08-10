@@ -413,31 +413,29 @@ function TrackCard({
           className="w-full h-full rounded-none"
         />
       </div>
-      <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/25 to-transparent" />
+      <div className="absolute inset-0 bg-gradient-to-t from-white/95 via-white/55 to-transparent" />
 
-      <span className="relative bg-moss text-parchment text-[11px] tracking-[0.15em] uppercase font-semibold px-4 py-1.5 rounded-r-full self-start mt-4 shadow-sm">
+      <span className="relative bg-moss/10 text-moss-dark border border-moss/30 text-[11px] tracking-[0.15em] uppercase font-semibold px-4 py-1.5 rounded-r-full self-start mt-4">
         Trilha {index + 1}
       </span>
 
       <div className="relative mt-auto p-5 flex flex-col gap-2">
-        <div className="text-gold text-[12px] tracking-[0.15em] uppercase font-semibold">
+        <div className="text-moss-dark text-[12px] tracking-[0.15em] uppercase font-semibold">
           {LEVEL_LABEL[track.level]}
         </div>
-        <p className="text-parchment/85 text-[13px] leading-snug">
-          {TRACK_DESCRIPTION[track.slug]}
-        </p>
+        <p className="text-ink/70 text-[13px] leading-snug">{TRACK_DESCRIPTION[track.slug]}</p>
 
         {accessible ? (
           <>
-            <div className="h-1.5 bg-parchment/25 rounded-full overflow-hidden mt-1">
-              <div className="h-full bg-gold" style={{ width: `${pct}%` }} />
+            <div className="h-1.5 bg-parchment-dark rounded-full overflow-hidden mt-1">
+              <div className="h-full bg-moss" style={{ width: `${pct}%` }} />
             </div>
             <div className="flex items-center justify-between mt-1">
-              <span className="text-parchment/70 text-[12px]">{totalDefined} livros</span>
+              <span className="text-ink/50 text-[12px]">{totalDefined} livros</span>
               <LinkButton
                 href={`/trilhas/${track.slug}`}
                 variant="primary"
-                className="!bg-gold !border-gold !text-ink !px-4 !py-1.5 !text-[13px]"
+                className="!px-4 !py-1.5 !text-[13px]"
               >
                 Acessar trilha
               </LinkButton>
@@ -445,17 +443,17 @@ function TrackCard({
           </>
         ) : (
           <div className="flex items-center justify-between mt-1">
-            <span className="text-parchment/70 text-[12px]">Não adquirida</span>
+            <span className="text-ink/50 text-[12px]">Não adquirida</span>
             {canBuy ? (
               <LinkButton
                 href={product!.checkout_url!}
                 variant="primary"
-                className="!bg-gold !border-gold !text-ink !px-4 !py-1.5 !text-[13px]"
+                className="!px-4 !py-1.5 !text-[13px]"
               >
                 Adquirir
               </LinkButton>
             ) : (
-              <span className="text-parchment/60 text-[12px] border border-parchment/40 rounded-full px-3 py-1">
+              <span className="text-ink/40 text-[12px] border border-line rounded-full px-3 py-1">
                 Em breve
               </span>
             )}

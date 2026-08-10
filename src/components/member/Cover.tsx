@@ -2,9 +2,9 @@ const TRACK_PALETTES: Record<
   string,
   { from: string; to: string; wash1: string; wash2: string; ink: string }
 > = {
-  letras: { from: "#79906c", to: "#2f3d2c", wash1: "#a9c19c", wash2: "#233123", ink: "#f4ede0" },
-  silabas: { from: "#c98f6f", to: "#5c2f1f", wash1: "#e3b79a", wash2: "#4a2718", ink: "#f4ede0" },
-  gramatica: { from: "#6b7796", to: "#1c202c", wash1: "#93a0c2", wash2: "#181c26", ink: "#f4ede0" },
+  letras: { from: "#e9efe1", to: "#c9d9ba", wash1: "#f5f8f0", wash2: "#b4c8a2", ink: "#4a5d45" },
+  silabas: { from: "#f6e9db", to: "#e8caa9", wash1: "#fbf3ea", wash2: "#dcb488", ink: "#a4644c" },
+  gramatica: { from: "#e8ecf1", to: "#c9d3de", wash1: "#f4f6f9", wash2: "#b6c3d2", ink: "#333a4d" },
 };
 
 function hashSeed(input: string): number {
@@ -66,9 +66,8 @@ export function Cover({
       className={`relative overflow-hidden ${className}`}
       style={{
         background: [
-          "radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.22) 100%)",
-          `radial-gradient(circle at ${x1}% ${y1}%, ${palette.wash1}5c, transparent 55%)`,
-          `radial-gradient(circle at ${x2}% ${y2}%, ${palette.wash2}66, transparent 60%)`,
+          `radial-gradient(circle at ${x1}% ${y1}%, ${palette.wash1}88, transparent 55%)`,
+          `radial-gradient(circle at ${x2}% ${y2}%, ${palette.wash2}55, transparent 60%)`,
           `linear-gradient(135deg, ${palette.from}, ${palette.to})`,
         ].join(", "),
       }}
