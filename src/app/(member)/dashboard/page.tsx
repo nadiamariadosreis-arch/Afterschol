@@ -231,8 +231,8 @@ function WelcomeBanner({
         className="p-8 md:p-12 flex flex-col justify-center"
         style={{
           background: [
-            "radial-gradient(circle at 90% 10%, #d9c9a3aa, transparent 55%)",
-            "linear-gradient(120deg, #f8f2e4, #efe2c4)",
+            "radial-gradient(circle at 90% 10%, #eef2ec, transparent 55%)",
+            "linear-gradient(120deg, #ffffff, #f6f6f4)",
           ].join(", "),
         }}
       >
@@ -305,7 +305,7 @@ function ProgressRing({ pct }: { pct: number }) {
   return (
     <div className="relative w-14 h-14 shrink-0">
       <svg viewBox="0 0 56 56" className="w-14 h-14 -rotate-90">
-        <circle cx="28" cy="28" r={r} fill="none" stroke="#e8dec9" strokeWidth="5" />
+        <circle cx="28" cy="28" r={r} fill="none" stroke="#eeeeee" strokeWidth="5" />
         <circle
           cx="28"
           cy="28"

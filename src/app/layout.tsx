@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Cormorant_Garamond, EB_Garamond } from "next/font/google";
+import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
 
 const playfair = Playfair_Display({
@@ -9,17 +9,10 @@ const playfair = Playfair_Display({
   weight: ["600", "700"],
 });
 
-const cormorant = Cormorant_Garamond({
-  variable: "--font-cormorant",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["500", "600"],
-});
-
-const ebGaramond = EB_Garamond({
-  variable: "--font-eb-garamond",
-  subsets: ["latin"],
-  style: ["normal", "italic"],
-  weight: ["400", "500"],
+  weight: ["400", "500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -30,13 +23,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="pt-BR"
-      className={`${playfair.variable} ${cormorant.variable} ${ebGaramond.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col bg-parchment text-ink">
-        {children}
-      </body>
+    <html lang="pt-BR" className={`${playfair.variable} ${inter.variable} h-full antialiased`}>
+      <body className="min-h-full flex flex-col bg-parchment text-ink">{children}</body>
     </html>
   );
 }
