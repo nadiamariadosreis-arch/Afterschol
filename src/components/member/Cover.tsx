@@ -21,21 +21,33 @@ const GRAIN_URI = `data:image/svg+xml,${encodeURIComponent(
 )}`;
 
 /**
- * Generated cover art standing in for real illustration — no artwork
- * pipeline exists yet. Layers a watercolor-style wash (two soft radial
- * blobs derived deterministically from `mark`, so cards in the same
- * track still read as a family without being identical), a grain
- * texture, a small gold sprig, and a big serif glyph.
+ * Cover art for a track/week. Renders the real illustration when
+ * `imageUrl` is set (uploaded by the admin); otherwise falls back to a
+ * generated watercolor-style wash (two soft radial blobs derived
+ * deterministically from `mark`, so cards in the same track still read
+ * as a family without being identical), a grain texture, a small gold
+ * sprig, and a big serif glyph — standing in until real artwork exists.
  */
 export function Cover({
   trackSlug,
   mark,
+  imageUrl,
   className = "",
 }: {
   trackSlug: string;
   mark: string;
+  imageUrl?: string | null;
   className?: string;
 }) {
+  if (imageUrl) {
+    return (
+      <div className={`relative overflow-hidden rounded-sm ${className}`}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src={imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
+      </div>
+    );
+  }
+
   const palette = TRACK_PALETTES[trackSlug] ?? TRACK_PALETTES.letras;
   const seed = hashSeed(trackSlug + mark);
   const x1 = 15 + (seed % 60);

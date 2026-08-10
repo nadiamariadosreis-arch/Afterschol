@@ -76,3 +76,35 @@ async function uploadActivity(weekId: string, file: File) {
 
   await admin.from("weeks").update({ activity_pdf_path: path }).eq("id", weekId);
 }
+
+const IMAGE_EXTENSION: Record<string, string> = {
+  "image/jpeg": "jpg",
+  "image/png": "png",
+  "image/webp": "webp",
+};
+
+export async function uploadTrackCoverAction(formData: FormData) {
+  await requireAdmin();
+
+  const trackId = String(formData.get("trackId") ?? "");
+  const trackSlug = String(formData.get("trackSlug") ?? "");
+  const file = formData.get("cover") as File | null;
+  if (!trackId || !trackSlug || !file || file.size === 0) return;
+
+  const extension = IMAGE_EXTENSION[file.type] ?? "jpg";
+  const path = `trilhas/${trackId}.${extension}`;
+  const bytes = new Uint8Array(await file.arrayBuffer());
+
+  const admin = createAdminClient();
+  await admin.storage.from("covers").upload(path, bytes, {
+    contentType: file.type || "image/jpeg",
+    upsert: true,
+  });
+  await admin.from("tracks").update({ cover_image_path: path }).eq("id", trackId);
+
+  revalidatePath(`/admin/trilhas/${trackSlug}`);
+  revalidatePath(`/trilhas/${trackSlug}`);
+  revalidatePath("/dashboard");
+  revalidatePath("/biblioteca");
+  revalidatePath("/");
+}

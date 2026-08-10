@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button, LinkButton } from "@/components/ui/Button";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Cover } from "@/components/member/Cover";
+import { coverImageUrl } from "@/lib/supabase/storage";
 import type { ProductCode, Week } from "@/lib/supabase/types";
 import { toggleProgressAction } from "@/lib/progress-actions";
 
@@ -115,6 +116,7 @@ export default async function TrackPage({
               <Cover
                 trackSlug={track.slug}
                 mark={String(virtue?.number ?? week.week_number)}
+                imageUrl={coverImageUrl(track.cover_image_path)}
                 className="w-28 shrink-0"
               />
 

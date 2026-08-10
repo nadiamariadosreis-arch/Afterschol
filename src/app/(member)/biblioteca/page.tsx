@@ -3,12 +3,13 @@ import { requireFamily } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { hasAccessToTrack } from "@/lib/entitlements";
 import { Cover } from "@/components/member/Cover";
+import { coverImageUrl } from "@/lib/supabase/storage";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import type { ProductCode, Track, Week } from "@/lib/supabase/types";
 
 type ShelfItem = Week & {
   virtues: { name: string; number: number } | null;
-  tracks: Pick<Track, "slug" | "name">;
+  tracks: Pick<Track, "slug" | "name" | "cover_image_path">;
 };
 
 export default async function BibliotecaPage() {
@@ -30,7 +31,7 @@ export default async function BibliotecaPage() {
   if (accessibleTrackIds.length > 0) {
     const { data } = await supabase
       .from("weeks")
-      .select("*, virtues(name, number), tracks(slug, name)")
+      .select("*, virtues(name, number), tracks(slug, name, cover_image_path)")
       .in("track_id", accessibleTrackIds)
       .lte("release_date", today)
       .returns<ShelfItem[]>();
@@ -59,6 +60,7 @@ export default async function BibliotecaPage() {
               <Cover
                 trackSlug={item.tracks.slug}
                 mark={String(item.virtues?.number ?? item.week_number)}
+                imageUrl={coverImageUrl(item.tracks.cover_image_path)}
                 className="aspect-[3/4] w-full group-hover:opacity-90 transition-opacity"
               />
               <div>

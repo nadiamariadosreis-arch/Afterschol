@@ -48,6 +48,7 @@ export type Track = {
   level: TrackLevel;
   product_code: ProductCode;
   sort_order: number;
+  cover_image_path: string | null;
   created_at: string;
 };
 

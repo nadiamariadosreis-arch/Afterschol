@@ -5,6 +5,7 @@ import { getActiveChildProfileId } from "@/lib/active-profile";
 import { hasAccessToTrack } from "@/lib/entitlements";
 import { LinkButton } from "@/components/ui/Button";
 import { Cover } from "@/components/member/Cover";
+import { coverImageUrl } from "@/lib/supabase/storage";
 import type { ProductCode, Track } from "@/lib/supabase/types";
 
 const LEVEL_LABEL: Record<Track["level"], string> = {
@@ -18,6 +19,7 @@ type NextUp = {
   trackName: string;
   weekNumber: number;
   virtueName: string | null;
+  coverImagePath: string | null;
 };
 
 export default async function DashboardPage() {
@@ -97,6 +99,7 @@ export default async function DashboardPage() {
       trackName: nextUpStat.track.name,
       weekNumber: nextUpStat.nextWeekNumber!,
       virtueName: week?.virtues?.name ?? null,
+      coverImagePath: nextUpStat.track.cover_image_path,
     };
   }
 
@@ -210,6 +213,7 @@ function ContinueCard({ nextUp }: { nextUp: NextUp }) {
         <Cover
           trackSlug={nextUp.trackSlug}
           mark={String(nextUp.weekNumber)}
+          imageUrl={coverImageUrl(nextUp.coverImagePath)}
           className="sm:w-56 h-40 sm:h-auto shrink-0"
         />
         <div className="p-6 flex flex-col gap-2 justify-center">
@@ -249,7 +253,12 @@ function TrackCard({
 
   return (
     <div className="flex flex-col gap-4 bg-card border border-line rounded-sm overflow-hidden">
-      <Cover trackSlug={track.slug} mark={track.name.charAt(0)} className="h-28 w-full" />
+      <Cover
+        trackSlug={track.slug}
+        mark={track.name.charAt(0)}
+        imageUrl={coverImageUrl(track.cover_image_path)}
+        className="h-28 w-full"
+      />
 
       <div className="px-6 pb-6 flex flex-col gap-3 flex-1">
         <div>

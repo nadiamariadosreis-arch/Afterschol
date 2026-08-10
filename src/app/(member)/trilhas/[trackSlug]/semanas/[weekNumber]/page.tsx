@@ -1,4 +1,5 @@
 import { redirect, notFound } from "next/navigation";
+import Link from "next/link";
 import { requireFamily } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { getActiveChildProfileId } from "@/lib/active-profile";
@@ -12,6 +13,13 @@ import { toggleProgressAction } from "@/lib/progress-actions";
 
 type WeekWithVirtue = Week & {
   virtues: { name: string; number: number; booklet_pdf_path: string | null } | null;
+};
+
+type WeekListItem = {
+  id: string;
+  week_number: number;
+  release_date: string;
+  virtues: { name: string } | null;
 };
 
 export default async function WeekPage({
@@ -40,90 +48,153 @@ export default async function WeekPage({
   const entitlementCodes = (entitlements ?? []).map((e) => e.product_code) as ProductCode[];
   if (!hasAccessToTrack(entitlementCodes, track)) redirect("/dashboard");
 
-  const { data: week } = await supabase
-    .from("weeks")
-    .select("*, virtues(name, number, booklet_pdf_path)")
-    .eq("track_id", track.id)
-    .eq("week_number", Number(weekNumber))
-    .returns<WeekWithVirtue[]>()
-    .maybeSingle();
+  const [{ data: week }, { data: allWeeks }, { data: progressRows }] = await Promise.all([
+    supabase
+      .from("weeks")
+      .select("*, virtues(name, number, booklet_pdf_path)")
+      .eq("track_id", track.id)
+      .eq("week_number", Number(weekNumber))
+      .returns<WeekWithVirtue[]>()
+      .maybeSingle(),
+    supabase
+      .from("weeks")
+      .select("id, week_number, release_date, virtues(name)")
+      .eq("track_id", track.id)
+      .order("week_number")
+      .returns<WeekListItem[]>(),
+    supabase.from("progress").select("week_id, completed_at").eq("child_profile_id", activeChildId),
+  ]);
   if (!week) notFound();
 
   const today = new Date().toISOString().slice(0, 10);
   if (week.release_date > today) redirect(`/trilhas/${trackSlug}`);
 
   const virtue = week.virtues;
-
-  const { data: progressRow } = await supabase
-    .from("progress")
-    .select("completed_at")
-    .eq("child_profile_id", activeChildId)
-    .eq("week_id", week.id)
-    .maybeSingle();
-  const completed = Boolean(progressRow?.completed_at);
+  const completedWeekIds = new Set(
+    (progressRows ?? []).filter((p) => p.completed_at).map((p) => p.week_id),
+  );
+  const completed = completedWeekIds.has(week.id);
 
   return (
-    <div className="max-w-3xl mx-auto flex flex-col gap-10">
-      <SectionHeading
-        eyebrow={`${track.name} · Semana ${week.week_number}`}
-        title={virtue?.name ?? "Virtude da semana"}
-      />
+    <div className="grid md:grid-cols-[280px_1fr] gap-8 items-start">
+      <aside className="order-2 md:order-1 md:sticky md:top-10 bg-card border border-line rounded-sm p-5">
+        <div className="text-[12px] tracking-[0.15em] uppercase text-moss mb-3">
+          {track.name}
+        </div>
+        <nav className="flex flex-col gap-1">
+          {(allWeeks ?? []).map((w) => {
+            const released = w.release_date <= today;
+            const isCurrent = w.week_number === week.week_number;
+            const isDone = completedWeekIds.has(w.id);
 
-      {virtue?.booklet_pdf_path ? (
-        <section>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-heading font-semibold text-[20px] text-ink">
-              Livrinho da virtude
-            </h3>
-            <a
-              href={`/api/pdf/${week.id}?type=booklet&mode=download`}
-              className="text-navy underline underline-offset-4 text-[15px]"
-            >
-              Baixar PDF
-            </a>
-          </div>
-          <PdfViewer src={`/api/pdf/${week.id}?type=booklet`} title="Livrinho da virtude" />
-        </section>
-      ) : null}
+            const rowContent = (
+              <>
+                <span
+                  className={`flex items-center justify-center w-7 h-7 rounded-full border text-[12px] shrink-0 ${
+                    isDone
+                      ? "bg-moss border-moss text-parchment"
+                      : isCurrent
+                        ? "border-moss text-moss"
+                        : "border-line text-ink/40"
+                  }`}
+                >
+                  {isDone ? "✓" : w.week_number}
+                </span>
+                <span
+                  className={`text-[14px] leading-tight ${
+                    isCurrent ? "text-ink font-semibold" : released ? "text-ink/70" : "text-ink/35"
+                  }`}
+                >
+                  {w.virtues?.name ?? `Semana ${w.week_number}`}
+                </span>
+              </>
+            );
 
-      {week.activity_pdf_path ? (
-        <section>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-heading font-semibold text-[20px] text-ink">Atividades</h3>
-            <a
-              href={`/api/pdf/${week.id}?type=activity&mode=download`}
-              className="text-navy underline underline-offset-4 text-[15px]"
-            >
-              Baixar PDF
-            </a>
-          </div>
-          <PdfViewer src={`/api/pdf/${week.id}?type=activity`} title="Atividades da semana" />
-        </section>
-      ) : null}
+            if (!released) {
+              return (
+                <div key={w.id} className="flex items-center gap-3 px-2 py-2 rounded-sm">
+                  {rowContent}
+                </div>
+              );
+            }
 
-      {week.video_url ? (
-        <section>
-          <h3 className="font-heading font-semibold text-[20px] text-ink mb-3">Vídeo-aula</h3>
-          <div className="aspect-video border border-line rounded-sm overflow-hidden">
-            <iframe
-              src={toEmbedUrl(week.video_url)}
-              title="Vídeo-aula"
-              className="w-full h-full"
-              allowFullScreen
-            />
-          </div>
-        </section>
-      ) : null}
+            return (
+              <Link
+                key={w.id}
+                href={`/trilhas/${trackSlug}/semanas/${w.week_number}`}
+                className={`flex items-center gap-3 px-2 py-2 rounded-sm ${
+                  isCurrent ? "bg-parchment-dark" : "hover:bg-parchment-dark"
+                }`}
+              >
+                {rowContent}
+              </Link>
+            );
+          })}
+        </nav>
+      </aside>
 
-      <form action={toggleProgressAction} className="flex justify-center">
-        <input type="hidden" name="weekId" value={week.id} />
-        <input type="hidden" name="trackSlug" value={trackSlug} />
-        <input type="hidden" name="weekNumber" value={weekNumber} />
-        <input type="hidden" name="currentlyCompleted" value={String(completed)} />
-        <Button type="submit" variant={completed ? "secondary" : "primary"}>
-          {completed ? "Marcar como pendente" : "Marcar como concluído"}
-        </Button>
-      </form>
+      <div className="order-1 md:order-2 flex flex-col gap-10">
+        <SectionHeading
+          eyebrow={`${track.name} · Semana ${week.week_number}`}
+          title={virtue?.name ?? "Virtude da semana"}
+        />
+
+        {virtue?.booklet_pdf_path ? (
+          <section>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-heading font-semibold text-[20px] text-ink">
+                Livrinho da virtude
+              </h3>
+              <a
+                href={`/api/pdf/${week.id}?type=booklet&mode=download`}
+                className="text-navy underline underline-offset-4 text-[15px]"
+              >
+                Baixar PDF
+              </a>
+            </div>
+            <PdfViewer src={`/api/pdf/${week.id}?type=booklet`} title="Livrinho da virtude" />
+          </section>
+        ) : null}
+
+        {week.activity_pdf_path ? (
+          <section>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-heading font-semibold text-[20px] text-ink">Atividades</h3>
+              <a
+                href={`/api/pdf/${week.id}?type=activity&mode=download`}
+                className="text-navy underline underline-offset-4 text-[15px]"
+              >
+                Baixar PDF
+              </a>
+            </div>
+            <PdfViewer src={`/api/pdf/${week.id}?type=activity`} title="Atividades da semana" />
+          </section>
+        ) : null}
+
+        {week.video_url ? (
+          <section>
+            <h3 className="font-heading font-semibold text-[20px] text-ink mb-3">Vídeo-aula</h3>
+            <div className="aspect-video border border-line rounded-sm overflow-hidden">
+              <iframe
+                src={toEmbedUrl(week.video_url)}
+                title="Vídeo-aula"
+                className="w-full h-full"
+                allowFullScreen
+              />
+            </div>
+          </section>
+        ) : null}
+
+        <form action={toggleProgressAction} className="flex justify-center">
+          <input type="hidden" name="weekId" value={week.id} />
+          <input type="hidden" name="trackSlug" value={trackSlug} />
+          <input type="hidden" name="weekNumber" value={weekNumber} />
+          <input type="hidden" name="currentlyCompleted" value={String(completed)} />
+          <Button type="submit" variant={completed ? "secondary" : "primary"}>
+            {completed ? "Marcar como pendente" : "Marcar como concluído"}
+          </Button>
+        </form>
+      </div>
     </div>
   );
 }

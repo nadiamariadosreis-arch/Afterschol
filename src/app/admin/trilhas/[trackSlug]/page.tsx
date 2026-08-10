@@ -4,8 +4,10 @@ import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { Cover } from "@/components/member/Cover";
+import { coverImageUrl } from "@/lib/supabase/storage";
 import type { Virtue, Week } from "@/lib/supabase/types";
-import { createWeekAction, updateWeekAction } from "../actions";
+import { createWeekAction, updateWeekAction, uploadTrackCoverAction } from "../actions";
 
 type WeekWithVirtue = Week & { virtues: Pick<Virtue, "name" | "number"> | null };
 
@@ -37,6 +39,33 @@ export default async function TrackWeeksAdminPage({
   return (
     <div>
       <SectionHeading eyebrow="Trilhas e Semanas" title={track.name} />
+
+      <Card className="mb-10 flex flex-col md:flex-row gap-6 items-start">
+        <Cover
+          trackSlug={track.slug}
+          mark={track.name.charAt(0)}
+          imageUrl={coverImageUrl(track.cover_image_path)}
+          className="w-40 h-40 shrink-0"
+        />
+        <div className="flex-1">
+          <h3 className="font-heading font-semibold text-[20px] text-ink mb-1">
+            Capa da trilha
+          </h3>
+          <p className="text-ink/60 text-[14px] mb-4">
+            Ilustração usada nos cards desta trilha (dashboard, biblioteca e
+            lista de semanas). Sem uma imagem enviada, uma capa gerada
+            automaticamente é usada no lugar.
+          </p>
+          <form action={uploadTrackCoverAction} className="flex flex-wrap items-center gap-3">
+            <input type="hidden" name="trackId" value={track.id} />
+            <input type="hidden" name="trackSlug" value={trackSlug} />
+            <input type="file" name="cover" accept="image/png,image/jpeg,image/webp" required className="text-[14px]" />
+            <Button type="submit" variant="secondary">
+              {track.cover_image_path ? "Substituir" : "Enviar"}
+            </Button>
+          </form>
+        </div>
+      </Card>
 
       <div className="flex flex-col gap-4 mb-10">
         {(weeks ?? []).map((week) => (
