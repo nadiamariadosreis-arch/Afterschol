@@ -7,9 +7,11 @@ import { hasAccessToTrack } from "@/lib/entitlements";
 import { toEmbedUrl } from "@/lib/video";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { PdfViewer } from "@/components/member/PdfViewer";
+import { GuideContent } from "@/components/member/GuideContent";
 import { Button } from "@/components/ui/Button";
 import type { ProductCode, Week } from "@/lib/supabase/types";
 import { toggleProgressAction } from "@/lib/progress-actions";
+import { WeekTabs } from "./WeekTabs";
 
 type WeekWithVirtue = Week & {
   virtues: { name: string; number: number; booklet_pdf_path: string | null } | null;
@@ -24,10 +26,14 @@ type WeekListItem = {
 
 export default async function WeekPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ trackSlug: string; weekNumber: string }>;
+  searchParams: Promise<{ tab?: string }>;
 }) {
   const { trackSlug, weekNumber } = await params;
+  const { tab } = await searchParams;
+  const initialTab = tab === "guia" ? "guia" : "conteudo";
   const profile = await requireFamily();
   const activeChildId = await getActiveChildProfileId();
   if (!activeChildId) redirect("/perfis");
@@ -139,13 +145,11 @@ export default async function WeekPage({
           title={virtue?.name ?? "Virtude da semana"}
         />
 
-        {week.description ? (
-          <p className="text-ink/80 text-[16px] leading-relaxed whitespace-pre-line -mt-4">
-            {week.description}
-          </p>
-        ) : null}
-
-        <ContentSections week={week} virtue={virtue} />
+        <WeekTabs
+          initialTab={initialTab}
+          contentTab={<ContentSections week={week} virtue={virtue} />}
+          guideTab={week.description ? <GuideContent markdown={week.description} /> : null}
+        />
 
         <form action={toggleProgressAction} className="flex justify-center">
           <input type="hidden" name="weekId" value={week.id} />

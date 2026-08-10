@@ -73,9 +73,35 @@ export default async function TrackPage({
   const allCompletedCount = (weeks ?? []).filter((w) => completedWeekIds.has(w.id)).length;
   const isFullyComplete = allWeeksCount > 0 && allCompletedCount === allWeeksCount;
 
+  const guideWeek = releasedWeeks.find((w) => w.description);
+
   return (
     <div>
       <SectionHeading eyebrow="Trilha" title={track.name} />
+
+      {guideWeek ? (
+        <div className="mb-8 flex items-center justify-between flex-wrap gap-4 bg-gold/10 border border-gold/40 rounded-sm px-6 py-5">
+          <div>
+            <div className="text-[12px] tracking-[0.18em] uppercase text-terracotta font-semibold mb-1">
+              Antes de começar
+            </div>
+            <p className="font-heading font-semibold text-[19px] text-ink">
+              Leia o Guia dos Pais antes de acessar as semanas
+            </p>
+            <p className="text-ink/60 text-[14px] mt-1">
+              São só alguns minutos de leitura — e vai te ajudar a aproveitar
+              cada semana com mais confiança e tranquilidade.
+            </p>
+          </div>
+          <LinkButton
+            href={`/trilhas/${track.slug}/semanas/${guideWeek.week_number}?tab=guia`}
+            variant="primary"
+            className="shrink-0"
+          >
+            Ler o Guia dos Pais →
+          </LinkButton>
+        </div>
+      ) : null}
 
       {releasedWeeks.length > 0 ? (
         <div className="mb-8 max-w-sm">
