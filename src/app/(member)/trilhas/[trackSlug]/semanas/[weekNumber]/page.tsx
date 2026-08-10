@@ -185,14 +185,7 @@ function ContentSections({
     items.push({
       title: "Livrinho da virtude",
       description: `A história desta semana: ${virtue.name}.`,
-      action: (
-        <a
-          href={`/api/pdf/${week.id}?type=booklet&mode=download`}
-          className="text-navy underline underline-offset-4 text-[14px] shrink-0"
-        >
-          Baixar PDF
-        </a>
-      ),
+      action: <DownloadButton href={`/api/pdf/${week.id}?type=booklet&mode=download`} />,
       body: <PdfViewer src={`/api/pdf/${week.id}?type=booklet`} title="Livrinho da virtude" />,
     });
   }
@@ -201,14 +194,7 @@ function ContentSections({
     items.push({
       title: "Atividades",
       description: "Exercícios para praticar o que foi lido.",
-      action: (
-        <a
-          href={`/api/pdf/${week.id}?type=activity&mode=download`}
-          className="text-navy underline underline-offset-4 text-[14px] shrink-0"
-        >
-          Baixar PDF
-        </a>
-      ),
+      action: <DownloadButton href={`/api/pdf/${week.id}?type=activity&mode=download`} />,
       body: <PdfViewer src={`/api/pdf/${week.id}?type=activity`} title="Atividades da semana" />,
     });
   }
@@ -231,5 +217,21 @@ function ContentSections({
         </section>
       ))}
     </div>
+  );
+}
+
+function DownloadButton({ href }: { href: string }) {
+  return (
+    <a
+      href={href}
+      className="flex items-center gap-2 border border-line rounded-sm px-3 py-1.5 text-[13px] text-ink hover:bg-parchment-dark shrink-0"
+    >
+      <svg viewBox="0 0 20 20" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.6">
+        <path d="M10 3v10" strokeLinecap="round" />
+        <path d="M6 9.5 10 13.5 14 9.5" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M4 16.5h12" strokeLinecap="round" />
+      </svg>
+      Baixar PDF
+    </a>
   );
 }
