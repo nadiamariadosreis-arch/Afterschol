@@ -43,7 +43,12 @@ export function Cover({
     return (
       <div className={`relative overflow-hidden rounded-sm ${className}`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={imageUrl} alt="" className="absolute inset-0 w-full h-full object-cover" />
+        <img
+          src={imageUrl}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ objectPosition: "72% 42%" }}
+        />
       </div>
     );
   }
