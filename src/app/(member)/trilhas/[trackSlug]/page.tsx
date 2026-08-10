@@ -117,7 +117,7 @@ export default async function TrackPage({
                 trackSlug={track.slug}
                 mark={String(virtue?.number ?? week.week_number)}
                 imageUrl={coverImageUrl(track.cover_image_path)}
-                className="w-28 shrink-0"
+                className="w-28 shrink-0 rounded-sm"
               />
 
               <div className="py-4 pr-5 flex flex-col gap-2 flex-1 min-w-0">

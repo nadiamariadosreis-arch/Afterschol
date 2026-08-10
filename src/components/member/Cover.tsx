@@ -41,7 +41,7 @@ export function Cover({
 }) {
   if (imageUrl) {
     return (
-      <div className={`relative overflow-hidden rounded-sm ${className}`}>
+      <div className={`relative overflow-hidden ${className}`}>
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={imageUrl}
@@ -63,7 +63,7 @@ export function Cover({
 
   return (
     <div
-      className={`relative overflow-hidden rounded-sm ${className}`}
+      className={`relative overflow-hidden ${className}`}
       style={{
         background: [
           "radial-gradient(ellipse at center, transparent 55%, rgba(0,0,0,0.22) 100%)",

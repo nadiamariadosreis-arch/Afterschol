@@ -61,7 +61,7 @@ export default async function BibliotecaPage() {
                 trackSlug={item.tracks.slug}
                 mark={String(item.virtues?.number ?? item.week_number)}
                 imageUrl={coverImageUrl(item.tracks.cover_image_path)}
-                className="aspect-[3/4] w-full group-hover:opacity-90 transition-opacity"
+                className="aspect-[3/4] w-full rounded-sm group-hover:opacity-90 transition-opacity"
               />
               <div>
                 <h3 className="font-heading font-semibold text-[16px] text-ink leading-tight">

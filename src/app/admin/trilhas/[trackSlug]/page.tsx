@@ -45,7 +45,7 @@ export default async function TrackWeeksAdminPage({
           trackSlug={track.slug}
           mark={track.name.charAt(0)}
           imageUrl={coverImageUrl(track.cover_image_path)}
-          className="w-40 h-40 shrink-0"
+          className="w-40 h-40 shrink-0 rounded-sm"
         />
         <div className="flex-1">
           <h3 className="font-heading font-semibold text-[20px] text-ink mb-1">
