@@ -56,10 +56,13 @@ function GuideMarkdownHint() {
 
 export default async function TrackWeeksAdminPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ trackSlug: string }>;
+  searchParams: Promise<{ error?: string }>;
 }) {
   const { trackSlug } = await params;
+  const { error: saveError } = await searchParams;
   const supabase = await createClient();
 
   const { data: track } = await supabase
@@ -82,6 +85,13 @@ export default async function TrackWeeksAdminPage({
   return (
     <div>
       <SectionHeading eyebrow="Trilhas e Semanas" title={track.name} />
+
+      {saveError ? (
+        <div className="mb-6 bg-terracotta/10 border border-terracotta/40 rounded-sm px-5 py-4">
+          <p className="text-terracotta font-semibold text-[14px]">Não foi possível salvar</p>
+          <p className="text-ink/70 text-[13px] mt-1">{saveError}</p>
+        </div>
+      ) : null}
 
       <Card className="mb-10 flex flex-col md:flex-row gap-6 items-start">
         <Cover

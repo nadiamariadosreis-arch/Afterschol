@@ -1,6 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -33,13 +34,20 @@ export async function createWeekAction(formData: FormData) {
     .select("id")
     .single();
 
-  if (error || !week) return;
+  if (error || !week) {
+    redirect(
+      `/admin/trilhas/${trackSlug}?error=${encodeURIComponent(
+        error?.message ?? "Não foi possível criar a semana.",
+      )}`,
+    );
+  }
 
   if (file && file.size > 0) {
     await uploadActivity(week.id, file);
   }
 
   revalidatePath(`/admin/trilhas/${trackSlug}`);
+  revalidatePath(`/trilhas/${trackSlug}`);
 }
 
 export async function updateWeekAction(formData: FormData) {
@@ -55,16 +63,21 @@ export async function updateWeekAction(formData: FormData) {
   if (!weekId) return;
 
   const supabase = await createClient();
-  await supabase
+  const { error } = await supabase
     .from("weeks")
     .update({ release_date: releaseDate, video_url: videoUrl || null, description: description || null })
     .eq("id", weekId);
+
+  if (error) {
+    redirect(`/admin/trilhas/${trackSlug}?error=${encodeURIComponent(error.message)}`);
+  }
 
   if (file && file.size > 0) {
     await uploadActivity(weekId, file);
   }
 
   revalidatePath(`/admin/trilhas/${trackSlug}`);
+  revalidatePath(`/trilhas/${trackSlug}`);
 }
 
 async function uploadActivity(weekId: string, file: File) {
