@@ -79,10 +79,7 @@ export default async function TrackWeeksAdminPage({
               </Badge>
             </div>
 
-            <form
-              action={updateWeekAction}
-              className="grid md:grid-cols-[1fr_1.5fr_1.5fr_auto] gap-3 items-end"
-            >
+            <form action={updateWeekAction} className="grid md:grid-cols-3 gap-3 items-end">
               <input type="hidden" name="weekId" value={week.id} />
               <input type="hidden" name="trackSlug" value={trackSlug} />
               <label className="flex flex-col gap-2">
@@ -109,7 +106,19 @@ export default async function TrackWeeksAdminPage({
                 <span className="text-[14px] text-ink/70">Atividade (PDF)</span>
                 <input type="file" name="activity" accept="application/pdf" className="text-[14px]" />
               </label>
-              <Button type="submit" variant="secondary">
+              <label className="flex flex-col gap-2 md:col-span-3">
+                <span className="text-[14px] text-ink/70">
+                  Texto da semana (aparece para a família, abaixo do título)
+                </span>
+                <textarea
+                  name="description"
+                  defaultValue={week.description ?? ""}
+                  rows={3}
+                  placeholder="Escreva aqui a introdução, contexto ou instruções desta semana…"
+                  className="border border-line bg-parchment rounded-sm px-3 py-2 font-body text-ink outline-none focus:border-moss resize-y"
+                />
+              </label>
+              <Button type="submit" variant="secondary" className="md:col-span-3 md:justify-self-start">
                 Salvar
               </Button>
             </form>
@@ -182,6 +191,18 @@ export default async function TrackWeeksAdminPage({
           <label className="flex flex-col gap-2 md:col-span-2">
             <span className="text-[14px] text-ink/70">Atividades (PDF, opcional)</span>
             <input type="file" name="activity" accept="application/pdf" className="text-[14px]" />
+          </label>
+
+          <label className="flex flex-col gap-2 md:col-span-2">
+            <span className="text-[14px] text-ink/70">
+              Texto da semana (opcional — aparece para a família, abaixo do título)
+            </span>
+            <textarea
+              name="description"
+              rows={3}
+              placeholder="Escreva aqui a introdução, contexto ou instruções desta semana…"
+              className="border border-line bg-parchment rounded-sm px-3 py-2 font-body text-ink outline-none focus:border-moss resize-y"
+            />
           </label>
 
           <Button type="submit" variant="primary" className="md:col-span-2">

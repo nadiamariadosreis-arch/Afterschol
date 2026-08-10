@@ -14,6 +14,7 @@ export async function createWeekAction(formData: FormData) {
   const weekNumber = Number(formData.get("weekNumber"));
   const releaseDate = String(formData.get("releaseDate") ?? "");
   const videoUrl = String(formData.get("videoUrl") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
   const file = formData.get("activity") as File | null;
 
   if (!trackId || !virtueId || !weekNumber || !releaseDate) return;
@@ -27,6 +28,7 @@ export async function createWeekAction(formData: FormData) {
       week_number: weekNumber,
       release_date: releaseDate,
       video_url: videoUrl || null,
+      description: description || null,
     })
     .select("id")
     .single();
@@ -47,6 +49,7 @@ export async function updateWeekAction(formData: FormData) {
   const trackSlug = String(formData.get("trackSlug") ?? "");
   const releaseDate = String(formData.get("releaseDate") ?? "");
   const videoUrl = String(formData.get("videoUrl") ?? "").trim();
+  const description = String(formData.get("description") ?? "").trim();
   const file = formData.get("activity") as File | null;
 
   if (!weekId) return;
@@ -54,7 +57,7 @@ export async function updateWeekAction(formData: FormData) {
   const supabase = await createClient();
   await supabase
     .from("weeks")
-    .update({ release_date: releaseDate, video_url: videoUrl || null })
+    .update({ release_date: releaseDate, video_url: videoUrl || null, description: description || null })
     .eq("id", weekId);
 
   if (file && file.size > 0) {

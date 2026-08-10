@@ -139,6 +139,12 @@ export default async function WeekPage({
           title={virtue?.name ?? "Virtude da semana"}
         />
 
+        {week.description ? (
+          <p className="text-ink/80 text-[16px] leading-relaxed whitespace-pre-line -mt-4">
+            {week.description}
+          </p>
+        ) : null}
+
         <ContentSections week={week} virtue={virtue} />
 
         <form action={toggleProgressAction} className="flex justify-center">

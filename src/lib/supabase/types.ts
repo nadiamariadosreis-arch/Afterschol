@@ -68,6 +68,7 @@ export type Week = {
   release_date: string;
   activity_pdf_path: string | null;
   video_url: string | null;
+  description: string | null;
   created_at: string;
 };
 
