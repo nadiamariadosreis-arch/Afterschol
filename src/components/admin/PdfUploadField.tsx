@@ -1,8 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { createClient } from "@/lib/supabase/client";
-import { supabaseAnonKey } from "@/lib/supabase/env";
 import { createPdfUploadUrlAction } from "@/lib/pdf-upload-actions";
 
 type Status = "idle" | "uploading" | "done" | "error";
@@ -10,14 +8,14 @@ type Status = "idle" | "uploading" | "done" | "error";
 function uploadWithProgress(
   signedUrl: string,
   file: File,
-  accessToken: string,
+  anonKey: string,
   onProgress: (pct: number) => void,
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open("PUT", signedUrl);
-    xhr.setRequestHeader("apikey", supabaseAnonKey());
-    xhr.setRequestHeader("Authorization", `Bearer ${accessToken}`);
+    xhr.setRequestHeader("apikey", anonKey);
+    xhr.setRequestHeader("Authorization", `Bearer ${anonKey}`);
     xhr.setRequestHeader("x-upsert", "true");
 
     xhr.upload.onprogress = (event) => {
@@ -44,6 +42,10 @@ function uploadWithProgress(
  * resulting path through a hidden form field so the enclosing <form>'s
  * server action just persists the path — no file bytes ever go through
  * the server action itself (Vercel hard-caps those at 4.5MB).
+ *
+ * Deliberately has no dependency on a browser Supabase client or
+ * NEXT_PUBLIC_* env vars — everything it needs (signed URL, anon key)
+ * comes back from the server action's response.
  */
 export function PdfUploadField({
   name,
@@ -75,16 +77,7 @@ export function PdfUploadField({
     }
 
     try {
-      const supabase = createClient();
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      await uploadWithProgress(
-        result.signedUrl,
-        file,
-        session?.access_token ?? supabaseAnonKey(),
-        setProgress,
-      );
+      await uploadWithProgress(result.signedUrl, file, result.anonKey, setProgress);
       setSavedPath(result.path);
       setStatus("done");
     } catch (err) {
