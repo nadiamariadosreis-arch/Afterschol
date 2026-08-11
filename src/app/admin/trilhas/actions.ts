@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import type { Week, WeekDay } from "@/lib/supabase/types";
 
 export async function createWeekAction(formData: FormData) {
   await requireAdmin();
@@ -16,34 +17,23 @@ export async function createWeekAction(formData: FormData) {
   const releaseDate = String(formData.get("releaseDate") ?? "");
   const videoUrl = String(formData.get("videoUrl") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
-  const file = formData.get("activity") as File | null;
+  const activityPath = String(formData.get("activityPath") ?? "").trim();
 
   if (!trackId || !virtueId || !weekNumber || !releaseDate) return;
 
   const supabase = await createClient();
-  const { data: week, error } = await supabase
-    .from("weeks")
-    .insert({
-      track_id: trackId,
-      virtue_id: virtueId,
-      week_number: weekNumber,
-      release_date: releaseDate,
-      video_url: videoUrl || null,
-      description: description || null,
-    })
-    .select("id")
-    .single();
+  const { error } = await supabase.from("weeks").insert({
+    track_id: trackId,
+    virtue_id: virtueId,
+    week_number: weekNumber,
+    release_date: releaseDate,
+    video_url: videoUrl || null,
+    description: description || null,
+    activity_pdf_path: activityPath || null,
+  });
 
-  if (error || !week) {
-    redirect(
-      `/admin/trilhas/${trackSlug}?error=${encodeURIComponent(
-        error?.message ?? "Não foi possível criar a semana.",
-      )}`,
-    );
-  }
-
-  if (file && file.size > 0) {
-    await uploadActivity(week.id, file);
+  if (error) {
+    redirect(`/admin/trilhas/${trackSlug}?error=${encodeURIComponent(error.message)}`);
   }
 
   revalidatePath(`/admin/trilhas/${trackSlug}`);
@@ -58,39 +48,26 @@ export async function updateWeekAction(formData: FormData) {
   const releaseDate = String(formData.get("releaseDate") ?? "");
   const videoUrl = String(formData.get("videoUrl") ?? "").trim();
   const description = String(formData.get("description") ?? "").trim();
-  const file = formData.get("activity") as File | null;
+  const activityPath = String(formData.get("activityPath") ?? "").trim();
 
   if (!weekId) return;
 
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("weeks")
-    .update({ release_date: releaseDate, video_url: videoUrl || null, description: description || null })
-    .eq("id", weekId);
+  const update: Partial<Week> = {
+    release_date: releaseDate,
+    video_url: videoUrl || null,
+    description: description || null,
+  };
+  if (activityPath) update.activity_pdf_path = activityPath;
+
+  const { error } = await supabase.from("weeks").update(update).eq("id", weekId);
 
   if (error) {
     redirect(`/admin/trilhas/${trackSlug}?error=${encodeURIComponent(error.message)}`);
   }
 
-  if (file && file.size > 0) {
-    await uploadActivity(weekId, file);
-  }
-
   revalidatePath(`/admin/trilhas/${trackSlug}`);
   revalidatePath(`/trilhas/${trackSlug}`);
-}
-
-async function uploadActivity(weekId: string, file: File) {
-  const admin = createAdminClient();
-  const path = `atividades/${weekId}.pdf`;
-  const bytes = new Uint8Array(await file.arrayBuffer());
-
-  await admin.storage.from("content").upload(path, bytes, {
-    contentType: "application/pdf",
-    upsert: true,
-  });
-
-  await admin.from("weeks").update({ activity_pdf_path: path }).eq("id", weekId);
 }
 
 export async function createWeekDayAction(formData: FormData) {
@@ -101,32 +78,21 @@ export async function createWeekDayAction(formData: FormData) {
   const dayNumber = Number(formData.get("dayNumber"));
   const label = String(formData.get("label") ?? "").trim();
   const content = String(formData.get("content") ?? "").trim();
-  const file = formData.get("pdf") as File | null;
+  const pdfPath = String(formData.get("pdfPath") ?? "").trim();
 
   if (!weekId || !dayNumber || !label) return;
 
   const supabase = await createClient();
-  const { data: day, error } = await supabase
-    .from("week_days")
-    .insert({
-      week_id: weekId,
-      day_number: dayNumber,
-      label,
-      content: content || null,
-    })
-    .select("id")
-    .single();
+  const { error } = await supabase.from("week_days").insert({
+    week_id: weekId,
+    day_number: dayNumber,
+    label,
+    content: content || null,
+    pdf_path: pdfPath || null,
+  });
 
-  if (error || !day) {
-    redirect(
-      `/admin/trilhas/${trackSlug}?error=${encodeURIComponent(
-        error?.message ?? "Não foi possível criar o dia.",
-      )}`,
-    );
-  }
-
-  if (file && file.size > 0) {
-    await uploadWeekDayPdf(day.id, file);
+  if (error) {
+    redirect(`/admin/trilhas/${trackSlug}?error=${encodeURIComponent(error.message)}`);
   }
 
   revalidatePath(`/admin/trilhas/${trackSlug}`);
@@ -140,22 +106,18 @@ export async function updateWeekDayAction(formData: FormData) {
   const trackSlug = String(formData.get("trackSlug") ?? "");
   const label = String(formData.get("label") ?? "").trim();
   const content = String(formData.get("content") ?? "").trim();
-  const file = formData.get("pdf") as File | null;
+  const pdfPath = String(formData.get("pdfPath") ?? "").trim();
 
   if (!dayId || !label) return;
 
   const supabase = await createClient();
-  const { error } = await supabase
-    .from("week_days")
-    .update({ label, content: content || null })
-    .eq("id", dayId);
+  const update: Partial<WeekDay> = { label, content: content || null };
+  if (pdfPath) update.pdf_path = pdfPath;
+
+  const { error } = await supabase.from("week_days").update(update).eq("id", dayId);
 
   if (error) {
     redirect(`/admin/trilhas/${trackSlug}?error=${encodeURIComponent(error.message)}`);
-  }
-
-  if (file && file.size > 0) {
-    await uploadWeekDayPdf(dayId, file);
   }
 
   revalidatePath(`/admin/trilhas/${trackSlug}`);
@@ -174,19 +136,6 @@ export async function deleteWeekDayAction(formData: FormData) {
 
   revalidatePath(`/admin/trilhas/${trackSlug}`);
   revalidatePath(`/trilhas/${trackSlug}`);
-}
-
-async function uploadWeekDayPdf(dayId: string, file: File) {
-  const admin = createAdminClient();
-  const path = `dias/${dayId}.pdf`;
-  const bytes = new Uint8Array(await file.arrayBuffer());
-
-  await admin.storage.from("content").upload(path, bytes, {
-    contentType: "application/pdf",
-    upsert: true,
-  });
-
-  await admin.from("week_days").update({ pdf_path: path }).eq("id", dayId);
 }
 
 const IMAGE_EXTENSION: Record<string, string> = {

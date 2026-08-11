@@ -205,15 +205,6 @@ function ContentSections({
     });
   }
 
-  if (virtue?.booklet_pdf_path) {
-    items.push({
-      title: "Livrinho da virtude",
-      description: `A história desta semana: ${virtue.name}.`,
-      action: <DownloadButton href={`/api/pdf/${week.id}?type=booklet&mode=download`} />,
-      body: <PdfViewer src={`/api/pdf/${week.id}?type=booklet`} title="Livrinho da virtude" />,
-    });
-  }
-
   if (week.activity_pdf_path) {
     items.push({
       title: "Atividades",
@@ -225,6 +216,8 @@ function ContentSections({
 
   return (
     <div className="flex flex-col gap-6">
+      {virtue?.booklet_pdf_path ? <BookletHero week={week} virtue={virtue} /> : null}
+
       {items.map((item, index) => (
         <section key={item.title} className="border border-line rounded-sm bg-card overflow-hidden">
           <div className="flex items-start gap-4 p-5 border-b border-line">
@@ -241,6 +234,58 @@ function ContentSections({
         </section>
       ))}
     </div>
+  );
+}
+
+function BookletHero({
+  week,
+  virtue,
+}: {
+  week: WeekWithVirtue;
+  virtue: NonNullable<WeekWithVirtue["virtues"]>;
+}) {
+  return (
+    <section className="rounded-[18px] border border-moss/30 bg-gradient-to-br from-moss/10 via-card to-gold/10 shadow-sm overflow-hidden">
+      <div className="p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-6">
+        <div className="flex items-center justify-center w-16 h-16 rounded-full bg-moss text-parchment shrink-0 shadow-sm">
+          <svg viewBox="0 0 24 24" className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="1.6">
+            <path
+              d="M4 5.5C4 4.7 4.7 4 5.5 4H11v16H5.5C4.7 20 4 19.3 4 18.5V5.5Z"
+              strokeLinejoin="round"
+            />
+            <path
+              d="M20 5.5C20 4.7 19.3 4 18.5 4H13v16h5.5c.8 0 1.5-.7 1.5-1.5V5.5Z"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-[12px] tracking-[0.18em] uppercase text-terracotta font-semibold mb-1">
+            Material principal da semana
+          </div>
+          <h3 className="font-heading font-semibold text-[24px] text-ink">
+            Livrinho — {virtue.name}
+          </h3>
+          <p className="text-ink/60 text-[15px] mt-1">
+            A história desta semana, para ler e reler com seu filho.
+          </p>
+        </div>
+        <a
+          href={`/api/pdf/${week.id}?type=booklet&mode=download`}
+          className="inline-flex items-center justify-center gap-2 rounded-sm px-6 py-2.5 font-body text-[15px] tracking-wide bg-moss text-parchment hover:bg-moss-dark border border-moss transition-colors duration-150 shrink-0"
+        >
+          <svg viewBox="0 0 20 20" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.6">
+            <path d="M10 3v10" strokeLinecap="round" />
+            <path d="M6 9.5 10 13.5 14 9.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M4 16.5h12" strokeLinecap="round" />
+          </svg>
+          Baixar Livrinho
+        </a>
+      </div>
+      <div className="px-6 md:px-8 pb-6 md:pb-8">
+        <PdfViewer src={`/api/pdf/${week.id}?type=booklet`} title="Livrinho da virtude" />
+      </div>
+    </section>
   );
 }
 

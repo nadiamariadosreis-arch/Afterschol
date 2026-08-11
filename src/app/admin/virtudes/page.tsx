@@ -1,17 +1,31 @@
+import { randomUUID } from "node:crypto";
 import { createClient } from "@/lib/supabase/server";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { PdfUploadField } from "@/components/admin/PdfUploadField";
 import { createVirtueAction, replaceBookletAction } from "./actions";
 
-export default async function VirtuesAdminPage() {
+export default async function VirtuesAdminPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error: saveError } = await searchParams;
   const supabase = await createClient();
   const { data: virtues } = await supabase.from("virtues").select("*").order("number");
 
   return (
     <div>
       <SectionHeading eyebrow="Conteúdo" title="Virtudes / Livrinhos" />
+
+      {saveError ? (
+        <div className="mb-6 bg-terracotta/10 border border-terracotta/40 rounded-sm px-5 py-4">
+          <p className="text-terracotta font-semibold text-[14px]">Não foi possível salvar</p>
+          <p className="text-ink/70 text-[13px] mt-1">{saveError}</p>
+        </div>
+      ) : null}
 
       <div className="flex flex-col gap-4 mb-10">
         {(virtues ?? []).map((virtue) => (
@@ -27,9 +41,13 @@ export default async function VirtuesAdminPage() {
               <Badge tone={virtue.booklet_pdf_path ? "moss" : "terracotta"}>
                 {virtue.booklet_pdf_path ? "PDF enviado" : "Sem PDF"}
               </Badge>
-              <form action={replaceBookletAction} className="flex items-center gap-2">
+              <form action={replaceBookletAction} className="flex items-center gap-3">
                 <input type="hidden" name="virtueId" value={virtue.id} />
-                <input type="file" name="booklet" accept="application/pdf" required className="text-[14px]" />
+                <PdfUploadField
+                  name="bookletPath"
+                  path={`virtudes/${virtue.id}.pdf`}
+                  hasExisting={!!virtue.booklet_pdf_path}
+                />
                 <Button type="submit" variant="secondary">
                   {virtue.booklet_pdf_path ? "Substituir" : "Enviar"}
                 </Button>
@@ -71,7 +89,7 @@ export default async function VirtuesAdminPage() {
           </label>
           <label className="flex flex-col gap-2">
             <span className="text-[14px] text-ink/70">Livrinho (PDF)</span>
-            <input type="file" name="booklet" accept="application/pdf" className="text-[14px]" />
+            <PdfUploadField name="bookletPath" path={`virtudes/${randomUUID()}.pdf`} />
           </label>
           <Button type="submit" variant="primary">
             Cadastrar

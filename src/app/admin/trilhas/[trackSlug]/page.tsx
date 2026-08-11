@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { Card } from "@/components/ui/Card";
@@ -5,6 +6,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Cover } from "@/components/member/Cover";
+import { PdfUploadField } from "@/components/admin/PdfUploadField";
 import { coverImageUrl } from "@/lib/supabase/storage";
 import type { Virtue, Week, WeekDay } from "@/lib/supabase/types";
 import {
@@ -182,7 +184,11 @@ export default async function TrackWeeksAdminPage({
               </label>
               <label className="flex flex-col gap-2">
                 <span className="text-[14px] text-ink/70">Atividade (PDF)</span>
-                <input type="file" name="activity" accept="application/pdf" className="text-[14px]" />
+                <PdfUploadField
+                  name="activityPath"
+                  path={`atividades/${week.id}.pdf`}
+                  hasExisting={!!week.activity_pdf_path}
+                />
               </label>
               <label className="flex flex-col gap-2 md:col-span-3">
                 <span className="text-[14px] text-ink/70">Guia dos Pais (Markdown)</span>
@@ -229,7 +235,11 @@ export default async function TrackWeeksAdminPage({
                         <span className="text-[13px] text-ink/70">
                           PDF do dia {day.pdf_path ? "(substituir)" : ""}
                         </span>
-                        <input type="file" name="pdf" accept="application/pdf" className="text-[13px]" />
+                        <PdfUploadField
+                          name="pdfPath"
+                          path={`dias/${day.id}.pdf`}
+                          hasExisting={!!day.pdf_path}
+                        />
                       </label>
                       <div className="flex items-center gap-3">
                         <Button type="submit" variant="secondary" className="!px-4 !py-1.5 !text-[13px]">
@@ -288,7 +298,7 @@ export default async function TrackWeeksAdminPage({
                 </label>
                 <label className="flex flex-col gap-2">
                   <span className="text-[13px] text-ink/70">PDF do dia (opcional)</span>
-                  <input type="file" name="pdf" accept="application/pdf" className="text-[13px]" />
+                  <PdfUploadField name="pdfPath" path={`dias/${randomUUID()}.pdf`} />
                 </label>
                 <Button type="submit" variant="ghost" className="!px-4 !py-1.5 !text-[13px]">
                   + Adicionar dia
@@ -372,7 +382,7 @@ export default async function TrackWeeksAdminPage({
 
           <label className="flex flex-col gap-2 md:col-span-2">
             <span className="text-[14px] text-ink/70">Atividades (PDF, opcional)</span>
-            <input type="file" name="activity" accept="application/pdf" className="text-[14px]" />
+            <PdfUploadField name="activityPath" path={`atividades/${randomUUID()}.pdf`} />
           </label>
 
           <label className="flex flex-col gap-2 md:col-span-2">
