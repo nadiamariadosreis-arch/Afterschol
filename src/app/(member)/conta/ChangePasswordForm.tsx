@@ -11,7 +11,7 @@ export function ChangePasswordForm() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setStatus("saving");
-    const supabase = createClient();
+    const supabase = await createClient();
     const { error } = await supabase.auth.updateUser({ password });
     setStatus(error ? "error" : "done");
     if (!error) setPassword("");

@@ -17,7 +17,7 @@ export default function ResetPasswordPage() {
     setPending(true);
     setError(null);
 
-    const supabase = createClient();
+    const supabase = await createClient();
     const { error } = await supabase.auth.updateUser({ password });
 
     setPending(false);
