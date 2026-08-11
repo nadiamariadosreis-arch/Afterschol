@@ -2,15 +2,48 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { supabaseAnonKey } from "@/lib/supabase/env";
 import { createPdfUploadUrlAction } from "@/lib/pdf-upload-actions";
 
 type Status = "idle" | "uploading" | "done" | "error";
 
+function uploadWithProgress(
+  signedUrl: string,
+  file: File,
+  accessToken: string,
+  onProgress: (pct: number) => void,
+): Promise<void> {
+  return new Promise((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open("PUT", signedUrl);
+    xhr.setRequestHeader("apikey", supabaseAnonKey());
+    xhr.setRequestHeader("Authorization", `Bearer ${accessToken}`);
+    xhr.setRequestHeader("x-upsert", "true");
+
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable) {
+        onProgress(Math.round((event.loaded / event.total) * 100));
+      }
+    };
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) resolve();
+      else reject(new Error(`Upload falhou (status ${xhr.status}).`));
+    };
+    xhr.onerror = () => reject(new Error("Falha de rede durante o upload."));
+
+    const body = new FormData();
+    body.append("cacheControl", "3600");
+    body.append("", file);
+    xhr.send(body);
+  });
+}
+
 /**
  * Uploads a PDF straight to Supabase Storage via a signed URL (browser
- * -> Storage directly), then exposes the resulting path through a hidden
- * form field so the enclosing <form>'s server action just persists the
- * path — no file bytes ever go through the server action itself.
+ * -> Storage directly, with real progress feedback), then exposes the
+ * resulting path through a hidden form field so the enclosing <form>'s
+ * server action just persists the path — no file bytes ever go through
+ * the server action itself (Vercel hard-caps those at 4.5MB).
  */
 export function PdfUploadField({
   name,
@@ -22,6 +55,7 @@ export function PdfUploadField({
   hasExisting?: boolean;
 }) {
   const [status, setStatus] = useState<Status>("idle");
+  const [progress, setProgress] = useState(0);
   const [savedPath, setSavedPath] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -30,6 +64,7 @@ export function PdfUploadField({
     if (!file) return;
 
     setStatus("uploading");
+    setProgress(0);
     setError(null);
 
     const result = await createPdfUploadUrlAction(path);
@@ -39,19 +74,23 @@ export function PdfUploadField({
       return;
     }
 
-    const supabase = createClient();
-    const { error: uploadError } = await supabase.storage
-      .from("content")
-      .uploadToSignedUrl(result.path, result.token, file, { contentType: "application/pdf" });
-
-    if (uploadError) {
+    try {
+      const supabase = createClient();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      await uploadWithProgress(
+        result.signedUrl,
+        file,
+        session?.access_token ?? supabaseAnonKey(),
+        setProgress,
+      );
+      setSavedPath(result.path);
+      setStatus("done");
+    } catch (err) {
       setStatus("error");
-      setError(uploadError.message);
-      return;
+      setError(err instanceof Error ? err.message : "Não foi possível enviar o arquivo.");
     }
-
-    setSavedPath(result.path);
-    setStatus("done");
   }
 
   return (
@@ -59,7 +98,12 @@ export function PdfUploadField({
       <input type="file" accept="application/pdf" onChange={handleChange} className="text-[13px]" />
       <input type="hidden" name={name} value={savedPath ?? ""} />
       {status === "uploading" ? (
-        <span className="text-[12px] text-ink/50">Enviando…</span>
+        <div className="flex items-center gap-2">
+          <div className="w-32 h-1.5 bg-parchment-dark rounded-full overflow-hidden">
+            <div className="h-full bg-moss transition-all" style={{ width: `${progress}%` }} />
+          </div>
+          <span className="text-[12px] text-ink/50">Enviando… {progress}%</span>
+        </div>
       ) : status === "done" ? (
         <span className="text-[12px] text-moss">PDF pronto — clique em Salvar para confirmar.</span>
       ) : status === "error" ? (

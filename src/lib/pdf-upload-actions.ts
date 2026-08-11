@@ -12,7 +12,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
  */
 export async function createPdfUploadUrlAction(
   path: string,
-): Promise<{ path: string; token: string } | { error: string }> {
+): Promise<{ path: string; token: string; signedUrl: string } | { error: string }> {
   await requireAdmin();
 
   const admin = createAdminClient();
@@ -24,5 +24,5 @@ export async function createPdfUploadUrlAction(
     return { error: error?.message ?? "Não foi possível preparar o upload." };
   }
 
-  return { path: data.path, token: data.token };
+  return { path: data.path, token: data.token, signedUrl: data.signedUrl };
 }
