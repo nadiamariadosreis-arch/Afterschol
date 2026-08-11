@@ -4,7 +4,6 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 
 function slugify(name: string) {
   return name
@@ -66,46 +65,21 @@ export async function updateJogoAction(formData: FormData) {
   revalidatePath(`/admin/jogos/${jogoId}`);
 }
 
-export async function uploadPdfAction(formData: FormData) {
+// The PDF/cover file itself is uploaded directly from the browser to
+// Supabase Storage (see PdfUploadForm/CapaUploadForm) — routing large
+// files through a Server Action would hit Vercel's ~4.5MB request body
+// limit. These actions only record the resulting storage path.
+export async function setJogoPdfPathAction(jogoId: string, path: string) {
   await requireAdmin();
-
-  const jogoId = String(formData.get("jogoId") ?? "");
-  const file = formData.get("pdf") as File | null;
-  if (!jogoId || !file || file.size === 0) return;
-
-  const admin = createAdminClient();
-  const path = `${jogoId}.pdf`;
-  const bytes = new Uint8Array(await file.arrayBuffer());
-
-  await admin.storage.from("jogos-pdf").upload(path, bytes, {
-    contentType: "application/pdf",
-    upsert: true,
-  });
-
-  await admin.from("jogos").update({ pdf_path: path }).eq("id", jogoId);
-
+  const supabase = await createClient();
+  await supabase.from("jogos").update({ pdf_path: path }).eq("id", jogoId);
   revalidatePath(`/admin/jogos/${jogoId}`);
 }
 
-export async function uploadCapaAction(formData: FormData) {
+export async function setJogoCapaPathAction(jogoId: string, path: string) {
   await requireAdmin();
-
-  const jogoId = String(formData.get("jogoId") ?? "");
-  const file = formData.get("capa") as File | null;
-  if (!jogoId || !file || file.size === 0) return;
-
-  const admin = createAdminClient();
-  const extension = file.type === "image/png" ? "png" : "jpg";
-  const path = `${jogoId}.${extension}`;
-  const bytes = new Uint8Array(await file.arrayBuffer());
-
-  await admin.storage.from("jogos-capas").upload(path, bytes, {
-    contentType: file.type || "image/jpeg",
-    upsert: true,
-  });
-
-  await admin.from("jogos").update({ capa_path: path }).eq("id", jogoId);
-
+  const supabase = await createClient();
+  await supabase.from("jogos").update({ capa_path: path }).eq("id", jogoId);
   revalidatePath(`/admin/jogos/${jogoId}`);
 }
 

@@ -5,14 +5,10 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import type { Tag } from "@/lib/supabase/types";
-import {
-  deleteJogoAction,
-  toggleJogoTagAction,
-  updateJogoAction,
-  uploadCapaAction,
-  uploadPdfAction,
-} from "../actions";
+import { deleteJogoAction, toggleJogoTagAction, updateJogoAction } from "../actions";
 import { DeleteJogoButton } from "../DeleteJogoButton";
+import { PdfUploadForm } from "../PdfUploadForm";
+import { CapaUploadForm } from "../CapaUploadForm";
 
 export default async function EditJogoPage({ params }: { params: Promise<{ jogoId: string }> }) {
   const { jogoId } = await params;
@@ -122,13 +118,7 @@ export default async function EditJogoPage({ params }: { params: Promise<{ jogoI
             {jogo.pdf_path ? "PDF enviado" : "Sem PDF"}
           </Badge>
         </div>
-        <form action={uploadPdfAction} className="flex items-center gap-3 flex-wrap">
-          <input type="hidden" name="jogoId" value={jogo.id} />
-          <input type="file" name="pdf" accept="application/pdf" required className="text-[14px]" />
-          <Button type="submit" variant="secondary">
-            {jogo.pdf_path ? "Substituir" : "Enviar"}
-          </Button>
-        </form>
+        <PdfUploadForm jogoId={jogo.id} hasExisting={Boolean(jogo.pdf_path)} />
       </Card>
 
       <Card>
@@ -138,13 +128,7 @@ export default async function EditJogoPage({ params }: { params: Promise<{ jogoI
             {jogo.capa_path ? "Capa enviada" : "Sem capa"}
           </Badge>
         </div>
-        <form action={uploadCapaAction} className="flex items-center gap-3 flex-wrap">
-          <input type="hidden" name="jogoId" value={jogo.id} />
-          <input type="file" name="capa" accept="image/png,image/jpeg" required className="text-[14px]" />
-          <Button type="submit" variant="secondary">
-            {jogo.capa_path ? "Substituir" : "Enviar"}
-          </Button>
-        </form>
+        <CapaUploadForm jogoId={jogo.id} hasExisting={Boolean(jogo.capa_path)} />
       </Card>
 
       <form action={deleteJogoAction} className="self-start">
