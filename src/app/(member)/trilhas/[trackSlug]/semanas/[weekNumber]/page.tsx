@@ -9,7 +9,7 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { PdfViewer } from "@/components/member/PdfViewer";
 import { GuideContent } from "@/components/member/GuideContent";
 import { Button } from "@/components/ui/Button";
-import type { ProductCode, Week, WeekDay } from "@/lib/supabase/types";
+import type { ProductCode, Week } from "@/lib/supabase/types";
 import { toggleProgressAction } from "@/lib/progress-actions";
 import { WeekTabs, type WeekTab } from "./WeekTabs";
 
@@ -74,13 +74,6 @@ export default async function WeekPage({
   const today = new Date().toISOString().slice(0, 10);
   if (week.release_date > today) redirect(`/trilhas/${trackSlug}`);
 
-  const { data: days } = await supabase
-    .from("week_days")
-    .select("*")
-    .eq("week_id", week.id)
-    .order("day_number")
-    .returns<WeekDay[]>();
-
   const virtue = week.virtues;
   const completedWeekIds = new Set(
     (progressRows ?? []).filter((p) => p.completed_at).map((p) => p.week_id),
@@ -89,11 +82,6 @@ export default async function WeekPage({
 
   const tabs: WeekTab[] = [
     { key: "conteudo", label: "Conteúdo", content: <ContentSections week={week} virtue={virtue} /> },
-    ...(days ?? []).map((day) => ({
-      key: `dia-${day.id}`,
-      label: day.label,
-      content: <DayContent day={day} />,
-    })),
     ...(week.description
       ? [{ key: "guia", label: "Guia dos Pais", content: <GuideContent markdown={week.description} /> }]
       : []),
@@ -186,129 +174,56 @@ function ContentSections({
   week: WeekWithVirtue;
   virtue: WeekWithVirtue["virtues"];
 }) {
-  const items: { title: string; description: string; action?: React.ReactNode; body: React.ReactNode }[] = [];
-
-  if (week.video_url) {
-    items.push({
-      title: "Vídeo-aula",
-      description: "Assista antes de começar a atividade da semana.",
-      body: (
-        <div className="aspect-video rounded-sm overflow-hidden border border-line">
-          <iframe
-            src={toEmbedUrl(week.video_url)}
-            title="Vídeo-aula"
-            className="w-full h-full"
-            allowFullScreen
-          />
-        </div>
-      ),
-    });
-  }
-
-  if (week.activity_pdf_path) {
-    items.push({
-      title: "Atividades",
-      description: "Exercícios para praticar o que foi lido.",
-      action: <DownloadButton href={`/api/pdf/${week.id}?type=activity&mode=download`} />,
-      body: <PdfViewer src={`/api/pdf/${week.id}?type=activity`} title="Atividades da semana" />,
-    });
-  }
-
   return (
     <div className="flex flex-col gap-6">
-      {virtue?.booklet_pdf_path ? <BookletHero week={week} virtue={virtue} /> : null}
+      {virtue?.booklet_pdf_path ? (
+        <HeroCard
+          eyebrow="Material principal da semana"
+          title={`Livrinho — ${virtue.name}`}
+          description="A história desta semana, para ler e reler com seu filho."
+          downloadLabel="Baixar Livrinho"
+          downloadHref={`/api/pdf/${week.id}?type=booklet&mode=download`}
+          pdfSrc={`/api/pdf/${week.id}?type=booklet`}
+          pdfTitle="Livrinho da virtude"
+          icon={<BookIcon />}
+        />
+      ) : null}
 
-      {items.map((item, index) => (
-        <section key={item.title} className="border border-line rounded-sm bg-card overflow-hidden">
-          <div className="flex items-start gap-4 p-5 border-b border-line">
-            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-moss text-parchment text-[14px] font-semibold shrink-0">
-              {index + 1}
-            </span>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-heading font-semibold text-[18px] text-ink">{item.title}</h3>
-              <p className="text-ink/60 text-[14px] mt-0.5">{item.description}</p>
-            </div>
-            {item.action}
-          </div>
-          <div className="p-5">{item.body}</div>
-        </section>
-      ))}
-    </div>
-  );
-}
+      {week.activity_pdf_path ? (
+        <HeroCard
+          eyebrow="Roteiro, atividades e cartões da semana"
+          title="Atividades da Semana"
+          description="Tudo que vocês vão precisar para os próximos dias, em um só arquivo."
+          downloadLabel="Baixar Atividades"
+          downloadHref={`/api/pdf/${week.id}?type=activity&mode=download`}
+          pdfSrc={`/api/pdf/${week.id}?type=activity`}
+          pdfTitle="Atividades da semana"
+          icon={<ActivitiesIcon />}
+        />
+      ) : null}
 
-function BookletHero({
-  week,
-  virtue,
-}: {
-  week: WeekWithVirtue;
-  virtue: NonNullable<WeekWithVirtue["virtues"]>;
-}) {
-  return (
-    <section className="rounded-[18px] border border-moss/30 bg-gradient-to-br from-moss/10 via-card to-gold/10 shadow-sm overflow-hidden">
-      <div className="p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-6">
-        <div className="flex items-center justify-center w-16 h-16 rounded-full bg-moss text-parchment shrink-0 shadow-sm">
-          <svg viewBox="0 0 24 24" className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="1.6">
-            <path
-              d="M4 5.5C4 4.7 4.7 4 5.5 4H11v16H5.5C4.7 20 4 19.3 4 18.5V5.5Z"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M20 5.5C20 4.7 19.3 4 18.5 4H13v16h5.5c.8 0 1.5-.7 1.5-1.5V5.5Z"
-              strokeLinejoin="round"
-            />
-          </svg>
-        </div>
-        <div className="flex-1 min-w-0">
-          <div className="text-[12px] tracking-[0.18em] uppercase text-terracotta font-semibold mb-1">
-            Material principal da semana
-          </div>
-          <h3 className="font-heading font-semibold text-[24px] text-ink">
-            Livrinho — {virtue.name}
-          </h3>
-          <p className="text-ink/60 text-[15px] mt-1">
-            A história desta semana, para ler e reler com seu filho.
-          </p>
-        </div>
-        <a
-          href={`/api/pdf/${week.id}?type=booklet&mode=download`}
-          className="inline-flex items-center justify-center gap-2 rounded-sm px-6 py-2.5 font-body text-[15px] tracking-wide bg-moss text-parchment hover:bg-moss-dark border border-moss transition-colors duration-150 shrink-0"
-        >
-          <svg viewBox="0 0 20 20" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.6">
-            <path d="M10 3v10" strokeLinecap="round" />
-            <path d="M6 9.5 10 13.5 14 9.5" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M4 16.5h12" strokeLinecap="round" />
-          </svg>
-          Baixar Livrinho
-        </a>
-      </div>
-      <div className="px-6 md:px-8 pb-6 md:pb-8">
-        <PdfViewer src={`/api/pdf/${week.id}?type=booklet`} title="Livrinho da virtude" />
-      </div>
-    </section>
-  );
-}
-
-function DayContent({ day }: { day: WeekDay }) {
-  if (!day.content && !day.pdf_path) {
-    return <p className="text-ink/50 text-[14px]">Conteúdo deste dia ainda será publicado.</p>;
-  }
-
-  return (
-    <div className="flex flex-col gap-6">
-      {day.content ? <GuideContent markdown={day.content} /> : null}
-
-      {day.pdf_path ? (
+      {week.video_url ? (
         <section className="border border-line rounded-sm bg-card overflow-hidden">
           <div className="flex items-start gap-4 p-5 border-b border-line">
+            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-moss text-parchment text-[14px] font-semibold shrink-0">
+              1
+            </span>
             <div className="flex-1 min-w-0">
-              <h3 className="font-heading font-semibold text-[18px] text-ink">Atividade do dia</h3>
-              <p className="text-ink/60 text-[14px] mt-0.5">Material para {day.label}.</p>
+              <h3 className="font-heading font-semibold text-[18px] text-ink">Vídeo-aula</h3>
+              <p className="text-ink/60 text-[14px] mt-0.5">
+                Assista antes de começar a atividade da semana.
+              </p>
             </div>
-            <DownloadButton href={`/api/pdf-dia/${day.id}?mode=download`} />
           </div>
           <div className="p-5">
-            <PdfViewer src={`/api/pdf-dia/${day.id}`} title={`Atividade — ${day.label}`} />
+            <div className="aspect-video rounded-sm overflow-hidden border border-line">
+              <iframe
+                src={toEmbedUrl(week.video_url)}
+                title="Vídeo-aula"
+                className="w-full h-full"
+                allowFullScreen
+              />
+            </div>
           </div>
         </section>
       ) : null}
@@ -316,18 +231,71 @@ function DayContent({ day }: { day: WeekDay }) {
   );
 }
 
-function DownloadButton({ href }: { href: string }) {
+function HeroCard({
+  eyebrow,
+  title,
+  description,
+  downloadLabel,
+  downloadHref,
+  pdfSrc,
+  pdfTitle,
+  icon,
+}: {
+  eyebrow: string;
+  title: string;
+  description: string;
+  downloadLabel: string;
+  downloadHref: string;
+  pdfSrc: string;
+  pdfTitle: string;
+  icon: React.ReactNode;
+}) {
   return (
-    <a
-      href={href}
-      className="flex items-center gap-2 border border-line rounded-sm px-3 py-1.5 text-[13px] text-ink hover:bg-parchment-dark shrink-0"
-    >
-      <svg viewBox="0 0 20 20" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.6">
-        <path d="M10 3v10" strokeLinecap="round" />
-        <path d="M6 9.5 10 13.5 14 9.5" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M4 16.5h12" strokeLinecap="round" />
-      </svg>
-      Baixar PDF
-    </a>
+    <section className="rounded-[18px] border border-moss/30 bg-gradient-to-br from-moss/10 via-card to-gold/10 shadow-sm overflow-hidden">
+      <div className="p-6 md:p-8 flex flex-col md:flex-row md:items-center gap-6">
+        <div className="flex items-center justify-center w-16 h-16 rounded-full bg-moss text-parchment shrink-0 shadow-sm">
+          {icon}
+        </div>
+        <div className="flex-1 min-w-0">
+          <div className="text-[12px] tracking-[0.18em] uppercase text-terracotta font-semibold mb-1">
+            {eyebrow}
+          </div>
+          <h3 className="font-heading font-semibold text-[24px] text-ink">{title}</h3>
+          <p className="text-ink/60 text-[15px] mt-1">{description}</p>
+        </div>
+        <a
+          href={downloadHref}
+          className="inline-flex items-center justify-center gap-2 rounded-sm px-6 py-2.5 font-body text-[15px] tracking-wide bg-moss text-parchment hover:bg-moss-dark border border-moss transition-colors duration-150 shrink-0"
+        >
+          <svg viewBox="0 0 20 20" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.6">
+            <path d="M10 3v10" strokeLinecap="round" />
+            <path d="M6 9.5 10 13.5 14 9.5" strokeLinecap="round" strokeLinejoin="round" />
+            <path d="M4 16.5h12" strokeLinecap="round" />
+          </svg>
+          {downloadLabel}
+        </a>
+      </div>
+      <div className="px-6 md:px-8 pb-6 md:pb-8">
+        <PdfViewer src={pdfSrc} title={pdfTitle} />
+      </div>
+    </section>
+  );
+}
+
+function BookIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v16H5.5C4.7 20 4 19.3 4 18.5V5.5Z" strokeLinejoin="round" />
+      <path d="M20 5.5C20 4.7 19.3 4 18.5 4H13v16h5.5c.8 0 1.5-.7 1.5-1.5V5.5Z" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+function ActivitiesIcon() {
+  return (
+    <svg viewBox="0 0 24 24" className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth="1.6">
+      <path d="M5 4.5A1.5 1.5 0 0 1 6.5 3h9L19 6.5v14a1.5 1.5 0 0 1-1.5 1.5h-11A1.5 1.5 0 0 1 5 20.5v-16Z" strokeLinejoin="round" />
+      <path d="M8.5 12h7M8.5 15.5h7M8.5 8.5h4" strokeLinecap="round" />
+    </svg>
   );
 }

@@ -8,15 +8,8 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Cover } from "@/components/member/Cover";
 import { PdfUploadField } from "@/components/admin/PdfUploadField";
 import { coverImageUrl } from "@/lib/supabase/storage";
-import type { Virtue, Week, WeekDay } from "@/lib/supabase/types";
-import {
-  createWeekAction,
-  createWeekDayAction,
-  deleteWeekDayAction,
-  updateWeekAction,
-  updateWeekDayAction,
-  uploadTrackCoverAction,
-} from "../actions";
+import type { Virtue, Week } from "@/lib/supabase/types";
+import { createWeekAction, updateWeekAction, uploadTrackCoverAction } from "../actions";
 
 type WeekWithVirtue = Week & { virtues: Pick<Virtue, "name" | "number"> | null };
 
@@ -90,24 +83,6 @@ export default async function TrackWeeksAdminPage({
       .returns<WeekWithVirtue[]>(),
     supabase.from("virtues").select("*").order("number"),
   ]);
-
-  const weekIds = (weeks ?? []).map((w) => w.id);
-  const { data: weekDays } =
-    weekIds.length > 0
-      ? await supabase
-          .from("week_days")
-          .select("*")
-          .in("week_id", weekIds)
-          .order("day_number")
-          .returns<WeekDay[]>()
-      : { data: [] as WeekDay[] };
-
-  const daysByWeek = new Map<string, WeekDay[]>();
-  for (const day of weekDays ?? []) {
-    const list = daysByWeek.get(day.week_id) ?? [];
-    list.push(day);
-    daysByWeek.set(day.week_id, list);
-  }
 
   return (
     <div>
@@ -183,7 +158,7 @@ export default async function TrackWeeksAdminPage({
                 />
               </label>
               <label className="flex flex-col gap-2">
-                <span className="text-[14px] text-ink/70">Atividade (PDF)</span>
+                <span className="text-[14px] text-ink/70">Atividades da Semana (PDF)</span>
                 <PdfUploadField
                   name="activityPath"
                   path={`atividades/${week.id}.pdf`}
@@ -205,115 +180,6 @@ export default async function TrackWeeksAdminPage({
                 Salvar
               </Button>
             </form>
-
-            <div className="mt-6 pt-6 border-t border-line">
-              <h4 className="font-heading font-semibold text-[16px] text-ink mb-1">
-                Dias da semana
-              </h4>
-              <p className="text-ink/50 text-[13px] mb-4">
-                Um card por dia (Segunda, Terça...), cada um com seu próprio
-                texto (mesmo formato do Guia dos Pais) e um PDF pra baixar.
-              </p>
-
-              <div className="flex flex-col gap-4">
-                {(daysByWeek.get(week.id) ?? []).map((day) => (
-                  <div key={day.id} className="border border-line rounded-sm p-4 bg-parchment/40">
-                    <form action={updateWeekDayAction} className="grid md:grid-cols-3 gap-3 items-end">
-                      <input type="hidden" name="dayId" value={day.id} />
-                      <input type="hidden" name="trackSlug" value={trackSlug} />
-                      <label className="flex flex-col gap-2">
-                        <span className="text-[13px] text-ink/70">Nome do dia</span>
-                        <input
-                          type="text"
-                          name="label"
-                          defaultValue={day.label}
-                          required
-                          className="border border-line bg-parchment rounded-sm px-3 py-2 font-body text-ink outline-none focus:border-moss"
-                        />
-                      </label>
-                      <label className="flex flex-col gap-2">
-                        <span className="text-[13px] text-ink/70">
-                          PDF do dia {day.pdf_path ? "(substituir)" : ""}
-                        </span>
-                        <PdfUploadField
-                          name="pdfPath"
-                          path={`dias/${day.id}.pdf`}
-                          hasExisting={!!day.pdf_path}
-                        />
-                      </label>
-                      <div className="flex items-center gap-3">
-                        <Button type="submit" variant="secondary" className="!px-4 !py-1.5 !text-[13px]">
-                          Salvar dia
-                        </Button>
-                        <Badge tone={day.pdf_path ? "moss" : "muted"}>
-                          {day.pdf_path ? "PDF enviado" : "Sem PDF"}
-                        </Badge>
-                      </div>
-                      <label className="flex flex-col gap-2 md:col-span-3">
-                        <span className="text-[13px] text-ink/70">
-                          Conteúdo do dia (Markdown, mesmo formato do Guia dos Pais)
-                        </span>
-                        <textarea
-                          name="content"
-                          defaultValue={day.content ?? ""}
-                          rows={6}
-                          className="border border-line bg-parchment rounded-sm px-3 py-2 font-mono text-[13px] text-ink outline-none focus:border-moss resize-y"
-                        />
-                      </label>
-                    </form>
-                    <form action={deleteWeekDayAction} className="mt-3">
-                      <input type="hidden" name="dayId" value={day.id} />
-                      <input type="hidden" name="trackSlug" value={trackSlug} />
-                      <button
-                        type="submit"
-                        className="text-[12px] text-terracotta underline underline-offset-2"
-                      >
-                        Remover este dia
-                      </button>
-                    </form>
-                  </div>
-                ))}
-              </div>
-
-              <form
-                action={createWeekDayAction}
-                className="grid md:grid-cols-3 gap-3 items-end mt-4 border border-dashed border-line rounded-sm p-4"
-              >
-                <input type="hidden" name="weekId" value={week.id} />
-                <input type="hidden" name="trackSlug" value={trackSlug} />
-                <input
-                  type="hidden"
-                  name="dayNumber"
-                  value={(daysByWeek.get(week.id)?.length ?? 0) + 1}
-                />
-                <label className="flex flex-col gap-2">
-                  <span className="text-[13px] text-ink/70">Nome do novo dia</span>
-                  <input
-                    type="text"
-                    name="label"
-                    placeholder="Ex: Segunda-feira"
-                    required
-                    className="border border-line bg-parchment rounded-sm px-3 py-2 font-body text-ink outline-none focus:border-moss"
-                  />
-                </label>
-                <label className="flex flex-col gap-2">
-                  <span className="text-[13px] text-ink/70">PDF do dia (opcional)</span>
-                  <PdfUploadField name="pdfPath" path={`dias/${randomUUID()}.pdf`} />
-                </label>
-                <Button type="submit" variant="ghost" className="!px-4 !py-1.5 !text-[13px]">
-                  + Adicionar dia
-                </Button>
-                <label className="flex flex-col gap-2 md:col-span-3">
-                  <span className="text-[13px] text-ink/70">Conteúdo do dia (Markdown, opcional)</span>
-                  <textarea
-                    name="content"
-                    rows={6}
-                    placeholder="Texto do dia — mesmo formato do Guia dos Pais"
-                    className="border border-line bg-parchment rounded-sm px-3 py-2 font-mono text-[13px] text-ink outline-none focus:border-moss resize-y"
-                  />
-                </label>
-              </form>
-            </div>
           </Card>
         ))}
 
@@ -381,7 +247,7 @@ export default async function TrackWeeksAdminPage({
           </label>
 
           <label className="flex flex-col gap-2 md:col-span-2">
-            <span className="text-[14px] text-ink/70">Atividades (PDF, opcional)</span>
+            <span className="text-[14px] text-ink/70">Atividades da Semana (PDF, opcional)</span>
             <PdfUploadField name="activityPath" path={`atividades/${randomUUID()}.pdf`} />
           </label>
 

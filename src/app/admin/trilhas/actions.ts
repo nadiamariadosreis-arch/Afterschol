@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { Week, WeekDay } from "@/lib/supabase/types";
+import type { Week } from "@/lib/supabase/types";
 
 export async function createWeekAction(formData: FormData) {
   await requireAdmin();
@@ -65,74 +65,6 @@ export async function updateWeekAction(formData: FormData) {
   if (error) {
     redirect(`/admin/trilhas/${trackSlug}?error=${encodeURIComponent(error.message)}`);
   }
-
-  revalidatePath(`/admin/trilhas/${trackSlug}`);
-  revalidatePath(`/trilhas/${trackSlug}`);
-}
-
-export async function createWeekDayAction(formData: FormData) {
-  await requireAdmin();
-
-  const weekId = String(formData.get("weekId") ?? "");
-  const trackSlug = String(formData.get("trackSlug") ?? "");
-  const dayNumber = Number(formData.get("dayNumber"));
-  const label = String(formData.get("label") ?? "").trim();
-  const content = String(formData.get("content") ?? "").trim();
-  const pdfPath = String(formData.get("pdfPath") ?? "").trim();
-
-  if (!weekId || !dayNumber || !label) return;
-
-  const supabase = await createClient();
-  const { error } = await supabase.from("week_days").insert({
-    week_id: weekId,
-    day_number: dayNumber,
-    label,
-    content: content || null,
-    pdf_path: pdfPath || null,
-  });
-
-  if (error) {
-    redirect(`/admin/trilhas/${trackSlug}?error=${encodeURIComponent(error.message)}`);
-  }
-
-  revalidatePath(`/admin/trilhas/${trackSlug}`);
-  revalidatePath(`/trilhas/${trackSlug}`);
-}
-
-export async function updateWeekDayAction(formData: FormData) {
-  await requireAdmin();
-
-  const dayId = String(formData.get("dayId") ?? "");
-  const trackSlug = String(formData.get("trackSlug") ?? "");
-  const label = String(formData.get("label") ?? "").trim();
-  const content = String(formData.get("content") ?? "").trim();
-  const pdfPath = String(formData.get("pdfPath") ?? "").trim();
-
-  if (!dayId || !label) return;
-
-  const supabase = await createClient();
-  const update: Partial<WeekDay> = { label, content: content || null };
-  if (pdfPath) update.pdf_path = pdfPath;
-
-  const { error } = await supabase.from("week_days").update(update).eq("id", dayId);
-
-  if (error) {
-    redirect(`/admin/trilhas/${trackSlug}?error=${encodeURIComponent(error.message)}`);
-  }
-
-  revalidatePath(`/admin/trilhas/${trackSlug}`);
-  revalidatePath(`/trilhas/${trackSlug}`);
-}
-
-export async function deleteWeekDayAction(formData: FormData) {
-  await requireAdmin();
-
-  const dayId = String(formData.get("dayId") ?? "");
-  const trackSlug = String(formData.get("trackSlug") ?? "");
-  if (!dayId) return;
-
-  const supabase = await createClient();
-  await supabase.from("week_days").delete().eq("id", dayId);
 
   revalidatePath(`/admin/trilhas/${trackSlug}`);
   revalidatePath(`/trilhas/${trackSlug}`);
