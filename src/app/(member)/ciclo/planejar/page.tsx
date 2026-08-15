@@ -28,7 +28,12 @@ export default async function PlanejarPage() {
         A reunião marcada, a dívida que mais pesa priorizada no plano, cada conta do mês com dia e
         meio de pagamento definidos, e a fatura do cartão avaliada item por item.
       </Callout>
-      <PlanejarForm cycleId={cycle.id} familyId={profile.id} initial={cycle.planejar ?? emptyPlanejar()} />
+      <PlanejarForm
+        cycleId={cycle.id}
+        familyId={profile.id}
+        initial={cycle.planejar ?? emptyPlanejar()}
+        avaliar={cycle.avaliar}
+      />
     </div>
   );
 }

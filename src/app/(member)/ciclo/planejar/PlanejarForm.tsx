@@ -8,9 +8,11 @@ import { AutosaveIndicator } from "@/components/ui/AutosaveIndicator";
 import { useAutosave } from "@/lib/useAutosave";
 import { createClient } from "@/lib/supabase/client";
 import { formatBRL } from "@/lib/format";
+import { itensMesFromAvaliar } from "@/lib/apfa/calc";
 import { PROCESSO_INFO, MEIO_PAGAMENTO_LABEL, URGENCIA_LABEL } from "@/lib/apfa/processos";
 import {
   PROCESSO_ORDER,
+  type AvaliarData,
   type CartaoItem,
   type Divida,
   type FaturaItem,
@@ -41,10 +43,12 @@ export function PlanejarForm({
   cycleId,
   familyId,
   initial,
+  avaliar,
 }: {
   cycleId: string;
   familyId: string;
   initial: PlanejarData;
+  avaliar: AvaliarData | null;
 }) {
   const [state, formAction, pending] = useActionState(salvarPlanejarAction, initialState);
   const [tab, setTab] = useState<TabKey>("reuniao");
@@ -52,7 +56,9 @@ export function PlanejarForm({
 
   const [reuniao, setReuniao] = useState(initial.reuniao);
   const [dividas, setDividas] = useState<Divida[]>(initial.dividas);
-  const [mes, setMes] = useState<ItemMes[]>(initial.organizacao_mes);
+  const [mes, setMes] = useState<ItemMes[]>(
+    () => (initial.organizacao_mes.length ? initial.organizacao_mes : itensMesFromAvaliar(avaliar)),
+  );
   const [cartao, setCartao] = useState(initial.cartao);
   const [completedAt] = useState(initial.completed_at);
 
@@ -100,9 +106,24 @@ export function PlanejarForm({
         ))}
       </div>
 
-      {tab === "reuniao" ? <ReuniaoTab reuniao={reuniao} setReuniao={setReuniao} /> : null}
-      {tab === "dividas" ? <DividasTab dividas={dividas} setDividas={setDividas} /> : null}
-      {tab === "mes" ? <MesTab itens={mes} setItens={setMes} /> : null}
+      {tab === "reuniao" ? (
+        <>
+          <ReuniaoTab reuniao={reuniao} setReuniao={setReuniao} />
+          <ReuniaoResumo reuniao={reuniao} />
+        </>
+      ) : null}
+      {tab === "dividas" ? (
+        <>
+          <DividasTab dividas={dividas} setDividas={setDividas} />
+          <DividasResumo dividas={dividas} />
+        </>
+      ) : null}
+      {tab === "mes" ? (
+        <>
+          <MesTab itens={mes} setItens={setMes} />
+          <MesResumo itens={mes} />
+        </>
+      ) : null}
       {tab === "cartao" ? <CartaoTab familyId={familyId} cartao={cartao} setCartao={setCartao} /> : null}
 
       {state.error ? <p className="text-orange-dark text-[15px]">{state.error}</p> : null}
@@ -308,8 +329,9 @@ function MesTab({ itens, setItens }: { itens: ItemMes[]; setItens: (fn: (i: Item
       <Card>
         <h3 className="font-display-italic font-semibold text-[19px] text-ink mb-1">Organização do mês</h3>
         <p className="text-ink/60 text-[14px]">
-          Para cada conta, defina o dia de pagamento, quem paga e o meio de pagamento. Marque o que
-          pode ser cortado ou ajustado.
+          Já trouxemos os itens que você preencheu no Avaliar — é só definir o dia de pagamento, quem
+          paga e o meio de pagamento de cada um. Marque o que pode ser cortado ou ajustado, e
+          apague ou adicione o que precisar.
         </p>
       </Card>
       {itens.map((item) => (
@@ -595,5 +617,140 @@ function CartaoTab({
         </Card>
       ) : null}
     </div>
+  );
+}
+
+function ReuniaoResumo({ reuniao }: { reuniao: PlanejarData["reuniao"] }) {
+  const preenchido = reuniao.dia || reuniao.cadencia || reuniao.responsaveis || reuniao.proxima_data;
+  if (!preenchido) return null;
+
+  return (
+    <Card>
+      <h4 className="font-display-italic font-semibold text-[17px] text-ink mb-1">Resumo da parte técnica</h4>
+      <p className="text-ink/55 text-[13px] mb-4">O que ficou combinado até agora.</p>
+      <dl className="grid sm:grid-cols-2 gap-4 text-[14px]">
+        <div>
+          <dt className="text-ink/55 text-[11px] uppercase tracking-wide font-semibold mb-0.5">Dia combinado</dt>
+          <dd className="text-ink font-semibold">{reuniao.dia || "—"}</dd>
+        </div>
+        <div>
+          <dt className="text-ink/55 text-[11px] uppercase tracking-wide font-semibold mb-0.5">Cadência</dt>
+          <dd className="text-ink font-semibold">
+            {reuniao.cadencia === "mensal" ? "Mensal" : reuniao.cadencia === "quinzenal" ? "Quinzenal" : "—"}
+          </dd>
+        </div>
+        <div className="sm:col-span-2">
+          <dt className="text-ink/55 text-[11px] uppercase tracking-wide font-semibold mb-0.5">Quem acompanha o quê</dt>
+          <dd className="text-ink">{reuniao.responsaveis || "—"}</dd>
+        </div>
+        <div>
+          <dt className="text-ink/55 text-[11px] uppercase tracking-wide font-semibold mb-0.5">Próxima reunião</dt>
+          <dd className="text-ink font-semibold">{reuniao.proxima_data || "—"}</dd>
+        </div>
+      </dl>
+    </Card>
+  );
+}
+
+function DividasResumo({ dividas }: { dividas: Divida[] }) {
+  if (!dividas.length) return null;
+
+  const total = dividas.reduce((sum, d) => sum + d.valor, 0);
+  const ordenadas = [...dividas].sort((a, b) => b.valor - a.valor);
+  const maior = Math.max(...ordenadas.map((d) => d.valor), 1);
+
+  return (
+    <Card>
+      <h4 className="font-display-italic font-semibold text-[17px] text-ink mb-1">Resumo das dívidas</h4>
+      <p className="text-ink/55 text-[13px] mb-4">
+        {dividas.length} {dividas.length === 1 ? "dívida cadastrada" : "dívidas cadastradas"}, somando{" "}
+        <strong className="text-ink">{formatBRL(total)}</strong>.
+      </p>
+
+      <div className="flex flex-col gap-2 mb-6">
+        {ordenadas.map((d) => (
+          <div key={d.id} className="flex items-center gap-3">
+            <span className="w-32 text-[13px] text-ink/70 truncate shrink-0">{d.nome || "Sem nome"}</span>
+            <div className="flex-1 h-5 rounded-full bg-cream-dark overflow-hidden">
+              <div
+                className={`h-full rounded-full ${d.dolorosa ? "bg-orange-dark" : "bg-mint"}`}
+                style={{ width: `${Math.max(2, Math.min(100, (d.valor / maior) * 100))}%` }}
+              />
+            </div>
+            <span className="w-24 text-[13px] font-semibold text-ink text-right shrink-0">{formatBRL(d.valor)}</span>
+          </div>
+        ))}
+      </div>
+
+      <div className="overflow-x-auto">
+        <table className="w-full text-[13px] border-t border-line min-w-[560px]">
+          <thead>
+            <tr className="text-ink/55 text-[11px] uppercase tracking-wide">
+              <th className="text-left font-semibold py-2">Dívida</th>
+              <th className="text-right font-semibold py-2">Valor</th>
+              <th className="text-left font-semibold py-2 pl-4">Urgência</th>
+              <th className="text-left font-semibold py-2 pl-4">Juros</th>
+              <th className="text-left font-semibold py-2 pl-4">Situação</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ordenadas.map((d) => (
+              <tr key={d.id} className="border-b border-line">
+                <td className="py-2 text-ink">
+                  {d.nome || "Sem nome"}
+                  {d.dolorosa ? <span className="ml-1.5 text-orange-dark" title="Tira o sono da família">●</span> : null}
+                </td>
+                <td className="py-2 text-right font-semibold text-ink">{formatBRL(d.valor)}</td>
+                <td className="py-2 pl-4 text-ink/75">{URGENCIA_LABEL[d.urgencia]}</td>
+                <td className="py-2 pl-4 text-ink/75">{d.juros ? `${d.juros}% a.m.` : "—"}</td>
+                <td className="py-2 pl-4 text-ink/75">{d.quitada ? "Quitada" : "Em aberto"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Card>
+  );
+}
+
+function MesResumo({ itens }: { itens: ItemMes[] }) {
+  if (!itens.length) return null;
+
+  const podeCortar = itens.filter((i) => i.cortar).length;
+
+  return (
+    <Card>
+      <h4 className="font-display-italic font-semibold text-[17px] text-ink mb-1">Resumo da organização do mês</h4>
+      <p className="text-ink/55 text-[13px] mb-4">
+        {itens.length} {itens.length === 1 ? "item organizado" : "itens organizados"}
+        {podeCortar ? `, ${podeCortar} marcado${podeCortar === 1 ? "" : "s"} pra cortar ou ajustar` : ""}.
+      </p>
+      <div className="overflow-x-auto">
+        <table className="w-full text-[13px] border-t border-line min-w-[560px]">
+          <thead>
+            <tr className="text-ink/55 text-[11px] uppercase tracking-wide">
+              <th className="text-left font-semibold py-2">Item</th>
+              <th className="text-left font-semibold py-2 pl-4">Processo</th>
+              <th className="text-left font-semibold py-2 pl-4">Dia</th>
+              <th className="text-left font-semibold py-2 pl-4">Quem paga</th>
+              <th className="text-left font-semibold py-2 pl-4">Meio</th>
+              <th className="text-left font-semibold py-2 pl-4">Cortar?</th>
+            </tr>
+          </thead>
+          <tbody>
+            {itens.map((item) => (
+              <tr key={item.id} className="border-b border-line">
+                <td className="py-2 text-ink">{item.nome || "Sem nome"}</td>
+                <td className="py-2 pl-4 text-ink/75">{PROCESSO_INFO[item.processo].titulo}</td>
+                <td className="py-2 pl-4 text-ink/75">{item.dia_pagamento ?? "—"}</td>
+                <td className="py-2 pl-4 text-ink/75">{item.quem_paga || "—"}</td>
+                <td className="py-2 pl-4 text-ink/75">{MEIO_PAGAMENTO_LABEL[item.meio_pagamento]}</td>
+                <td className="py-2 pl-4">{item.cortar ? <span className="text-orange-dark font-semibold">Sim</span> : "—"}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Card>
   );
 }

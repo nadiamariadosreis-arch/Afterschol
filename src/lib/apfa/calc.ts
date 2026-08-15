@@ -4,6 +4,7 @@ import {
   type AvaliarData,
   type Cycle,
   type ExecucaoItem,
+  type ItemMes,
   type PlanejarData,
   type ProcessoKey,
 } from "./types";
@@ -79,6 +80,28 @@ export type ComparativoLinha = {
   realPct: number;
   diferencaPct: number;
 };
+
+/**
+ * Semeia a Organização do mês a partir do que já foi preenchido no Avaliar
+ * (contas fixas, gastos variáveis e parcelas) — assim a família não digita
+ * o mesmo item duas vezes, só completa dia de pagamento, quem paga e o
+ * meio. Gastos anuais ficam de fora por não serem um pagamento do mês.
+ */
+export function itensMesFromAvaliar(avaliar: AvaliarData | null): ItemMes[] {
+  if (!avaliar) return [];
+  const fonte = [...avaliar.contas_fixas, ...avaliar.gastos_variaveis, ...avaliar.parcelas];
+  return fonte
+    .filter((item) => item.nome.trim())
+    .map((item) => ({
+      id: `mes-avaliar-${item.id}`,
+      nome: item.nome,
+      processo: item.processo,
+      dia_pagamento: null,
+      quem_paga: "",
+      meio_pagamento: "pix" as const,
+      cortar: false,
+    }));
+}
 
 /**
  * Derives the Fazer Acontecer checklist from what was decided in Planejar —
