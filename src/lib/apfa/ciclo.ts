@@ -1,7 +1,7 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "@/lib/supabase/types";
-import { PERCENTUAL_IDEAL, type Cycle } from "./types";
+import { PERCENTUAL_IDEAL, emptyPlanejar, type Cycle } from "./types";
 import { currentCycleDate, pilarStatus } from "./calc";
 
 type TypedSupabase = SupabaseClient<Database>;
@@ -58,6 +58,12 @@ export async function getOrCreateActiveCycle(
     ? { ...cicloAnterior.avaliar, completed_at: new Date().toISOString() }
     : null;
 
+  // As dívidas também se mantêm de mês a mês — só somem quando marcadas
+  // como quitadas. O resto do Planejar (reunião, organização do mês,
+  // cartão) começa do zero, então herda só a lista de dívidas em aberto.
+  const dividasEmAberto = cicloAnterior?.planejar?.dividas.filter((d) => !d.quitada) ?? [];
+  const planejarHerdado = cicloAnterior ? { ...emptyPlanejar(), dividas: dividasEmAberto } : null;
+
   const { data: created, error } = await supabase
     .from("cycles")
     .insert({
@@ -66,6 +72,7 @@ export async function getOrCreateActiveCycle(
       month,
       percentuais: cicloAnterior ? cicloAnterior.percentuais : PERCENTUAL_IDEAL,
       avaliar: avaliarHerdado,
+      planejar: planejarHerdado,
     })
     .select("*")
     .single();

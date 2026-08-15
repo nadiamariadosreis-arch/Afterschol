@@ -312,20 +312,23 @@ function DividasTab({ dividas, setDividas }: { dividas: Divida[]; setDividas: (f
     ]);
   }
 
-  const ordenadas = [...dividas].sort((a, b) => Number(b.dolorosa) - Number(a.dolorosa));
+  const ordenadas = [...dividas].sort((a, b) => Number(a.quitada) - Number(b.quitada) || Number(b.dolorosa) - Number(a.dolorosa));
 
   return (
     <div className="flex flex-col gap-4">
       <Card>
         <h3 className="font-display-italic font-semibold text-[19px] text-ink mb-1">Organização das dívidas</h3>
         <p className="text-ink/60 text-[14px]">
-          Marque primeiro qual dívida está tirando o sono da família hoje — mesmo que não seja a
-          maior nem a de juro mais alto. Ela entra primeiro no plano de ação: juros alto dá pra
-          negociar, peso emocional não. Depois organize as demais por urgência, juros ou valor.
+          As dívidas em aberto se mantêm de mês a mês — não precisa recadastrar. Marque &ldquo;Já
+          quitada&rdquo; quando pagar: some da lista do mês seguinte, mas continua aparecendo aqui até o fim deste
+          mês, riscada, como registro de que foi paga. Continue adicionando as novas conforme
+          surgirem, e marque primeiro qual está tirando o sono da família hoje — mesmo que não seja
+          a maior nem a de juro mais alto: ela entra primeiro no plano de ação, porque juros alto dá
+          pra negociar, peso emocional não.
         </p>
       </Card>
       {ordenadas.map((div) => (
-        <Card key={div.id} className={div.dolorosa ? "border-orange" : ""}>
+        <Card key={div.id} className={div.quitada ? "opacity-60" : div.dolorosa ? "border-orange" : ""}>
           <div className="grid sm:grid-cols-2 gap-3">
             <label className="flex flex-col gap-1.5 sm:col-span-2">
               <span className="text-[13px] text-ink/70">Nome da dívida</span>
@@ -333,7 +336,7 @@ function DividasTab({ dividas, setDividas }: { dividas: Divida[]; setDividas: (f
                 type="text"
                 value={div.nome}
                 onChange={(e) => update(div.id, { nome: e.target.value })}
-                className="border border-line bg-cream rounded-lg px-3 py-2 text-[14px] outline-none focus:border-orange"
+                className={`border border-line bg-cream rounded-lg px-3 py-2 text-[14px] outline-none focus:border-orange ${div.quitada ? "line-through" : ""}`}
               />
             </label>
             <label className="flex flex-col gap-1.5">
@@ -386,7 +389,7 @@ function DividasTab({ dividas, setDividas }: { dividas: Divida[]; setDividas: (f
               </label>
               <label className="flex items-center gap-2 text-[14px]">
                 <input type="checkbox" checked={div.quitada} onChange={(e) => update(div.id, { quitada: e.target.checked })} />
-                Já quitada
+                Já quitada (risca e some da lista a partir do mês seguinte)
               </label>
               <button type="button" onClick={() => remove(div.id)} className="ml-auto text-ink/40 hover:text-orange-dark text-[14px]">
                 Remover
@@ -834,32 +837,37 @@ function ReuniaoResumo({ reuniao }: { reuniao: PlanejarData["reuniao"] }) {
 function DividasResumo({ dividas }: { dividas: Divida[] }) {
   if (!dividas.length) return null;
 
-  const total = dividas.reduce((sum, d) => sum + d.valor, 0);
-  const ordenadas = [...dividas].sort((a, b) => b.valor - a.valor);
+  const abertas = dividas.filter((d) => !d.quitada);
+  const quitadas = dividas.filter((d) => d.quitada);
+  const totalAberto = abertas.reduce((sum, d) => sum + d.valor, 0);
+  const ordenadas = [...abertas].sort((a, b) => b.valor - a.valor);
   const maior = Math.max(...ordenadas.map((d) => d.valor), 1);
 
   return (
     <Card>
       <h4 className="font-display-italic font-semibold text-[17px] text-ink mb-1">Resumo das dívidas</h4>
       <p className="text-ink/55 text-[13px] mb-4">
-        {dividas.length} {dividas.length === 1 ? "dívida cadastrada" : "dívidas cadastradas"}, somando{" "}
-        <strong className="text-ink">{formatBRL(total)}</strong>.
+        {abertas.length} {abertas.length === 1 ? "dívida em aberto" : "dívidas em aberto"}, somando{" "}
+        <strong className="text-ink">{formatBRL(totalAberto)}</strong>
+        {quitadas.length ? `. ${quitadas.length} já quitada${quitadas.length === 1 ? "" : "s"} este mês.` : "."}
       </p>
 
-      <div className="flex flex-col gap-2 mb-6">
-        {ordenadas.map((d) => (
-          <div key={d.id} className="flex items-center gap-3">
-            <span className="w-32 text-[13px] text-ink/70 truncate shrink-0">{d.nome || "Sem nome"}</span>
-            <div className="flex-1 h-5 rounded-full bg-cream-dark overflow-hidden">
-              <div
-                className={`h-full rounded-full ${d.dolorosa ? "bg-orange-dark" : "bg-mint"}`}
-                style={{ width: `${Math.max(2, Math.min(100, (d.valor / maior) * 100))}%` }}
-              />
+      {ordenadas.length ? (
+        <div className="flex flex-col gap-2 mb-6">
+          {ordenadas.map((d) => (
+            <div key={d.id} className="flex items-center gap-3">
+              <span className="w-32 text-[13px] text-ink/70 truncate shrink-0">{d.nome || "Sem nome"}</span>
+              <div className="flex-1 h-5 rounded-full bg-cream-dark overflow-hidden">
+                <div
+                  className={`h-full rounded-full ${d.dolorosa ? "bg-orange-dark" : "bg-mint"}`}
+                  style={{ width: `${Math.max(2, Math.min(100, (d.valor / maior) * 100))}%` }}
+                />
+              </div>
+              <span className="w-24 text-[13px] font-semibold text-ink text-right shrink-0">{formatBRL(d.valor)}</span>
             </div>
-            <span className="w-24 text-[13px] font-semibold text-ink text-right shrink-0">{formatBRL(d.valor)}</span>
-          </div>
-        ))}
-      </div>
+          ))}
+        </div>
+      ) : null}
 
       <div className="overflow-x-auto">
         <table className="w-full text-[13px] border-t border-line min-w-[560px]">
@@ -873,11 +881,13 @@ function DividasResumo({ dividas }: { dividas: Divida[] }) {
             </tr>
           </thead>
           <tbody>
-            {ordenadas.map((d) => (
-              <tr key={d.id} className="border-b border-line">
-                <td className="py-2 text-ink">
+            {[...ordenadas, ...quitadas].map((d) => (
+              <tr key={d.id} className={`border-b border-line ${d.quitada ? "opacity-50" : ""}`}>
+                <td className={`py-2 text-ink ${d.quitada ? "line-through" : ""}`}>
                   {d.nome || "Sem nome"}
-                  {d.dolorosa ? <span className="ml-1.5 text-orange-dark" title="Tira o sono da família">●</span> : null}
+                  {d.dolorosa && !d.quitada ? (
+                    <span className="ml-1.5 text-orange-dark" title="Tira o sono da família">●</span>
+                  ) : null}
                 </td>
                 <td className="py-2 text-right font-semibold text-ink">{formatBRL(d.valor)}</td>
                 <td className="py-2 pl-4 text-ink/75">{URGENCIA_LABEL[d.urgencia]}</td>
