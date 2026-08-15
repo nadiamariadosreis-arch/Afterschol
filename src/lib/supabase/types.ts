@@ -13,6 +13,7 @@ export type Profile = {
   email: string;
   family_name: string | null;
   role: UserRole;
+  paid: boolean;
   created_at: string;
 };
 

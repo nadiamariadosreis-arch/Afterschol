@@ -1,11 +1,21 @@
 import { requireCurrentCycle } from "@/lib/apfa/session";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Callout } from "@/components/ui/Callout";
+import { Paywall } from "@/components/member/Paywall";
 import { emptyAcompanhar } from "@/lib/apfa/types";
 import { AcompanharForm } from "./AcompanharForm";
 
 export default async function AcompanharPage() {
-  const { cycle } = await requireCurrentCycle();
+  const { profile, cycle } = await requireCurrentCycle();
+
+  if (!profile.paid) {
+    return (
+      <Paywall
+        titulo="Acompanhar"
+        resumo="Revisão contínua, com perguntas — não cobrança. O que sair daqui já alimenta o Avaliar do mês que vem."
+      />
+    );
+  }
 
   const pistas = {
     reservaSeparada: Boolean(cycle.fazer_acontecer?.reserva.guardado),

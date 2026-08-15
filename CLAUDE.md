@@ -20,8 +20,13 @@ the code is the source of truth for exact data shapes.
   `src/lib/apfa/types.ts` for the authoritative shape of each, and
   `src/lib/apfa/schemas.ts` for the zod validation used by server actions.
 - A pilar counts as done when its `completed_at` is set. Each pilar's page
-  is a single form that saves the whole jsonb blob at once (no partial
-  autosave) and redirects to the next pilar.
+  is a single form that saves the whole jsonb blob at once and redirects to
+  the next pilar. It also autosaves a draft ~1.5s after the user stops
+  typing (`src/lib/useAutosave.ts` + `autosalvar*Action` in each pilar's
+  `actions.ts`, backed by `src/lib/apfa/draft.ts`) — the draft path skips
+  strict zod validation and never touches `completed_at`, so it can't mark
+  a pilar done or un-mark one that already was; only the explicit "Salvar
+  e ir para..." submit does that.
 - `src/lib/apfa/calc.ts` holds pure, client-safe helpers (no `server-only`)
   — comparativo, progress, checklist generation. `src/lib/apfa/ciclo.ts`
   holds the Supabase-backed helpers (`server-only`) and re-exports the
@@ -32,9 +37,15 @@ the code is the source of truth for exact data shapes.
   only opens a new cycle once the latest one is fully closed — carrying
   forward `percentuais` (which Acompanhar may have recalibrated).
 - No admin area — the product is sold anonymously/self-serve. Signup is
-  direct (`/cadastro`); the Kiwify webhook (`src/app/api/webhooks/kiwify`)
-  is a placeholder for when paid checkout is wired up, mirroring the invite
-  pattern used on the other platforms in this account.
+  direct (`/cadastro`) and free, and grants Pilar 1 (Avaliar) only.
+  Pilares 2-4 are gated behind `profiles.paid` (see
+  `supabase/migrations/0002_paid_flag.sql`) — each of their `page.tsx`
+  checks `profile.paid` and renders `src/components/member/Paywall.tsx`
+  instead of the form when false. The Kiwify webhook
+  (`src/app/api/webhooks/kiwify`) sets `paid = true` on an approved
+  purchase — inviting the family by email if they don't have an account
+  yet, or just flipping the flag if they already self-registered for the
+  free Avaliar.
 
 ## Conventions to keep
 

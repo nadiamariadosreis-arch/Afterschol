@@ -12,6 +12,7 @@ const PILARES = [
     numero: 1,
     titulo: "Avaliar",
     resumo: "Sentar uma vez, olhar o cenário real, sem julgamento.",
+    gratis: true,
   },
   {
     key: "planejar" as const,
@@ -19,6 +20,7 @@ const PILARES = [
     numero: 2,
     titulo: "Planejar",
     resumo: "Decidir o plano do mês, com ação real para o que dói.",
+    gratis: false,
   },
   {
     key: "fazer_acontecer" as const,
@@ -26,6 +28,7 @@ const PILARES = [
     numero: 3,
     titulo: "Fazer Acontecer",
     resumo: "O dia em que o dinheiro cai é o dia de agir — não depois.",
+    gratis: false,
   },
   {
     key: "acompanhar" as const,
@@ -33,6 +36,7 @@ const PILARES = [
     numero: 4,
     titulo: "Acompanhar",
     resumo: "Revisão contínua, com perguntas — não cobrança.",
+    gratis: false,
   },
 ];
 
@@ -41,7 +45,10 @@ export default async function DashboardPage() {
   const status = pilarStatus(cycle);
   const progress = cycleProgress(cycle);
   const nome = profile.family_name || "família";
-  const proximo = PILARES.find((p) => !status[p.key]);
+  const checkoutUrl = process.env.NEXT_PUBLIC_KIWIFY_CHECKOUT_URL || "#";
+
+  const proximo = PILARES.find((p) => (p.gratis || profile.paid) && !status[p.key]);
+  const pedirUpgrade = !profile.paid && status.avaliar;
 
   return (
     <div className="flex flex-col gap-8">
@@ -68,7 +75,30 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {proximo ? (
+      {pedirUpgrade ? (
+        <div className="bg-orange rounded-2xl px-6 py-6 md:px-8 md:py-7 flex flex-col md:flex-row md:items-center gap-5 md:gap-8">
+          <div className="flex-1">
+            <div className="text-white/75 text-[12px] tracking-[0.2em] uppercase font-bold mb-1.5">
+              Pronta pra colocar em prática?
+            </div>
+            <h2 className="font-display-italic font-semibold text-white text-[22px] mb-1">
+              Libere Planejar, Fazer Acontecer e Acompanhar
+            </h2>
+            <p className="text-white/85 text-[14px]">
+              Você já viu o diagnóstico real das suas finanças no Avaliar — agora é hora de
+              transformar isso num plano de ação.
+            </p>
+          </div>
+          <a
+            href={checkoutUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center justify-center gap-2 rounded-full px-6 py-2.5 font-body font-semibold text-[15px] bg-white text-orange-dark hover:bg-cream shrink-0 transition-colors"
+          >
+            Liberar acesso completo →
+          </a>
+        </div>
+      ) : proximo ? (
         <div className="bg-orange rounded-2xl px-6 py-6 md:px-8 md:py-7 flex flex-col md:flex-row md:items-center gap-5 md:gap-8">
           <div className="flex-1">
             <div className="text-white/75 text-[12px] tracking-[0.2em] uppercase font-bold mb-1.5">
@@ -90,7 +120,15 @@ export default async function DashboardPage() {
 
       <div className="grid sm:grid-cols-2 gap-5">
         {PILARES.map((p) => (
-          <ModuleCard key={p.key} href={p.href} numero={p.numero} titulo={p.titulo} resumo={p.resumo} concluido={status[p.key]} />
+          <ModuleCard
+            key={p.key}
+            href={p.href}
+            numero={p.numero}
+            titulo={p.titulo}
+            resumo={p.resumo}
+            concluido={status[p.key]}
+            bloqueado={!p.gratis && !profile.paid}
+          />
         ))}
       </div>
 

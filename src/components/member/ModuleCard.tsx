@@ -17,25 +17,26 @@ export function ModuleCard({
   concluido: boolean;
   bloqueado?: boolean;
 }) {
-  const content = (
-    <div
-      className={`group flex flex-col rounded-2xl border border-line bg-card shadow-sm transition-all overflow-hidden ${
-        bloqueado ? "opacity-60" : "hover:shadow-md hover:-translate-y-0.5"
-      }`}
-    >
-      <ModuleCover numero={numero} titulo={titulo} />
-      <div className="flex flex-col gap-3 p-5">
-        <p className="text-ink/65 text-[14px]">{resumo}</p>
-        <ProgressBar percent={concluido ? 100 : 0} label={concluido ? "Concluído ✓" : "Não iniciado"} />
-      </div>
-    </div>
-  );
-
-  if (bloqueado) return content;
-
   return (
-    <Link href={href} className="block">
-      {content}
+    <Link href={href} className="block group">
+      <div className="flex flex-col rounded-2xl border border-line bg-card shadow-sm transition-all overflow-hidden group-hover:shadow-md group-hover:-translate-y-0.5">
+        <div className="relative">
+          <ModuleCover numero={numero} titulo={titulo} />
+          {bloqueado ? (
+            <span className="absolute top-3 right-3 w-8 h-8 rounded-full bg-ink/60 backdrop-blur-sm text-white flex items-center justify-center text-[15px]">
+              🔒
+            </span>
+          ) : null}
+        </div>
+        <div className="flex flex-col gap-3 p-5">
+          <p className="text-ink/65 text-[14px]">{resumo}</p>
+          {bloqueado ? (
+            <p className="text-[13px] text-ink/45 font-semibold">🔒 Disponível após a compra</p>
+          ) : (
+            <ProgressBar percent={concluido ? 100 : 0} label={concluido ? "Concluído ✓" : "Não iniciado"} />
+          )}
+        </div>
+      </div>
     </Link>
   );
 }

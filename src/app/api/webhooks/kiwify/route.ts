@@ -2,11 +2,11 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
 /**
- * Placeholder para a integração futura com a Kiwify.
+ * Webhook da Kiwify — libera o acesso completo (Planejar, Fazer Acontecer,
+ * Acompanhar) na compra aprovada. O Avaliar é gratuito e não depende
+ * disso: qualquer conta criada em /cadastro já acessa o Pilar 1.
  *
- * Quando a venda do Método A.P.F.A estiver ativa na Kiwify, configure o
- * webhook de "compra aprovada" apontando para esta rota. Antes de ativar
- * em produção:
+ * Antes de ativar em produção:
  *
  *  1. Confirme o payload real enviado pela Kiwify (nome dos campos pode
  *     variar por conta/plano) e ajuste o parsing abaixo.
@@ -14,10 +14,11 @@ import { createAdminClient } from "@/lib/supabase/admin";
  *     conforme a documentação da Kiwify para o método de verificação
  *     escolhido (query token, header HMAC, etc.).
  *
- * Fluxo implementado: recebe a notificação e convida a família por
- * e-mail — a conta nasce em `public.profiles` pelo trigger `on_auth_user_created`
- * assim que ela definir a própria senha pelo link do convite. Até a
- * automação ser ativada, o cadastro direto em /cadastro já funciona.
+ * Fluxo: se a família já tem conta (criada de graça em /cadastro antes de
+ * comprar), só marca `paid = true`. Se não tem conta ainda, convida por
+ * e-mail — a conta nasce em `public.profiles` pelo trigger
+ * `on_auth_user_created` assim que ela definir a senha pelo link do
+ * convite — e já marca `paid = true` na hora.
  */
 export async function POST(request: NextRequest) {
   const token = request.nextUrl.searchParams.get("token");
@@ -43,17 +44,25 @@ export async function POST(request: NextRequest) {
 
   const admin = createAdminClient();
   const { data: existing } = await admin.auth.admin.listUsers();
-  const alreadyExists = existing.users.some((u) => u.email?.toLowerCase() === email);
+  const existingUser = existing.users.find((u) => u.email?.toLowerCase() === email);
 
-  if (!alreadyExists) {
+  let userId = existingUser?.id;
+
+  if (!userId) {
     const origin = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-    const { error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
+    const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
       data: { family_name: familyName || undefined },
       redirectTo: `${origin}/redefinir-senha`,
     });
-    if (inviteError) {
+    if (inviteError || !invited.user) {
       return NextResponse.json({ error: "Não foi possível criar a conta da família." }, { status: 500 });
     }
+    userId = invited.user.id;
+  }
+
+  const { error: updateError } = await admin.from("profiles").update({ paid: true }).eq("id", userId);
+  if (updateError) {
+    return NextResponse.json({ error: "Não foi possível liberar o acesso." }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true });

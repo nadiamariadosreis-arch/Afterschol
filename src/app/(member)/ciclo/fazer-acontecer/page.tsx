@@ -1,12 +1,22 @@
 import { requireCurrentCycle } from "@/lib/apfa/session";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Callout } from "@/components/ui/Callout";
+import { Paywall } from "@/components/member/Paywall";
 import { emptyFazerAcontecer } from "@/lib/apfa/types";
 import { gerarItensExecucao } from "@/lib/apfa/calc";
 import { FazerAcontecerForm } from "./FazerAcontecerForm";
 
 export default async function FazerAcontecerPage() {
-  const { cycle } = await requireCurrentCycle();
+  const { profile, cycle } = await requireCurrentCycle();
+
+  if (!profile.paid) {
+    return (
+      <Paywall
+        titulo="Fazer Acontecer"
+        resumo="O dia em que o dinheiro cai é o dia de agir — não depois. Uma decisão única no momento do recebimento, em vez de força de vontade repetida ao longo do mês."
+      />
+    );
+  }
 
   const initial = cycle.fazer_acontecer ?? emptyFazerAcontecer();
   if (initial.itens.length === 0) {
