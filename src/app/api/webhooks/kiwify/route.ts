@@ -6,10 +6,18 @@ import { createAdminClient } from "@/lib/supabase/admin";
  * Acompanhar) na compra aprovada. O Avaliar é gratuito e não depende
  * disso: qualquer conta criada em /cadastro já acessa o Pilar 1.
  *
+ * A Kiwify não manda um campo de "status" genérico pra filtrar — é o
+ * próprio evento escolhido no painel dela que decide quando ela chama essa
+ * rota (Produto → Webhooks → Criar webhook). Configure o webhook para
+ * disparar **só** no evento "Compra aprovada" — não marque os outros
+ * (recusada, reembolsada, chargeback etc.), senão esta rota vai liberar
+ * acesso indevidamente.
+ *
  * Antes de ativar em produção:
  *
  *  1. Confirme o payload real enviado pela Kiwify (nome dos campos pode
- *     variar por conta/plano) e ajuste o parsing abaixo.
+ *     variar por conta/plano) e ajuste o parsing abaixo — o `Customer.email`
+ *     e `Customer.full_name` usados aqui já batem com o formato documentado.
  *  2. Configure `KIWIFY_WEBHOOK_SECRET` no ambiente e valide a assinatura
  *     conforme a documentação da Kiwify para o método de verificação
  *     escolhido (query token, header HMAC, etc.).
@@ -28,18 +36,22 @@ export async function POST(request: NextRequest) {
 
   const payload = await request.json();
 
-  // TODO: ajustar aos nomes de campo reais do webhook da Kiwify.
   const email = String(payload?.Customer?.email ?? payload?.email ?? "").trim().toLowerCase();
   const familyName = String(payload?.Customer?.full_name ?? payload?.full_name ?? "");
-  const status = String(payload?.order_status ?? payload?.status ?? "");
 
   if (!email) {
     return NextResponse.json({ error: "Payload incompleto." }, { status: 400 });
   }
 
-  // TODO: confirmar o valor exato usado pela Kiwify para "compra aprovada".
-  if (status && status !== "paid" && status !== "approved") {
-    return NextResponse.json({ ok: true, skipped: "status não aprovado" });
+  // Defesa extra, caso o mesmo webhook também esteja marcado para outros
+  // eventos além de "Compra aprovada": se vier um campo de status/evento
+  // reconhecível e ele indicar algo diferente de aprovado, ignora.
+  const statusOuEvento = String(
+    payload?.order_status ?? payload?.status ?? payload?.webhook_event_type ?? payload?.event ?? "",
+  ).toLowerCase();
+  const REPROVADOS = ["recusada", "refused", "reembolsada", "refunded", "chargeback", "cancelado", "canceled"];
+  if (statusOuEvento && REPROVADOS.some((termo) => statusOuEvento.includes(termo))) {
+    return NextResponse.json({ ok: true, skipped: "evento não é compra aprovada" });
   }
 
   const admin = createAdminClient();

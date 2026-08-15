@@ -80,14 +80,20 @@ sem área administrativa.
 
 1. Crie o produto na Kiwify e copie o link de checkout — cole em
    `NEXT_PUBLIC_KIWIFY_CHECKOUT_URL`.
-2. Na Kiwify, em **Configurações → Webhooks** (ou "Integrações"), cadastre
-   um webhook de **"Compra aprovada"** apontando para:
+2. Na Kiwify: **Produto → Webhooks → Criar webhook**. A Kiwify não manda um
+   campo de "status aprovado" dentro dos dados — é o **evento que você
+   marca na hora de criar o webhook** que decide quando ela chama a
+   plataforma. Marque **só** o evento **"Compra aprovada"** (não marque
+   "Compra recusada", "Reembolsada", "Chargeback" etc. no mesmo webhook).
+3. Aponte a URL do webhook para:
    `https://SEU-DOMINIO/api/webhooks/kiwify?token=SEU_KIWIFY_WEBHOOK_SECRET`
    (o mesmo valor de `KIWIFY_WEBHOOK_SECRET`).
-3. Antes de ativar de verdade: confira o payload real que a Kiwify envia
-   (os nomes dos campos podem variar por conta/plano) e ajuste o parsing em
-   `src/app/api/webhooks/kiwify/route.ts` se precisar — os pontos marcados
-   com `TODO` no arquivo.
+4. Faça uma compra de teste (a Kiwify tem um modo de teste no próprio
+   produto) pra confirmar que o acesso libera de verdade. Se der erro,
+   confira os logs do webhook no painel da Kiwify (ela mostra o payload
+   enviado e a resposta) — o formato dos campos usados aqui
+   (`Customer.email`, `Customer.full_name`) já segue o padrão documentado
+   pela Kiwify, mas pode variar por conta/plano.
 
 O que o webhook faz na compra aprovada: se a família já tinha criado conta
 de graça (para usar o Avaliar), só libera o acesso completo. Se ainda não
