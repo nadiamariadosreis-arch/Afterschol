@@ -80,7 +80,7 @@ function NavContent() {
             pathname === "/dashboard" ? "bg-orange text-white" : "text-ink/80 hover:bg-cream-dark"
           }`}
         >
-          Início
+          Seu primeiro passo
         </Link>
         {PILARES.map((p) => (
           <Link

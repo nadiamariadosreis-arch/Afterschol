@@ -28,9 +28,12 @@ export default async function AvaliarPage() {
         ))}
       </div>
 
-      <Callout title="Ao final deste pilar, você vai ter:">
-        Os percentuais ideais ajustados pra sua família, o checklist da renda real preenchido, e um
-        comparativo visual mostrando exatamente onde o dinheiro está saindo do combinado.
+      <Callout title="Como funciona este pilar">
+        Primeiro você vê o cenário ideal (o quanto deveria ir pra cada processo). Depois preenche
+        cada campo com o que <strong className="text-ink">você paga hoje de verdade</strong> — não é
+        o ideal, é a sua realidade. A plataforma cruza os dois números sozinha e te entrega um
+        diagnóstico: onde está dentro do combinado, onde está sobrando espaço, e onde está saindo
+        mais dinheiro do que deveria.
       </Callout>
 
       <AvaliarForm cycleId={cycle.id} initial={cycle.avaliar ?? emptyAvaliar()} initialPercentuais={cycle.percentuais} />

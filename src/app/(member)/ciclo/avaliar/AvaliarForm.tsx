@@ -136,8 +136,11 @@ export function AvaliarForm({ cycleId, initial, initialPercentuais }: {
       <div>
         <h3 className="font-display-italic font-semibold text-[24px] text-ink mb-1">Renda real — o que sai de fato</h3>
         <p className="text-ink/60 text-[14px] mb-5">
-          Preencha os valores mensais de cada item. Apague o que não se aplica à sua família e
-          adicione o que faltar — já deixamos os itens mais comuns começados para você.
+          Aqui é a parte mais importante: preencha com o que <strong className="text-ink">você paga
+          hoje de verdade</strong> em cada item — não é o que você acha que deveria gastar, é o valor
+          real que sai da sua conta. Apague o que não se aplica à sua família e adicione o que
+          faltar — já deixamos os itens mais comuns começados para você. É com esses números que a
+          plataforma monta, mais abaixo, o diagnóstico comparando sua realidade com o ideal.
         </p>
 
         <div className="flex flex-col gap-6">
@@ -167,28 +170,42 @@ export function AvaliarForm({ cycleId, initial, initialPercentuais }: {
       </div>
 
       <Card>
-        <h3 className="font-display-italic font-semibold text-[20px] text-ink mb-4">Comparativo — Ideal × Real</h3>
+        <h3 className="font-display-italic font-semibold text-[20px] text-ink mb-1">Seu diagnóstico — Ideal × Real</h3>
+        <p className="text-ink/60 text-[14px] mb-4">
+          Isto se atualiza sozinho conforme você preenche os campos acima. Mostra, processo por
+          processo, onde está dentro do combinado, onde está sobrando espaço e onde está saindo
+          mais dinheiro do que o planejado.
+        </p>
         <div className="flex flex-col gap-4">
-          {linhas.map((linha) => (
-            <div key={linha.processo} className="flex flex-col gap-1">
-              <div className="flex items-center justify-between text-[15px]">
-                <span className="font-semibold text-ink">{PROCESSO_INFO[linha.processo].titulo}</span>
-                <span className="text-ink/70">
+          {linhas.map((linha) => {
+            const dentro = Math.abs(linha.diferencaPct) <= 3;
+            const acima = linha.diferencaPct > 3;
+            return (
+              <div key={linha.processo} className="flex flex-col gap-1">
+                <div className="flex items-center justify-between text-[15px] flex-wrap gap-1">
+                  <span className="font-semibold text-ink">{PROCESSO_INFO[linha.processo].titulo}</span>
+                  <span className={`text-[13px] font-semibold ${dentro ? "text-sage" : "text-orange-dark"}`}>
+                    {dentro
+                      ? "✓ dentro do combinado"
+                      : acima
+                        ? "▲ acima do ideal — está saindo mais dinheiro aqui do que deveria"
+                        : "▼ abaixo do ideal — sobra espaço aqui"}
+                  </span>
+                </div>
+                <span className="text-ink/60 text-[13px]">
                   ideal {linha.idealPct}% ({formatBRL(linha.idealValor)}) · você está em{" "}
                   {linha.realPct.toFixed(0)}% ({formatBRL(linha.realValor)})
                 </span>
+                <div className="h-2.5 w-full rounded-full bg-cream-dark overflow-hidden relative mt-1">
+                  <div className="h-full bg-orange-light absolute inset-y-0 left-0" style={{ width: `${linha.idealPct}%` }} />
+                  <div
+                    className={`h-full rounded-full absolute inset-y-0 left-0 ${dentro ? "bg-sage" : "bg-orange-dark"}`}
+                    style={{ width: `${Math.min(100, linha.realPct)}%` }}
+                  />
+                </div>
               </div>
-              <div className="h-2.5 w-full rounded-full bg-cream-dark overflow-hidden relative">
-                <div className="h-full bg-orange-light absolute inset-y-0 left-0" style={{ width: `${linha.idealPct}%` }} />
-                <div
-                  className={`h-full rounded-full absolute inset-y-0 left-0 ${
-                    Math.abs(linha.diferencaPct) <= 3 ? "bg-sage" : "bg-orange-dark"
-                  }`}
-                  style={{ width: `${Math.min(100, linha.realPct)}%` }}
-                />
-              </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </Card>
 
