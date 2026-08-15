@@ -35,54 +35,69 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Token inválido." }, { status: 401 });
   }
 
-  const payload = await request.json();
-
-  const email = String(payload?.Customer?.email ?? payload?.email ?? "").trim().toLowerCase();
-  const familyName = String(payload?.Customer?.full_name ?? payload?.full_name ?? "");
-
-  if (!email) {
-    return NextResponse.json({ error: "Payload incompleto." }, { status: 400 });
+  // O botão de "testar webhook" da Kiwify (e reenvios automáticos dela)
+  // podem mandar o corpo vazio ou fora do formato esperado — nesses casos
+  // respondemos 200 (sem fazer nada) em vez de quebrar com erro 500.
+  let payload;
+  try {
+    payload = await request.json();
+  } catch {
+    return NextResponse.json({ ok: true, skipped: "corpo vazio ou não é JSON (provável teste)" });
   }
 
-  // Defesa extra, caso o mesmo webhook também esteja marcado para outros
-  // eventos além de "Compra aprovada": se vier um campo de status/evento
-  // reconhecível e ele indicar algo diferente de aprovado, ignora.
-  const statusOuEvento = String(
-    payload?.order_status ?? payload?.status ?? payload?.webhook_event_type ?? payload?.event ?? "",
-  ).toLowerCase();
-  const REPROVADOS = ["recusada", "refused", "reembolsada", "refunded", "chargeback", "cancelado", "canceled"];
-  if (statusOuEvento && REPROVADOS.some((termo) => statusOuEvento.includes(termo))) {
-    return NextResponse.json({ ok: true, skipped: "evento não é compra aprovada" });
-  }
+  try {
+    const email = String(payload?.Customer?.email ?? payload?.email ?? "").trim().toLowerCase();
+    const familyName = String(payload?.Customer?.full_name ?? payload?.full_name ?? "");
 
-  const admin = createAdminClient();
-  const { data: existing } = await admin.auth.admin.listUsers();
-  const existingUser = existing.users.find((u) => u.email?.toLowerCase() === email);
-
-  let userId = existingUser?.id;
-
-  if (!userId) {
-    const origin = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-    const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
-      data: { family_name: familyName || undefined },
-      redirectTo: `${origin}/redefinir-senha`,
-    });
-    if (inviteError || !invited.user) {
-      return NextResponse.json({ error: "Não foi possível criar a conta da família." }, { status: 500 });
+    if (!email) {
+      return NextResponse.json({ error: "Payload incompleto." }, { status: 400 });
     }
-    userId = invited.user.id;
-  }
 
-  // O acesso pago vale 1 ano a partir de agora — inclusive numa renovação
-  // feita antes de vencer, o que dá um ano cheio a partir da nova compra.
-  const paidUntil = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
-  const { error: updateError } = await admin
-    .from("profiles")
-    .update({ paid: true, paid_until: paidUntil })
-    .eq("id", userId);
-  if (updateError) {
-    return NextResponse.json({ error: "Não foi possível liberar o acesso." }, { status: 500 });
-  }
+    // Defesa extra, caso o mesmo webhook também esteja marcado para outros
+    // eventos além de "Compra aprovada": se vier um campo de status/evento
+    // reconhecível e ele indicar algo diferente de aprovado, ignora.
+    const statusOuEvento = String(
+      payload?.order_status ?? payload?.status ?? payload?.webhook_event_type ?? payload?.event ?? "",
+    ).toLowerCase();
+    const REPROVADOS = ["recusada", "refused", "reembolsada", "refunded", "chargeback", "cancelado", "canceled"];
+    if (statusOuEvento && REPROVADOS.some((termo) => statusOuEvento.includes(termo))) {
+      return NextResponse.json({ ok: true, skipped: "evento não é compra aprovada" });
+    }
 
-  return NextResponse.json({ ok: true });
+    const admin = createAdminClient();
+    const { data: existing } = await admin.auth.admin.listUsers();
+    const existingUser = existing.users.find((u) => u.email?.toLowerCase() === email);
+
+    let userId = existingUser?.id;
+
+    if (!userId) {
+      const origin = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
+      const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
+        data: { family_name: familyName || undefined },
+        redirectTo: `${origin}/redefinir-senha`,
+      });
+      if (inviteError || !invited.user) {
+        console.error("Kiwify webhook: falha ao convidar família", inviteError);
+        return NextResponse.json({ error: "Não foi possível criar a conta da família." }, { status: 500 });
+      }
+      userId = invited.user.id;
+    }
+
+    // O acesso pago vale 1 ano a partir de agora — inclusive numa renovação
+    // feita antes de vencer, o que dá um ano cheio a partir da nova compra.
+    const paidUntil = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+    const { error: updateError } = await admin
+      .from("profiles")
+      .update({ paid: true, paid_until: paidUntil })
+      .eq("id", userId);
+    if (updateError) {
+      console.error("Kiwify webhook: falha ao liberar acesso", updateError);
+      return NextResponse.json({ error: "Não foi possível liberar o acesso." }, { status: 500 });
+    }
+
+    return NextResponse.json({ ok: true });
+  } catch (err) {
+    console.error("Kiwify webhook: erro inesperado", err);
+    return NextResponse.json({ error: "Erro inesperado ao processar o webhook." }, { status: 500 });
+  }
 }
