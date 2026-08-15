@@ -3,6 +3,7 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Card } from "@/components/ui/Card";
 import { Callout } from "@/components/ui/Callout";
 import { PROCESSO_INFO } from "@/lib/apfa/processos";
+import { cycleLabel } from "@/lib/apfa/calc";
 import { PROCESSO_ORDER, emptyAvaliar } from "@/lib/apfa/types";
 import { AvaliarForm } from "./AvaliarForm";
 
@@ -36,7 +37,12 @@ export default async function AvaliarPage() {
         mais dinheiro do que deveria.
       </Callout>
 
-      <AvaliarForm cycleId={cycle.id} initial={cycle.avaliar ?? emptyAvaliar()} initialPercentuais={cycle.percentuais} />
+      <AvaliarForm
+        cycleId={cycle.id}
+        initial={cycle.avaliar ?? emptyAvaliar()}
+        initialPercentuais={cycle.percentuais}
+        cicloLabel={cycleLabel(cycle.year, cycle.month)}
+      />
     </div>
   );
 }

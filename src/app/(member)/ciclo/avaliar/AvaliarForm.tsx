@@ -8,6 +8,7 @@ import { AutosaveIndicator } from "@/components/ui/AutosaveIndicator";
 import { useAutosave } from "@/lib/useAutosave";
 import { PROCESSO_INFO } from "@/lib/apfa/processos";
 import { comparativo } from "@/lib/apfa/calc";
+import { ResumoFinal } from "./ResumoFinal";
 import { formatBRL } from "@/lib/format";
 import { PROCESSO_ORDER, type AvaliarData, type ChecklistItem, type ProcessoKey } from "@/lib/apfa/types";
 
@@ -47,10 +48,11 @@ const SUGESTOES = {
 
 const initialState: AvaliarState = {};
 
-export function AvaliarForm({ cycleId, initial, initialPercentuais }: {
+export function AvaliarForm({ cycleId, initial, initialPercentuais, cicloLabel }: {
   cycleId: string;
   initial: AvaliarData;
   initialPercentuais: Record<ProcessoKey, number>;
+  cicloLabel: string;
 }) {
   const [state, formAction, pending] = useActionState(salvarAvaliarAction, initialState);
 
@@ -215,6 +217,8 @@ export function AvaliarForm({ cycleId, initial, initialPercentuais }: {
           })}
         </div>
       </Card>
+
+      <ResumoFinal avaliar={avaliarPayload} linhas={linhas} cicloLabel={cicloLabel} />
 
       {state.error ? <p className="text-orange-dark text-[15px]">{state.error}</p> : null}
 

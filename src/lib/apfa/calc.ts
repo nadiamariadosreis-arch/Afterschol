@@ -57,6 +57,20 @@ export function totalRendaReal(avaliar: AvaliarData | null): number {
   return PROCESSO_ORDER.reduce((sum, key) => sum + totals[key], 0);
 }
 
+export type ResumoCategoria = { nome: string; valor: number };
+
+/** Soma de cada grupo do checklist do Avaliar — não item a item, só o total de cada "coisa". */
+export function resumoPorCategoria(avaliar: AvaliarData | null): ResumoCategoria[] {
+  if (!avaliar) return [];
+  const soma = (itens: { valor: number }[]) => itens.reduce((sum, i) => sum + i.valor, 0);
+  return [
+    { nome: "Contas fixas", valor: soma(avaliar.contas_fixas) },
+    { nome: "Gastos variáveis", valor: soma(avaliar.gastos_variaveis) },
+    { nome: "Parcelas", valor: soma(avaliar.parcelas) },
+    { nome: "Gastos anuais (rateado por mês)", valor: soma(avaliar.gastos_anuais) / 12 },
+  ];
+}
+
 export type ComparativoLinha = {
   processo: ProcessoKey;
   idealPct: number;
