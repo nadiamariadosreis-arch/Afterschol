@@ -2,6 +2,7 @@ import { requireCurrentCycle } from "@/lib/apfa/session";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Callout } from "@/components/ui/Callout";
 import { Paywall } from "@/components/member/Paywall";
+import { temAcessoPago } from "@/lib/auth";
 import { emptyFazerAcontecer } from "@/lib/apfa/types";
 import { gerarItensExecucao } from "@/lib/apfa/calc";
 import { FazerAcontecerForm } from "./FazerAcontecerForm";
@@ -9,7 +10,7 @@ import { FazerAcontecerForm } from "./FazerAcontecerForm";
 export default async function FazerAcontecerPage() {
   const { profile, cycle } = await requireCurrentCycle();
 
-  if (!profile.paid) {
+  if (!temAcessoPago(profile)) {
     return (
       <Paywall
         titulo="Fazer Acontecer"

@@ -14,6 +14,8 @@ export type Profile = {
   family_name: string | null;
   role: UserRole;
   paid: boolean;
+  /** Até quando o acesso pago vale (compra dá 1 ano). `null` = nunca comprou. */
+  paid_until: string | null;
   created_at: string;
 };
 

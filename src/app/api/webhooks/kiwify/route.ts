@@ -3,7 +3,8 @@ import { createAdminClient } from "@/lib/supabase/admin";
 
 /**
  * Webhook da Kiwify — libera o acesso completo (Planejar, Fazer Acontecer,
- * Acompanhar) na compra aprovada. O Avaliar é gratuito e não depende
+ * Acompanhar) na compra aprovada, por 1 ano a partir da data da compra (ver
+ * `temAcessoPago` em src/lib/auth.ts). O Avaliar é gratuito e não depende
  * disso: qualquer conta criada em /cadastro já acessa o Pilar 1.
  *
  * A Kiwify não manda um campo de "status" genérico pra filtrar — é o
@@ -72,7 +73,13 @@ export async function POST(request: NextRequest) {
     userId = invited.user.id;
   }
 
-  const { error: updateError } = await admin.from("profiles").update({ paid: true }).eq("id", userId);
+  // O acesso pago vale 1 ano a partir de agora — inclusive numa renovação
+  // feita antes de vencer, o que dá um ano cheio a partir da nova compra.
+  const paidUntil = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString();
+  const { error: updateError } = await admin
+    .from("profiles")
+    .update({ paid: true, paid_until: paidUntil })
+    .eq("id", userId);
   if (updateError) {
     return NextResponse.json({ error: "Não foi possível liberar o acesso." }, { status: 500 });
   }

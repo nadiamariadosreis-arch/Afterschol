@@ -2,13 +2,14 @@ import { requireCurrentCycle } from "@/lib/apfa/session";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Callout } from "@/components/ui/Callout";
 import { Paywall } from "@/components/member/Paywall";
+import { temAcessoPago } from "@/lib/auth";
 import { emptyAcompanhar } from "@/lib/apfa/types";
 import { AcompanharForm } from "./AcompanharForm";
 
 export default async function AcompanharPage() {
   const { profile, cycle } = await requireCurrentCycle();
 
-  if (!profile.paid) {
+  if (!temAcessoPago(profile)) {
     return (
       <Paywall
         titulo="Acompanhar"

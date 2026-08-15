@@ -2,13 +2,14 @@ import { requireCurrentCycle } from "@/lib/apfa/session";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Callout } from "@/components/ui/Callout";
 import { Paywall } from "@/components/member/Paywall";
+import { temAcessoPago } from "@/lib/auth";
 import { emptyPlanejar } from "@/lib/apfa/types";
 import { PlanejarForm } from "./PlanejarForm";
 
 export default async function PlanejarPage() {
   const { profile, cycle } = await requireCurrentCycle();
 
-  if (!profile.paid) {
+  if (!temAcessoPago(profile)) {
     return (
       <Paywall
         titulo="Planejar"

@@ -20,3 +20,10 @@ export async function requireMember(): Promise<Profile> {
   if (!profile) redirect("/login");
   return profile;
 }
+
+/** O acesso pago (Planejar, Fazer Acontecer, Acompanhar) vale por 1 ano da compra. */
+export function temAcessoPago(profile: Pick<Profile, "paid" | "paid_until">): boolean {
+  if (!profile.paid) return false;
+  if (!profile.paid_until) return true;
+  return new Date(profile.paid_until) > new Date();
+}

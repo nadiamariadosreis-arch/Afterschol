@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { requireCurrentCycle } from "@/lib/apfa/session";
 import { cycleLabel, cycleProgress, pilarStatus } from "@/lib/apfa/ciclo";
+import { temAcessoPago } from "@/lib/auth";
 import { ModuleCard } from "@/components/member/ModuleCard";
 import { InstallAppBanner } from "@/components/member/InstallAppBanner";
 import { Card } from "@/components/ui/Card";
@@ -48,8 +49,9 @@ export default async function DashboardPage() {
   const nome = profile.family_name || "família";
   const checkoutUrl = process.env.NEXT_PUBLIC_KIWIFY_CHECKOUT_URL || "#";
 
-  const proximo = PILARES.find((p) => (p.gratis || profile.paid) && !status[p.key]);
-  const pedirUpgrade = !profile.paid && status.avaliar;
+  const acessoPago = temAcessoPago(profile);
+  const proximo = PILARES.find((p) => (p.gratis || acessoPago) && !status[p.key]);
+  const pedirUpgrade = !acessoPago && status.avaliar;
 
   return (
     <div className="flex flex-col gap-8">
@@ -130,7 +132,7 @@ export default async function DashboardPage() {
             titulo={p.titulo}
             resumo={p.resumo}
             concluido={status[p.key]}
-            bloqueado={!p.gratis && !profile.paid}
+            bloqueado={!p.gratis && !acessoPago}
           />
         ))}
       </div>
