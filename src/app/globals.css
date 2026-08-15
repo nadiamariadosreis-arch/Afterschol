@@ -1,15 +1,17 @@
 @import "tailwindcss";
 
 @theme {
-  --color-cream: #fbf5ea;
-  --color-cream-dark: #f2e8d5;
+  --color-cream: #fdfbf6;
+  --color-cream-dark: #f5efe1;
   --color-ink: #2c241b;
   --color-orange: #e0692b;
   --color-orange-dark: #b8501d;
   --color-orange-light: #f6d9c2;
   --color-sage: #6b7f5f;
-  --color-line: #e6dac0;
-  --color-card: #fffdf8;
+  --color-mint: #2f6b46;
+  --color-mint-bg: #dcefe1;
+  --color-line: #ece3d1;
+  --color-card: #ffffff;
 
   --font-display: var(--font-fraunces), Georgia, serif;
   --font-body: var(--font-inter), sans-serif;
@@ -26,6 +28,10 @@ body {
 .font-display-italic {
   font-family: var(--font-display);
   font-style: italic;
+}
+
+.cover-gradient {
+  background: radial-gradient(120% 140% at 15% 15%, #d97a3f 0%, #b8501d 45%, #6b3113 100%);
 }
 
 @media print {

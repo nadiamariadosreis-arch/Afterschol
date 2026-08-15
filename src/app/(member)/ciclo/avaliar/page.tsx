@@ -1,6 +1,7 @@
 import { requireCurrentCycle } from "@/lib/apfa/session";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Card } from "@/components/ui/Card";
+import { Callout } from "@/components/ui/Callout";
 import { PROCESSO_INFO } from "@/lib/apfa/processos";
 import { PROCESSO_ORDER, emptyAvaliar } from "@/lib/apfa/types";
 import { AvaliarForm } from "./AvaliarForm";
@@ -26,6 +27,11 @@ export default async function AvaliarPage() {
           </Card>
         ))}
       </div>
+
+      <Callout title="Ao final deste pilar, você vai ter:">
+        Os percentuais ideais ajustados pra sua família, o checklist da renda real preenchido, e um
+        comparativo visual mostrando exatamente onde o dinheiro está saindo do combinado.
+      </Callout>
 
       <AvaliarForm cycleId={cycle.id} initial={cycle.avaliar ?? emptyAvaliar()} initialPercentuais={cycle.percentuais} />
     </div>

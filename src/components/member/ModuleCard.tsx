@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ProgressBar } from "@/components/ui/ProgressBar";
+import { ModuleCover } from "./ModuleCover";
 
 export function ModuleCard({
   href,
@@ -18,22 +19,15 @@ export function ModuleCard({
 }) {
   const content = (
     <div
-      className={`group flex flex-col gap-4 rounded-2xl border border-line bg-card p-6 shadow-sm transition-all ${
+      className={`group flex flex-col rounded-2xl border border-line bg-card shadow-sm transition-all overflow-hidden ${
         bloqueado ? "opacity-60" : "hover:shadow-md hover:-translate-y-0.5"
       }`}
     >
-      <div
-        className={`w-11 h-11 rounded-full flex items-center justify-center font-display-italic font-semibold text-[18px] ${
-          concluido ? "bg-sage text-white" : "bg-orange-light text-orange-dark"
-        }`}
-      >
-        {concluido ? "✓" : numero}
+      <ModuleCover numero={numero} titulo={titulo} />
+      <div className="flex flex-col gap-3 p-5">
+        <p className="text-ink/65 text-[14px]">{resumo}</p>
+        <ProgressBar percent={concluido ? 100 : 0} label={concluido ? "Concluído ✓" : "Não iniciado"} />
       </div>
-      <div>
-        <h3 className="font-display-italic font-semibold text-[22px] text-ink">{titulo}</h3>
-        <p className="text-ink/65 text-[15px] mt-1.5">{resumo}</p>
-      </div>
-      <ProgressBar percent={concluido ? 100 : 0} label={concluido ? "Concluído" : "Não iniciado"} />
     </div>
   );
 

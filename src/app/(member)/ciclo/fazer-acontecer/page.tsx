@@ -1,5 +1,6 @@
 import { requireCurrentCycle } from "@/lib/apfa/session";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { Callout } from "@/components/ui/Callout";
 import { emptyFazerAcontecer } from "@/lib/apfa/types";
 import { gerarItensExecucao } from "@/lib/apfa/calc";
 import { FazerAcontecerForm } from "./FazerAcontecerForm";
@@ -19,6 +20,10 @@ export default async function FazerAcontecerPage() {
         title="Fazer Acontecer"
         subtitle="O dia em que o dinheiro cai é o dia de agir — não depois. Uma decisão única no momento do recebimento, em vez de força de vontade repetida ao longo do mês."
       />
+      <Callout title="Ao final deste pilar, você vai ter:">
+        A reserva do mês separada de imediato, e cada dívida, conta e fatura do Planejar marcada
+        como executada, com a data em que foi feita.
+      </Callout>
       <FazerAcontecerForm cycleId={cycle.id} initial={initial} />
     </div>
   );

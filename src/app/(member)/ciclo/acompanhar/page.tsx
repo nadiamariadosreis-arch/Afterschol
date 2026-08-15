@@ -1,5 +1,6 @@
 import { requireCurrentCycle } from "@/lib/apfa/session";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { Callout } from "@/components/ui/Callout";
 import { emptyAcompanhar } from "@/lib/apfa/types";
 import { AcompanharForm } from "./AcompanharForm";
 
@@ -19,6 +20,10 @@ export default async function AcompanharPage() {
         title="Acompanhar"
         subtitle="Revisão contínua, com perguntas — não cobrança. O que sair daqui já alimenta o Avaliar do mês que vem."
       />
+      <Callout title="Ao final deste pilar, você vai ter:">
+        O diagnóstico do mês por processo, os percentuais recalibrados onde a meta não coube na
+        vida real, e o ciclo deste mês fechado — pronto pro planner no Histórico.
+      </Callout>
       <AcompanharForm
         cycleId={cycle.id}
         initial={cycle.acompanhar ?? emptyAcompanhar()}
