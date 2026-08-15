@@ -48,6 +48,7 @@ export function PlanejarForm({
 }) {
   const [state, formAction, pending] = useActionState(salvarPlanejarAction, initialState);
   const [tab, setTab] = useState<TabKey>("reuniao");
+  const [avancando, setAvancando] = useState(false);
 
   const [reuniao, setReuniao] = useState(initial.reuniao);
   const [dividas, setDividas] = useState<Divida[]>(initial.dividas);
@@ -64,6 +65,20 @@ export function PlanejarForm({
   };
 
   const autosaveStatus = useAutosave(payload, (draft) => autosalvarPlanejarAction(cycleId, draft));
+
+  const tabIndex = TABS.findIndex((t) => t.key === tab);
+  const proximaTab = TABS[tabIndex + 1];
+
+  async function avancarPara(next: TabKey) {
+    setAvancando(true);
+    try {
+      await autosalvarPlanejarAction(cycleId, payload);
+    } finally {
+      setAvancando(false);
+    }
+    setTab(next);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }
 
   return (
     <form action={formAction} className="flex flex-col gap-6">
@@ -93,9 +108,15 @@ export function PlanejarForm({
       {state.error ? <p className="text-orange-dark text-[15px]">{state.error}</p> : null}
 
       <div className="flex items-center gap-4">
-        <Button type="submit" disabled={pending} className="self-start">
-          {pending ? "Salvando…" : "Salvar e ir para Fazer Acontecer →"}
-        </Button>
+        {proximaTab ? (
+          <Button type="button" disabled={avancando} onClick={() => avancarPara(proximaTab.key)} className="self-start">
+            {avancando ? "Salvando…" : `Salvar e ir para ${proximaTab.label} →`}
+          </Button>
+        ) : (
+          <Button type="submit" disabled={pending} className="self-start">
+            {pending ? "Salvando…" : "Salvar e ir para Fazer Acontecer →"}
+          </Button>
+        )}
         <AutosaveIndicator status={autosaveStatus} />
       </div>
     </form>
