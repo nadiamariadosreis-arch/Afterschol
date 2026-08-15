@@ -5,8 +5,16 @@ import { revalidatePath } from "next/cache";
 import { requireMember } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { planejarSchema } from "@/lib/apfa/schemas";
+import { saveDraft } from "@/lib/apfa/draft";
+import type { PlanejarData } from "@/lib/apfa/types";
 
 export type PlanejarState = { error?: string };
+
+export async function autosalvarPlanejarAction(cycleId: string, planejar: PlanejarData): Promise<void> {
+  const profile = await requireMember();
+  const supabase = await createClient();
+  await saveDraft(supabase, profile.id, cycleId, { planejar });
+}
 
 export async function salvarPlanejarAction(_prevState: PlanejarState, formData: FormData): Promise<PlanejarState> {
   const profile = await requireMember();

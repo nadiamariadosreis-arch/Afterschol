@@ -1,9 +1,11 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { salvarFazerAcontecerAction, type FazerAcontecerState } from "./actions";
+import { salvarFazerAcontecerAction, autosalvarFazerAcontecerAction, type FazerAcontecerState } from "./actions";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { AutosaveIndicator } from "@/components/ui/AutosaveIndicator";
+import { useAutosave } from "@/lib/useAutosave";
 import { formatBRL } from "@/lib/format";
 import type { ExecucaoItem, FazerAcontecerData } from "@/lib/apfa/types";
 
@@ -25,7 +27,10 @@ export function FazerAcontecerForm({ cycleId, initial }: { cycleId: string; init
     setItens((i) => i.map((x) => (x.id === id ? { ...x, ...patch } : x)));
   }
 
-  const payload: FazerAcontecerData = { reserva, itens, completed_at: null };
+  const [completedAt] = useState(initial.completed_at);
+  const payload: FazerAcontecerData = { reserva, itens, completed_at: completedAt };
+
+  const autosaveStatus = useAutosave(payload, (draft) => autosalvarFazerAcontecerAction(cycleId, draft));
 
   return (
     <form action={formAction} className="flex flex-col gap-6">
@@ -121,9 +126,12 @@ export function FazerAcontecerForm({ cycleId, initial }: { cycleId: string; init
 
       {state.error ? <p className="text-orange-dark text-[15px]">{state.error}</p> : null}
 
-      <Button type="submit" disabled={pending} className="self-start">
-        {pending ? "Salvando…" : "Salvar e ir para Acompanhar →"}
-      </Button>
+      <div className="flex items-center gap-4">
+        <Button type="submit" disabled={pending} className="self-start">
+          {pending ? "Salvando…" : "Salvar e ir para Acompanhar →"}
+        </Button>
+        <AutosaveIndicator status={autosaveStatus} />
+      </div>
     </form>
   );
 }

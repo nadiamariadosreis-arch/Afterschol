@@ -5,8 +5,21 @@ import { revalidatePath } from "next/cache";
 import { requireMember } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { avaliarSchema, percentuaisSchema } from "@/lib/apfa/schemas";
+import { saveDraft } from "@/lib/apfa/draft";
+import type { AvaliarData } from "@/lib/apfa/types";
+import type { ProcessoKey } from "@/lib/apfa/types";
 
 export type AvaliarState = { error?: string };
+
+export async function autosalvarAvaliarAction(
+  cycleId: string,
+  avaliar: AvaliarData,
+  percentuais: Record<ProcessoKey, number>,
+): Promise<void> {
+  const profile = await requireMember();
+  const supabase = await createClient();
+  await saveDraft(supabase, profile.id, cycleId, { avaliar, percentuais });
+}
 
 export async function salvarAvaliarAction(_prevState: AvaliarState, formData: FormData): Promise<AvaliarState> {
   const profile = await requireMember();

@@ -5,9 +5,16 @@ import { revalidatePath } from "next/cache";
 import { requireMember } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { acompanharSchema, percentuaisSchema } from "@/lib/apfa/schemas";
-import { PROCESSO_ORDER } from "@/lib/apfa/types";
+import { PROCESSO_ORDER, type AcompanharData } from "@/lib/apfa/types";
+import { saveDraft } from "@/lib/apfa/draft";
 
 export type AcompanharState = { error?: string };
+
+export async function autosalvarAcompanharAction(cycleId: string, acompanhar: AcompanharData): Promise<void> {
+  const profile = await requireMember();
+  const supabase = await createClient();
+  await saveDraft(supabase, profile.id, cycleId, { acompanhar });
+}
 
 export async function salvarAcompanharAction(
   _prevState: AcompanharState,

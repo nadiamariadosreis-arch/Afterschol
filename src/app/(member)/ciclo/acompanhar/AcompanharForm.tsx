@@ -1,9 +1,11 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { salvarAcompanharAction, type AcompanharState } from "./actions";
+import { salvarAcompanharAction, autosalvarAcompanharAction, type AcompanharState } from "./actions";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { AutosaveIndicator } from "@/components/ui/AutosaveIndicator";
+import { useAutosave } from "@/lib/useAutosave";
 import { PROCESSO_INFO } from "@/lib/apfa/processos";
 import { PROCESSO_ORDER, type AcompanharData, type ProcessoKey, type MotivoDesvio } from "@/lib/apfa/types";
 
@@ -27,14 +29,17 @@ export function AcompanharForm({
   const [imprevistos, setImprevistos] = useState(initial.imprevistos);
   const [proximaReuniaoConfirmada, setProximaReuniaoConfirmada] = useState(initial.proxima_reuniao_confirmada);
 
+  const [completedAt] = useState(initial.completed_at);
   const payload: AcompanharData = {
     por_processo: porProcesso,
     reserva_separada: reservaSeparada,
     cortes_feitos: cortesFeitos,
     imprevistos,
     proxima_reuniao_confirmada: proximaReuniaoConfirmada,
-    completed_at: null,
+    completed_at: completedAt,
   };
+
+  const autosaveStatus = useAutosave(payload, (draft) => autosalvarAcompanharAction(cycleId, draft));
 
   return (
     <form action={formAction} className="flex flex-col gap-6">
@@ -202,9 +207,12 @@ export function AcompanharForm({
 
       {state.error ? <p className="text-orange-dark text-[15px]">{state.error}</p> : null}
 
-      <Button type="submit" disabled={pending} className="self-start">
-        {pending ? "Salvando…" : "Fechar o ciclo deste mês →"}
-      </Button>
+      <div className="flex items-center gap-4">
+        <Button type="submit" disabled={pending} className="self-start">
+          {pending ? "Salvando…" : "Fechar o ciclo deste mês →"}
+        </Button>
+        <AutosaveIndicator status={autosaveStatus} />
+      </div>
     </form>
   );
 }

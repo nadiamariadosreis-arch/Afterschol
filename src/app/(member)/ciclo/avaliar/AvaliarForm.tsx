@@ -1,9 +1,11 @@
 "use client";
 
 import { useActionState, useMemo, useState } from "react";
-import { salvarAvaliarAction, type AvaliarState } from "./actions";
+import { salvarAvaliarAction, autosalvarAvaliarAction, type AvaliarState } from "./actions";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { AutosaveIndicator } from "@/components/ui/AutosaveIndicator";
+import { useAutosave } from "@/lib/useAutosave";
 import { PROCESSO_INFO } from "@/lib/apfa/processos";
 import { comparativo } from "@/lib/apfa/calc";
 import { formatBRL } from "@/lib/format";
@@ -65,6 +67,7 @@ export function AvaliarForm({ cycleId, initial, initialPercentuais }: {
     initial.gastos_anuais.length ? initial.gastos_anuais : SUGESTOES.gastos_anuais,
   );
 
+  const [completedAt] = useState(initial.completed_at);
   const somaPercentuais = PROCESSO_ORDER.reduce((sum, k) => sum + (percentuais[k] || 0), 0);
 
   const avaliarPayload: AvaliarData = {
@@ -73,8 +76,12 @@ export function AvaliarForm({ cycleId, initial, initialPercentuais }: {
     gastos_variaveis: gastosVariaveis,
     parcelas,
     gastos_anuais: gastosAnuais,
-    completed_at: null,
+    completed_at: completedAt,
   };
+
+  const autosaveStatus = useAutosave({ avaliar: avaliarPayload, percentuais }, ({ avaliar, percentuais }) =>
+    autosalvarAvaliarAction(cycleId, avaliar, percentuais),
+  );
 
   const linhas = useMemo(
     () => comparativo(percentuais, avaliarPayload),
@@ -211,9 +218,12 @@ export function AvaliarForm({ cycleId, initial, initialPercentuais }: {
 
       {state.error ? <p className="text-orange-dark text-[15px]">{state.error}</p> : null}
 
-      <Button type="submit" disabled={pending} className="self-start">
-        {pending ? "Salvando…" : "Salvar e ir para Planejar →"}
-      </Button>
+      <div className="flex items-center gap-4">
+        <Button type="submit" disabled={pending} className="self-start">
+          {pending ? "Salvando…" : "Salvar e ir para Planejar →"}
+        </Button>
+        <AutosaveIndicator status={autosaveStatus} />
+      </div>
     </form>
   );
 }

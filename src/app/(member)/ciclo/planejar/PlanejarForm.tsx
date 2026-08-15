@@ -1,9 +1,11 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { salvarPlanejarAction, type PlanejarState } from "./actions";
+import { salvarPlanejarAction, autosalvarPlanejarAction, type PlanejarState } from "./actions";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { AutosaveIndicator } from "@/components/ui/AutosaveIndicator";
+import { useAutosave } from "@/lib/useAutosave";
 import { createClient } from "@/lib/supabase/client";
 import { formatBRL } from "@/lib/format";
 import { PROCESSO_INFO, MEIO_PAGAMENTO_LABEL, URGENCIA_LABEL } from "@/lib/apfa/processos";
@@ -51,14 +53,17 @@ export function PlanejarForm({
   const [dividas, setDividas] = useState<Divida[]>(initial.dividas);
   const [mes, setMes] = useState<ItemMes[]>(initial.organizacao_mes);
   const [cartao, setCartao] = useState(initial.cartao);
+  const [completedAt] = useState(initial.completed_at);
 
   const payload: PlanejarData = {
     reuniao,
     dividas,
     organizacao_mes: mes,
     cartao,
-    completed_at: null,
+    completed_at: completedAt,
   };
+
+  const autosaveStatus = useAutosave(payload, (draft) => autosalvarPlanejarAction(cycleId, draft));
 
   return (
     <form action={formAction} className="flex flex-col gap-6">
@@ -87,9 +92,12 @@ export function PlanejarForm({
 
       {state.error ? <p className="text-orange-dark text-[15px]">{state.error}</p> : null}
 
-      <Button type="submit" disabled={pending} className="self-start">
-        {pending ? "Salvando…" : "Salvar e ir para Fazer Acontecer →"}
-      </Button>
+      <div className="flex items-center gap-4">
+        <Button type="submit" disabled={pending} className="self-start">
+          {pending ? "Salvando…" : "Salvar e ir para Fazer Acontecer →"}
+        </Button>
+        <AutosaveIndicator status={autosaveStatus} />
+      </div>
     </form>
   );
 }

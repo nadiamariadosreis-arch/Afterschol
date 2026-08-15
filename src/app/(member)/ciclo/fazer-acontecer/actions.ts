@@ -5,8 +5,16 @@ import { revalidatePath } from "next/cache";
 import { requireMember } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { fazerAcontecerSchema } from "@/lib/apfa/schemas";
+import { saveDraft } from "@/lib/apfa/draft";
+import type { FazerAcontecerData } from "@/lib/apfa/types";
 
 export type FazerAcontecerState = { error?: string };
+
+export async function autosalvarFazerAcontecerAction(cycleId: string, fazerAcontecer: FazerAcontecerData): Promise<void> {
+  const profile = await requireMember();
+  const supabase = await createClient();
+  await saveDraft(supabase, profile.id, cycleId, { fazer_acontecer: fazerAcontecer });
+}
 
 export async function salvarFazerAcontecerAction(
   _prevState: FazerAcontecerState,
