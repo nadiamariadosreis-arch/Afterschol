@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Fraunces, Inter } from "next/font/google";
 import "./globals.css";
 
@@ -19,6 +19,14 @@ export const metadata: Metadata = {
   title: "Método A.P.F.A",
   description:
     "Um método simples para famílias católicas colocarem o dinheiro em ordem — não por controle, mas por confiança.",
+  appleWebApp: {
+    title: "Método A.P.F.A",
+    statusBarStyle: "default",
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#e0692b",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

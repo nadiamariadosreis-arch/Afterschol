@@ -2,6 +2,7 @@ import Link from "next/link";
 import { requireCurrentCycle } from "@/lib/apfa/session";
 import { cycleLabel, cycleProgress, pilarStatus } from "@/lib/apfa/ciclo";
 import { ModuleCard } from "@/components/member/ModuleCard";
+import { InstallAppBanner } from "@/components/member/InstallAppBanner";
 import { Card } from "@/components/ui/Card";
 import { Sunburst } from "@/components/ui/Sunburst";
 
@@ -52,6 +53,8 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-8">
+      <InstallAppBanner />
+
       <div className="cover-gradient relative rounded-2xl overflow-hidden px-7 py-8 md:px-10 md:py-10">
         <Sunburst size={220} className="absolute -right-10 -top-16 text-white/10" />
         <div className="relative">
