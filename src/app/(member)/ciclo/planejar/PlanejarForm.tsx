@@ -449,10 +449,11 @@ function MesTab({
       <Card>
         <h3 className="font-display-italic font-semibold text-[19px] text-ink mb-1">Organização do mês</h3>
         <p className="text-ink/60 text-[14px] mb-3">
-          Puxe os itens que você já preencheu no Avaliar (contas fixas, gastos variáveis e parcelas)
-          e os eventos especiais da parte técnica, e só complete o dia de pagamento, quem paga e o
-          meio de cada um. Marque o que pode ser cortado ou ajustado, e apague ou adicione o que
-          precisar.
+          A partir do segundo mês, isso já vem pronto do mês anterior — item, dia de pagamento, quem
+          paga e o meio — porque são as mesmas contas básicas se repetindo. É só revisar e editar o
+          que mudou. Se faltar algo novo, os botões abaixo trazem itens do Avaliar (contas fixas,
+          gastos variáveis e parcelas) ou eventos especiais da parte técnica. Marque o que pode ser
+          cortado ou ajustado, e apague ou adicione o que precisar.
         </p>
         <div className="flex flex-wrap gap-x-5 gap-y-2">
           {disponiveisNoAvaliar.length ? (

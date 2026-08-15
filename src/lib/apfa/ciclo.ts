@@ -59,10 +59,20 @@ export async function getOrCreateActiveCycle(
     : null;
 
   // As dívidas também se mantêm de mês a mês — só somem quando marcadas
-  // como quitadas. O resto do Planejar (reunião, organização do mês,
-  // cartão) começa do zero, então herda só a lista de dívidas em aberto.
+  // como quitadas.
   const dividasEmAberto = cicloAnterior?.planejar?.dividas.filter((d) => !d.quitada) ?? [];
-  const planejarHerdado = cicloAnterior ? { ...emptyPlanejar(), dividas: dividasEmAberto } : null;
+
+  // A organização do mês (item, dia de pagamento, quem paga, meio) também
+  // vem pronta do mês anterior — são as mesmas contas básicas se repetindo,
+  // não faz sentido reorganizar tudo de novo. A família só edita o que
+  // mudou. Parte técnica (reunião) e cartão de crédito começam do zero:
+  // datas de reunião e eventos especiais mudam mês a mês, e a fatura do
+  // cartão é sempre nova.
+  const organizacaoMesHerdada = cicloAnterior?.planejar?.organizacao_mes ?? [];
+
+  const planejarHerdado = cicloAnterior
+    ? { ...emptyPlanejar(), dividas: dividasEmAberto, organizacao_mes: organizacaoMesHerdada }
+    : null;
 
   const { data: created, error } = await supabase
     .from("cycles")
