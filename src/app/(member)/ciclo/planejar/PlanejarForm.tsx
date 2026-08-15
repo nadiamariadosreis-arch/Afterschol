@@ -8,7 +8,7 @@ import { AutosaveIndicator } from "@/components/ui/AutosaveIndicator";
 import { useAutosave } from "@/lib/useAutosave";
 import { createClient } from "@/lib/supabase/client";
 import { formatBRL } from "@/lib/format";
-import { itensMesFromAvaliar } from "@/lib/apfa/calc";
+import { itensMesFromAvaliar, mesclarItensMesComAvaliar } from "@/lib/apfa/calc";
 import { PROCESSO_INFO, MEIO_PAGAMENTO_LABEL, URGENCIA_LABEL } from "@/lib/apfa/processos";
 import {
   PROCESSO_ORDER,
@@ -56,9 +56,7 @@ export function PlanejarForm({
 
   const [reuniao, setReuniao] = useState(initial.reuniao);
   const [dividas, setDividas] = useState<Divida[]>(initial.dividas);
-  const [mes, setMes] = useState<ItemMes[]>(
-    () => (initial.organizacao_mes.length ? initial.organizacao_mes : itensMesFromAvaliar(avaliar)),
-  );
+  const [mes, setMes] = useState<ItemMes[]>(initial.organizacao_mes);
   const [cartao, setCartao] = useState(initial.cartao);
   const [completedAt] = useState(initial.completed_at);
 
@@ -120,7 +118,7 @@ export function PlanejarForm({
       ) : null}
       {tab === "mes" ? (
         <>
-          <MesTab itens={mes} setItens={setMes} />
+          <MesTab itens={mes} setItens={setMes} avaliar={avaliar} />
           <MesResumo itens={mes} />
         </>
       ) : null}
@@ -310,7 +308,15 @@ function DividasTab({ dividas, setDividas }: { dividas: Divida[]; setDividas: (f
   );
 }
 
-function MesTab({ itens, setItens }: { itens: ItemMes[]; setItens: (fn: (i: ItemMes[]) => ItemMes[]) => void }) {
+function MesTab({
+  itens,
+  setItens,
+  avaliar,
+}: {
+  itens: ItemMes[];
+  setItens: (fn: (i: ItemMes[]) => ItemMes[]) => void;
+  avaliar: AvaliarData | null;
+}) {
   function update(id: string, patch: Partial<ItemMes>) {
     setItens((i) => i.map((x) => (x.id === id ? { ...x, ...patch } : x)));
   }
@@ -324,15 +330,35 @@ function MesTab({ itens, setItens }: { itens: ItemMes[]; setItens: (fn: (i: Item
     ]);
   }
 
+  const nomesExistentes = new Set(itens.map((i) => i.nome.trim().toLowerCase()).filter(Boolean));
+  const disponiveisNoAvaliar = itensMesFromAvaliar(avaliar).filter(
+    (i) => !nomesExistentes.has(i.nome.trim().toLowerCase()),
+  );
+
+  function trazerDoAvaliar() {
+    setItens((atual) => mesclarItensMesComAvaliar(atual, avaliar));
+  }
+
   return (
     <div className="flex flex-col gap-4">
       <Card>
         <h3 className="font-display-italic font-semibold text-[19px] text-ink mb-1">Organização do mês</h3>
-        <p className="text-ink/60 text-[14px]">
-          Já trouxemos os itens que você preencheu no Avaliar — é só definir o dia de pagamento, quem
-          paga e o meio de pagamento de cada um. Marque o que pode ser cortado ou ajustado, e
-          apague ou adicione o que precisar.
+        <p className="text-ink/60 text-[14px] mb-3">
+          Puxe os itens que você já preencheu no Avaliar (contas fixas, gastos variáveis e parcelas)
+          e só complete o dia de pagamento, quem paga e o meio de cada um. Marque o que pode ser
+          cortado ou ajustado, e apague ou adicione o que precisar.
         </p>
+        {disponiveisNoAvaliar.length ? (
+          <button
+            type="button"
+            onClick={trazerDoAvaliar}
+            className="text-[14px] font-semibold text-orange-dark hover:underline underline-offset-4"
+          >
+            ↓ Trazer {disponiveisNoAvaliar.length} {disponiveisNoAvaliar.length === 1 ? "item" : "itens"} do Avaliar
+          </button>
+        ) : avaliar ? (
+          <p className="text-[13px] text-sage">✓ Todos os itens do Avaliar já estão aqui.</p>
+        ) : null}
       </Card>
       {itens.map((item) => (
         <Card key={item.id}>

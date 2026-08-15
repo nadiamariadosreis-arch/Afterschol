@@ -104,6 +104,17 @@ export function itensMesFromAvaliar(avaliar: AvaliarData | null): ItemMes[] {
 }
 
 /**
+ * Mescla os itens do Avaliar na lista atual da Organização do mês, sem
+ * duplicar (compara por nome, ignorando maiúsculas/espaços) e sem remover
+ * ou alterar nada que a família já tenha preenchido ali.
+ */
+export function mesclarItensMesComAvaliar(itensAtuais: ItemMes[], avaliar: AvaliarData | null): ItemMes[] {
+  const nomesExistentes = new Set(itensAtuais.map((i) => i.nome.trim().toLowerCase()).filter(Boolean));
+  const faltando = itensMesFromAvaliar(avaliar).filter((i) => !nomesExistentes.has(i.nome.trim().toLowerCase()));
+  return [...itensAtuais, ...faltando];
+}
+
+/**
  * Derives the Fazer Acontecer checklist from what was decided in Planejar —
  * one execution item per dívida ativa, item do mês, and fatura de cartão.
  */
