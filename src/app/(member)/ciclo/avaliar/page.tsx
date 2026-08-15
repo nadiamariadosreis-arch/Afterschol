@@ -37,6 +37,13 @@ export default async function AvaliarPage() {
         mais dinheiro do que deveria.
       </Callout>
 
+      {cycle.avaliar?.completed_at ? (
+        <Callout title="Já está preenchido" tone="mint">
+          Este pilar já está marcado como concluído para este mês — não precisa refazer. Revise e
+          ajuste o que mudou (se mudou), ou pode seguir direto pro Planejar.
+        </Callout>
+      ) : null}
+
       <AvaliarForm
         cycleId={cycle.id}
         initial={cycle.avaliar ?? emptyAvaliar()}

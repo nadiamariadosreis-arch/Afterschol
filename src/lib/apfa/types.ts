@@ -46,6 +46,15 @@ export type ItemMes = {
   quem_paga: string;
   meio_pagamento: MeioPagamento;
   cortar: boolean;
+  /** Só usado por itens que não vêm do Avaliar (ex: eventos especiais) — lá o valor já mora no checklist do Avaliar. */
+  valor_estimado?: number;
+};
+
+export type EventoEspecial = {
+  id: string;
+  nome: string;
+  data: string;
+  valor_estimado: number;
 };
 
 export type FaturaItem = {
@@ -72,6 +81,7 @@ export type PlanejarData = {
     cadencia: "mensal" | "quinzenal" | "";
     responsaveis: string;
     proxima_data: string;
+    eventos_especiais: EventoEspecial[];
   };
   dividas: Divida[];
   organizacao_mes: ItemMes[];
@@ -148,7 +158,7 @@ export function emptyAvaliar(): AvaliarData {
 
 export function emptyPlanejar(): PlanejarData {
   return {
-    reuniao: { dia: "", cadencia: "", responsaveis: "", proxima_data: "" },
+    reuniao: { dia: "", cadencia: "", responsaveis: "", proxima_data: "", eventos_especiais: [] },
     dividas: [],
     organizacao_mes: [],
     cartao: { quantidade: 0, cartoes: [] },

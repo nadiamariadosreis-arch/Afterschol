@@ -8,13 +8,19 @@ import { AutosaveIndicator } from "@/components/ui/AutosaveIndicator";
 import { useAutosave } from "@/lib/useAutosave";
 import { createClient } from "@/lib/supabase/client";
 import { formatBRL } from "@/lib/format";
-import { itensMesFromAvaliar, mesclarItensMesComAvaliar } from "@/lib/apfa/calc";
+import {
+  itensMesFromAvaliar,
+  itensMesFromEventos,
+  mesclarItensMesComAvaliar,
+  mesclarItensMesComEventos,
+} from "@/lib/apfa/calc";
 import { PROCESSO_INFO, MEIO_PAGAMENTO_LABEL, URGENCIA_LABEL } from "@/lib/apfa/processos";
 import {
   PROCESSO_ORDER,
   type AvaliarData,
   type CartaoItem,
   type Divida,
+  type EventoEspecial,
   type FaturaItem,
   type ItemMes,
   type MeioPagamento,
@@ -54,7 +60,14 @@ export function PlanejarForm({
   const [tab, setTab] = useState<TabKey>("reuniao");
   const [avancando, setAvancando] = useState(false);
 
-  const [reuniao, setReuniao] = useState(initial.reuniao);
+  const [reuniao, setReuniao] = useState<PlanejarData["reuniao"]>(() => ({
+    dia: initial.reuniao.dia,
+    cadencia: initial.reuniao.cadencia,
+    responsaveis: initial.reuniao.responsaveis,
+    proxima_data: initial.reuniao.proxima_data,
+    // Dados salvos antes desse campo existir não têm eventos_especiais — cai pra lista vazia.
+    eventos_especiais: initial.reuniao.eventos_especiais ?? [],
+  }));
   const [dividas, setDividas] = useState<Divida[]>(initial.dividas);
   const [mes, setMes] = useState<ItemMes[]>(initial.organizacao_mes);
   const [cartao, setCartao] = useState(initial.cartao);
@@ -107,6 +120,7 @@ export function PlanejarForm({
       {tab === "reuniao" ? (
         <>
           <ReuniaoTab reuniao={reuniao} setReuniao={setReuniao} />
+          <EventosEspeciaisSection reuniao={reuniao} setReuniao={setReuniao} />
           <ReuniaoResumo reuniao={reuniao} />
         </>
       ) : null}
@@ -118,7 +132,7 @@ export function PlanejarForm({
       ) : null}
       {tab === "mes" ? (
         <>
-          <MesTab itens={mes} setItens={setMes} avaliar={avaliar} />
+          <MesTab itens={mes} setItens={setMes} avaliar={avaliar} eventos={reuniao.eventos_especiais} />
           <MesResumo itens={mes} />
         </>
       ) : null}
@@ -200,6 +214,86 @@ function ReuniaoTab({
           />
         </label>
       </div>
+    </Card>
+  );
+}
+
+function EventosEspeciaisSection({
+  reuniao,
+  setReuniao,
+}: {
+  reuniao: PlanejarData["reuniao"];
+  setReuniao: (v: PlanejarData["reuniao"]) => void;
+}) {
+  const eventos = reuniao.eventos_especiais;
+
+  function update(id: string, patch: Partial<EventoEspecial>) {
+    setReuniao({ ...reuniao, eventos_especiais: eventos.map((e) => (e.id === id ? { ...e, ...patch } : e)) });
+  }
+  function remove(id: string) {
+    setReuniao({ ...reuniao, eventos_especiais: eventos.filter((e) => e.id !== id) });
+  }
+  function add() {
+    setReuniao({
+      ...reuniao,
+      eventos_especiais: [...eventos, { id: newId(), nome: "", data: "", valor_estimado: 0 }],
+    });
+  }
+
+  return (
+    <Card className="flex flex-col gap-4">
+      <div>
+        <h3 className="font-display-italic font-semibold text-[19px] text-ink mb-1">
+          Datas e eventos especiais do mês
+        </h3>
+        <p className="text-ink/60 text-[14px]">
+          Aniversário, presente, festa, casamento — tudo que vai pesar no bolso além das contas de
+          sempre. Quem entrar aqui aparece depois na Organização do mês, já com o valor previsto.
+        </p>
+      </div>
+      <div className="flex flex-col gap-2.5">
+        {eventos.map((evento) => (
+          <div key={evento.id} className="grid grid-cols-[1fr_140px_140px_auto] gap-2 items-center">
+            <input
+              type="text"
+              value={evento.nome}
+              onChange={(e) => update(evento.id, { nome: e.target.value })}
+              placeholder="Ex: Aniversário da Maria"
+              className="border border-line bg-cream rounded-lg px-3 py-2 text-[14px] outline-none focus:border-orange"
+            />
+            <input
+              type="date"
+              value={evento.data}
+              onChange={(e) => update(evento.id, { data: e.target.value })}
+              className="border border-line bg-cream rounded-lg px-3 py-2 text-[14px] outline-none focus:border-orange"
+            />
+            <input
+              type="number"
+              min={0}
+              step="0.01"
+              value={evento.valor_estimado || ""}
+              onChange={(e) => update(evento.id, { valor_estimado: parseFloat(e.target.value) || 0 })}
+              placeholder="Valor previsto"
+              className="border border-line bg-cream rounded-lg px-3 py-2 text-[14px] outline-none focus:border-orange"
+            />
+            <button
+              type="button"
+              onClick={() => remove(evento.id)}
+              aria-label="Remover evento"
+              className="text-ink/40 hover:text-orange-dark px-2"
+            >
+              ×
+            </button>
+          </div>
+        ))}
+      </div>
+      <button
+        type="button"
+        onClick={add}
+        className="self-start text-[14px] font-semibold text-orange-dark hover:underline underline-offset-4"
+      >
+        + Adicionar data ou evento
+      </button>
     </Card>
   );
 }
@@ -312,10 +406,12 @@ function MesTab({
   itens,
   setItens,
   avaliar,
+  eventos,
 }: {
   itens: ItemMes[];
   setItens: (fn: (i: ItemMes[]) => ItemMes[]) => void;
   avaliar: AvaliarData | null;
+  eventos: EventoEspecial[];
 }) {
   function update(id: string, patch: Partial<ItemMes>) {
     setItens((i) => i.map((x) => (x.id === id ? { ...x, ...patch } : x)));
@@ -334,9 +430,15 @@ function MesTab({
   const disponiveisNoAvaliar = itensMesFromAvaliar(avaliar).filter(
     (i) => !nomesExistentes.has(i.nome.trim().toLowerCase()),
   );
+  const disponiveisNosEventos = itensMesFromEventos(eventos).filter(
+    (i) => !nomesExistentes.has(i.nome.trim().toLowerCase()),
+  );
 
   function trazerDoAvaliar() {
     setItens((atual) => mesclarItensMesComAvaliar(atual, avaliar));
+  }
+  function trazerDosEventos() {
+    setItens((atual) => mesclarItensMesComEventos(atual, eventos));
   }
 
   return (
@@ -345,20 +447,33 @@ function MesTab({
         <h3 className="font-display-italic font-semibold text-[19px] text-ink mb-1">Organização do mês</h3>
         <p className="text-ink/60 text-[14px] mb-3">
           Puxe os itens que você já preencheu no Avaliar (contas fixas, gastos variáveis e parcelas)
-          e só complete o dia de pagamento, quem paga e o meio de cada um. Marque o que pode ser
-          cortado ou ajustado, e apague ou adicione o que precisar.
+          e os eventos especiais da parte técnica, e só complete o dia de pagamento, quem paga e o
+          meio de cada um. Marque o que pode ser cortado ou ajustado, e apague ou adicione o que
+          precisar.
         </p>
-        {disponiveisNoAvaliar.length ? (
-          <button
-            type="button"
-            onClick={trazerDoAvaliar}
-            className="text-[14px] font-semibold text-orange-dark hover:underline underline-offset-4"
-          >
-            ↓ Trazer {disponiveisNoAvaliar.length} {disponiveisNoAvaliar.length === 1 ? "item" : "itens"} do Avaliar
-          </button>
-        ) : avaliar ? (
-          <p className="text-[13px] text-sage">✓ Todos os itens do Avaliar já estão aqui.</p>
-        ) : null}
+        <div className="flex flex-wrap gap-x-5 gap-y-2">
+          {disponiveisNoAvaliar.length ? (
+            <button
+              type="button"
+              onClick={trazerDoAvaliar}
+              className="text-[14px] font-semibold text-orange-dark hover:underline underline-offset-4"
+            >
+              ↓ Trazer {disponiveisNoAvaliar.length} {disponiveisNoAvaliar.length === 1 ? "item" : "itens"} do Avaliar
+            </button>
+          ) : avaliar ? (
+            <p className="text-[13px] text-sage">✓ Itens do Avaliar já estão todos aqui.</p>
+          ) : null}
+          {disponiveisNosEventos.length ? (
+            <button
+              type="button"
+              onClick={trazerDosEventos}
+              className="text-[14px] font-semibold text-orange-dark hover:underline underline-offset-4"
+            >
+              ↓ Trazer {disponiveisNosEventos.length} {disponiveisNosEventos.length === 1 ? "evento" : "eventos"} da
+              parte técnica
+            </button>
+          ) : null}
+        </div>
       </Card>
       {itens.map((item) => (
         <Card key={item.id}>
@@ -394,6 +509,18 @@ function MesTab({
                 max={31}
                 value={item.dia_pagamento ?? ""}
                 onChange={(e) => update(item.id, { dia_pagamento: e.target.value ? parseInt(e.target.value) : null })}
+                className="border border-line bg-cream rounded-lg px-3 py-2 text-[14px] outline-none focus:border-orange"
+              />
+            </label>
+            <label className="flex flex-col gap-1.5">
+              <span className="text-[13px] text-ink/70">Valor previsto (opcional)</span>
+              <input
+                type="number"
+                min={0}
+                step="0.01"
+                value={item.valor_estimado || ""}
+                onChange={(e) => update(item.id, { valor_estimado: e.target.value ? parseFloat(e.target.value) : undefined })}
+                placeholder="Se ainda não está em outro lugar"
                 className="border border-line bg-cream rounded-lg px-3 py-2 text-[14px] outline-none focus:border-orange"
               />
             </label>
@@ -647,7 +774,8 @@ function CartaoTab({
 }
 
 function ReuniaoResumo({ reuniao }: { reuniao: PlanejarData["reuniao"] }) {
-  const preenchido = reuniao.dia || reuniao.cadencia || reuniao.responsaveis || reuniao.proxima_data;
+  const preenchido =
+    reuniao.dia || reuniao.cadencia || reuniao.responsaveis || reuniao.proxima_data || reuniao.eventos_especiais.length;
   if (!preenchido) return null;
 
   return (
@@ -674,6 +802,31 @@ function ReuniaoResumo({ reuniao }: { reuniao: PlanejarData["reuniao"] }) {
           <dd className="text-ink font-semibold">{reuniao.proxima_data || "—"}</dd>
         </div>
       </dl>
+
+      {reuniao.eventos_especiais.length ? (
+        <div className="mt-5 pt-4 border-t border-line">
+          <p className="text-ink/55 text-[11px] uppercase tracking-wide font-semibold mb-2">
+            Datas e eventos especiais
+          </p>
+          <div className="flex flex-col gap-1.5">
+            {reuniao.eventos_especiais.map((evento) => (
+              <div key={evento.id} className="flex items-center justify-between text-[14px]">
+                <span className="text-ink">
+                  {evento.nome || "Sem nome"}
+                  {evento.data ? <span className="text-ink/50"> — {evento.data}</span> : null}
+                </span>
+                <span className="font-semibold text-ink">{formatBRL(evento.valor_estimado)}</span>
+              </div>
+            ))}
+            <div className="flex items-center justify-between text-[14px] pt-1.5 mt-1 border-t border-line">
+              <span className="font-semibold text-ink">Total previsto</span>
+              <span className="font-semibold text-orange-dark">
+                {formatBRL(reuniao.eventos_especiais.reduce((sum, e) => sum + e.valor_estimado, 0))}
+              </span>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </Card>
   );
 }
@@ -743,21 +896,24 @@ function MesResumo({ itens }: { itens: ItemMes[] }) {
   if (!itens.length) return null;
 
   const podeCortar = itens.filter((i) => i.cortar).length;
+  const totalPrevisto = itens.reduce((sum, i) => sum + (i.valor_estimado ?? 0), 0);
 
   return (
     <Card>
       <h4 className="font-display-italic font-semibold text-[17px] text-ink mb-1">Resumo da organização do mês</h4>
       <p className="text-ink/55 text-[13px] mb-4">
         {itens.length} {itens.length === 1 ? "item organizado" : "itens organizados"}
-        {podeCortar ? `, ${podeCortar} marcado${podeCortar === 1 ? "" : "s"} pra cortar ou ajustar` : ""}.
+        {podeCortar ? `, ${podeCortar} marcado${podeCortar === 1 ? "" : "s"} pra cortar ou ajustar` : ""}
+        {totalPrevisto ? `, ${formatBRL(totalPrevisto)} previstos que ainda não estão em outro lugar` : ""}.
       </p>
       <div className="overflow-x-auto">
-        <table className="w-full text-[13px] border-t border-line min-w-[560px]">
+        <table className="w-full text-[13px] border-t border-line min-w-[640px]">
           <thead>
             <tr className="text-ink/55 text-[11px] uppercase tracking-wide">
               <th className="text-left font-semibold py-2">Item</th>
               <th className="text-left font-semibold py-2 pl-4">Processo</th>
               <th className="text-left font-semibold py-2 pl-4">Dia</th>
+              <th className="text-right font-semibold py-2 pl-4">Valor previsto</th>
               <th className="text-left font-semibold py-2 pl-4">Quem paga</th>
               <th className="text-left font-semibold py-2 pl-4">Meio</th>
               <th className="text-left font-semibold py-2 pl-4">Cortar?</th>
@@ -769,6 +925,9 @@ function MesResumo({ itens }: { itens: ItemMes[] }) {
                 <td className="py-2 text-ink">{item.nome || "Sem nome"}</td>
                 <td className="py-2 pl-4 text-ink/75">{PROCESSO_INFO[item.processo].titulo}</td>
                 <td className="py-2 pl-4 text-ink/75">{item.dia_pagamento ?? "—"}</td>
+                <td className="py-2 pl-4 text-right font-semibold text-ink">
+                  {item.valor_estimado ? formatBRL(item.valor_estimado) : "—"}
+                </td>
                 <td className="py-2 pl-4 text-ink/75">{item.quem_paga || "—"}</td>
                 <td className="py-2 pl-4 text-ink/75">{MEIO_PAGAMENTO_LABEL[item.meio_pagamento]}</td>
                 <td className="py-2 pl-4">{item.cortar ? <span className="text-orange-dark font-semibold">Sim</span> : "—"}</td>

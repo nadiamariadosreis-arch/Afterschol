@@ -44,6 +44,14 @@ const itemMes = z.object({
   quem_paga: z.string(),
   meio_pagamento: z.enum(["cartao", "dinheiro", "pix", "debito", "transferencia"]),
   cortar: z.boolean(),
+  valor_estimado: z.number().nonnegative().optional(),
+});
+
+const eventoEspecial = z.object({
+  id: z.string(),
+  nome: z.string().min(1),
+  data: z.string(),
+  valor_estimado: z.number().nonnegative(),
 });
 
 const faturaItem = z.object({
@@ -70,6 +78,7 @@ export const planejarSchema = z.object({
     cadencia: z.enum(["mensal", "quinzenal", ""]),
     responsaveis: z.string(),
     proxima_data: z.string(),
+    eventos_especiais: z.array(eventoEspecial).default([]),
   }),
   dividas: z.array(divida),
   organizacao_mes: z.array(itemMes),

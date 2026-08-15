@@ -3,6 +3,7 @@ import {
   PROCESSO_ORDER,
   type AvaliarData,
   type Cycle,
+  type EventoEspecial,
   type ExecucaoItem,
   type ItemMes,
   type PlanejarData,
@@ -115,6 +116,33 @@ export function mesclarItensMesComAvaliar(itensAtuais: ItemMes[], avaliar: Avali
 }
 
 /**
+ * Converte os eventos especiais definidos na parte técnica (aniversário,
+ * festa, presente…) em itens da Organização do mês, já com o valor
+ * estimado — diferente dos itens vindos do Avaliar, aqui o valor é
+ * necessário porque essa despesa ainda não está em lugar nenhum.
+ */
+export function itensMesFromEventos(eventos: EventoEspecial[]): ItemMes[] {
+  return eventos
+    .filter((e) => e.nome.trim())
+    .map((e) => ({
+      id: `mes-evento-${e.id}`,
+      nome: e.nome,
+      processo: "presente" as const,
+      dia_pagamento: null,
+      quem_paga: "",
+      meio_pagamento: "pix" as const,
+      cortar: false,
+      valor_estimado: e.valor_estimado,
+    }));
+}
+
+export function mesclarItensMesComEventos(itensAtuais: ItemMes[], eventos: EventoEspecial[]): ItemMes[] {
+  const nomesExistentes = new Set(itensAtuais.map((i) => i.nome.trim().toLowerCase()).filter(Boolean));
+  const faltando = itensMesFromEventos(eventos).filter((i) => !nomesExistentes.has(i.nome.trim().toLowerCase()));
+  return [...itensAtuais, ...faltando];
+}
+
+/**
  * Derives the Fazer Acontecer checklist from what was decided in Planejar —
  * one execution item per dívida ativa, item do mês, and fatura de cartão.
  */
@@ -140,7 +168,7 @@ export function gerarItensExecucao(planejar: PlanejarData | null): ExecucaoItem[
       id: `mes-${m.id}`,
       origem: "mes",
       descricao: `${m.nome}${m.quem_paga ? ` — ${m.quem_paga}` : ""}`,
-      valor: 0,
+      valor: m.valor_estimado ?? 0,
       executado: false,
       data: null,
     });

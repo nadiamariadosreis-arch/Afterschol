@@ -49,13 +49,23 @@ export async function getOrCreateActiveCycle(
   }
 
   const { year, month } = currentCycleDate();
+  const cicloAnterior = latest ? (latest as Cycle) : null;
+
+  // O Avaliar não precisa ser refeito todo mês: a renda e o checklist do
+  // mês anterior já vêm prontos aqui, a família só revisa e ajusta o que
+  // mudou. Planejar, Fazer Acontecer e Acompanhar sempre começam do zero.
+  const avaliarHerdado = cicloAnterior?.avaliar
+    ? { ...cicloAnterior.avaliar, completed_at: new Date().toISOString() }
+    : null;
+
   const { data: created, error } = await supabase
     .from("cycles")
     .insert({
       family_id: familyId,
       year,
       month,
-      percentuais: latest ? (latest as Cycle).percentuais : PERCENTUAL_IDEAL,
+      percentuais: cicloAnterior ? cicloAnterior.percentuais : PERCENTUAL_IDEAL,
+      avaliar: avaliarHerdado,
     })
     .select("*")
     .single();
