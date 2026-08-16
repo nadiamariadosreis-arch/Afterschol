@@ -25,7 +25,7 @@ export async function signupAction(_prevState: SignupState, formData: FormData):
     password,
     options: {
       data: { family_name: familyName },
-      emailRedirectTo: `${origin}/dashboard`,
+      emailRedirectTo: `${origin}/auth/confirm?next=/dashboard`,
     },
   });
 

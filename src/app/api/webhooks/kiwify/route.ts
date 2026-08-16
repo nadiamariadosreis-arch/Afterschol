@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
       const origin = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
       const { data: invited, error: inviteError } = await admin.auth.admin.inviteUserByEmail(email, {
         data: { family_name: familyName || undefined },
-        redirectTo: `${origin}/redefinir-senha`,
+        redirectTo: `${origin}/auth/confirm?next=/redefinir-senha`,
       });
       if (inviteError || !invited.user) {
         console.error("Kiwify webhook: falha ao convidar família", inviteError);

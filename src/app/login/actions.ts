@@ -36,7 +36,7 @@ export async function requestPasswordResetAction(
   const origin = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
 
   await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${origin}/redefinir-senha`,
+    redirectTo: `${origin}/auth/confirm?next=/redefinir-senha`,
   });
 
   // Always return success (avoid leaking which e-mails exist).
