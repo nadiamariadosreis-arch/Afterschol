@@ -10,13 +10,19 @@ export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
   const [enviado, setEnviado] = useState(false);
   const [pending, setPending] = useState(false);
+  const [debugError, setDebugError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setPending(true);
+    setDebugError(null);
     try {
       const supabase = createClient();
-      await supabase.auth.resetPasswordForEmail(email);
+      const { error } = await supabase.auth.resetPasswordForEmail(email);
+      // TODO: remover esse aviso depois de confirmar por que o envio às vezes falha.
+      if (error) setDebugError(`${error.message} (status ${error.status ?? "?"})`);
+    } catch (e) {
+      setDebugError(e instanceof Error ? e.message : "erro desconhecido");
     } finally {
       setPending(false);
       // Sempre avança, mesmo se der erro — não revela quais e-mails estão cadastrados.
@@ -33,13 +39,18 @@ export default function ForgotPasswordPage() {
 
         <Card>
           {enviado ? (
-            <VerificarCodigoForm
-              tipo="recovery"
-              emailInicial={email}
-              pedirEmail={false}
-              destino="/redefinir-senha"
-              descricao={`Se ${email} estiver cadastrado, chega um código de 6 dígitos em instantes. Digite ele abaixo.`}
-            />
+            <>
+              {debugError ? (
+                <p className="text-orange-dark text-[13px] mb-4 break-words">[debug] {debugError}</p>
+              ) : null}
+              <VerificarCodigoForm
+                tipo="recovery"
+                emailInicial={email}
+                pedirEmail={false}
+                destino="/redefinir-senha"
+                descricao={`Se ${email} estiver cadastrado, chega um código de 6 dígitos em instantes. Digite ele abaixo.`}
+              />
+            </>
           ) : (
             <form onSubmit={handleSubmit} className="flex flex-col gap-5">
               <label className="flex flex-col gap-2">
