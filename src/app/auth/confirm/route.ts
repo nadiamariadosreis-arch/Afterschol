@@ -14,13 +14,17 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code");
   const next = searchParams.get("next") ?? "/dashboard";
 
-  if (code) {
-    const supabase = await createClient();
-    const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (!error) {
-      return NextResponse.redirect(`${origin}${next}`);
-    }
+  if (!code) {
+    console.error("Auth confirm: link sem código", request.url);
+    return NextResponse.redirect(`${origin}/login`);
   }
 
-  return NextResponse.redirect(`${origin}/login`);
+  const supabase = await createClient();
+  const { error } = await supabase.auth.exchangeCodeForSession(code);
+  if (error) {
+    console.error("Auth confirm: falha ao trocar código por sessão", error);
+    return NextResponse.redirect(`${origin}/login`);
+  }
+
+  return NextResponse.redirect(`${origin}${next}`);
 }
