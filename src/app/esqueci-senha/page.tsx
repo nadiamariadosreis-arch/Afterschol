@@ -14,11 +14,14 @@ export default function ForgotPasswordPage() {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setPending(true);
-    const supabase = createClient();
-    await supabase.auth.resetPasswordForEmail(email);
-    setPending(false);
-    // Sempre avança, independente do e-mail existir ou não (não revela quais e-mails estão cadastrados).
-    setEnviado(true);
+    try {
+      const supabase = createClient();
+      await supabase.auth.resetPasswordForEmail(email);
+    } finally {
+      setPending(false);
+      // Sempre avança, mesmo se der erro — não revela quais e-mails estão cadastrados.
+      setEnviado(true);
+    }
   }
 
   return (
