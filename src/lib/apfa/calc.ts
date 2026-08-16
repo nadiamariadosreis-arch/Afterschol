@@ -208,26 +208,35 @@ export function gerarItensExecucao(planejar: PlanejarData | null): ExecucaoItem[
 
 /**
  * Recalcula o checklist do Fazer Acontecer a partir do Planejar mais
- * recente, preservando o que a família já fez ali: progresso (executado +
- * data) e a ordem em que os itens estão (seja a ordem automática por
- * vencimento, seja uma reordenada manualmente). Sem isso, o checklist é
- * gerado só uma vez e fica "preso" — se uma dívida for desmarcada do Fazer
- * Acontecer (ou uma conta do mês for cortada) depois desse primeiro
- * momento, ela continuaria aparecendo ali pra sempre. Itens novos (uma
- * dívida recém-marcada, um item novo da Organização do mês) entram no
- * final, na ordem de vencimento entre eles.
+ * recente, preservando o que a família já fez ali (executado + data). Sem
+ * isso, o checklist é gerado só uma vez e fica "preso" — se uma dívida for
+ * desmarcada do Fazer Acontecer (ou uma conta do mês for cortada) depois
+ * desse primeiro momento, ela continuaria aparecendo ali pra sempre.
+ *
+ * Enquanto a família não arrastou nada pra reordenar (`ordemManual` false),
+ * a lista sempre volta a ficar ordenada pelo dia de vencimento — é o
+ * padrão. A partir do primeiro arraste, a ordem salva passa a ser
+ * respeitada: só remove o que não deve mais estar lá e acrescenta itens
+ * novos no final (ordenados entre si por vencimento).
  */
 export function reconciliarItensExecucao(
   itensAtuais: ExecucaoItem[],
   planejar: PlanejarData | null,
+  ordemManual: boolean,
 ): ExecucaoItem[] {
   const gerados = gerarItensExecucao(planejar);
+  const progresso = new Map(itensAtuais.map((i) => [i.id, i]));
+  const comProgresso = (item: ExecucaoItem): ExecucaoItem => {
+    const anterior = progresso.get(item.id);
+    return anterior ? { ...item, executado: anterior.executado, data: anterior.data } : item;
+  };
+
+  if (!ordemManual) {
+    return gerados.map(comProgresso);
+  }
+
   const geradosPorId = new Map(gerados.map((i) => [i.id, i]));
-
-  const mantidos = itensAtuais
-    .filter((i) => geradosPorId.has(i.id))
-    .map((i) => ({ ...geradosPorId.get(i.id)!, executado: i.executado, data: i.data }));
-
+  const mantidos = itensAtuais.filter((i) => geradosPorId.has(i.id)).map((i) => comProgresso(geradosPorId.get(i.id)!));
   const idsExistentes = new Set(mantidos.map((i) => i.id));
   const novos = gerados.filter((i) => !idsExistentes.has(i.id));
 

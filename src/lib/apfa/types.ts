@@ -133,6 +133,9 @@ export type FazerAcontecerData = {
     data: string | null;
   };
   itens: ExecucaoItem[];
+  /** Vira true assim que a família arrasta um item pra reordenar — a partir daí a ordem salva
+   * é respeitada. Enquanto for false, o checklist sempre reordena pelo dia de vencimento. */
+  ordem_manual: boolean;
   completed_at: string | null;
 };
 
@@ -196,6 +199,7 @@ export function emptyFazerAcontecer(): FazerAcontecerData {
   return {
     reserva: { conta_destino: "", banco: "", guardado: false, data: null },
     itens: [],
+    ordem_manual: false,
     completed_at: null,
   };
 }

@@ -22,8 +22,10 @@ export default async function FazerAcontecerPage() {
   const initial = cycle.fazer_acontecer ?? emptyFazerAcontecer();
   // Recalcula sempre a partir do Planejar mais recente — assim uma dívida
   // desmarcada do Fazer Acontecer (ou um item cortado da Organização do
-  // mês) some do checklist mesmo depois da primeira geração.
-  initial.itens = reconciliarItensExecucao(initial.itens, cycle.planejar);
+  // mês) some do checklist mesmo depois da primeira geração. Ciclos
+  // salvos antes desse campo existir não têm ordem_manual — cai pra false
+  // (ordem automática por vencimento).
+  initial.itens = reconciliarItensExecucao(initial.itens, cycle.planejar, initial.ordem_manual ?? false);
 
   return (
     <div className="flex flex-col gap-8">

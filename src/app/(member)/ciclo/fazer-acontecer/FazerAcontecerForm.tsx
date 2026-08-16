@@ -23,6 +23,9 @@ export function FazerAcontecerForm({ cycleId, initial }: { cycleId: string; init
   const [state, formAction, pending] = useActionState(salvarFazerAcontecerAction, initialState);
   const [reserva, setReserva] = useState(initial.reserva);
   const [itens, setItens] = useState<ExecucaoItem[]>(initial.itens);
+  // Ciclos salvos antes desse campo existir não têm ordem_manual — cai pra
+  // false, ou seja, a lista continua reordenando pelo vencimento sozinha.
+  const [ordemManual, setOrdemManual] = useState(initial.ordem_manual ?? false);
 
   function updateItem(id: string, patch: Partial<ExecucaoItem>) {
     setItens((i) => i.map((x) => (x.id === id ? { ...x, ...patch } : x)));
@@ -30,9 +33,12 @@ export function FazerAcontecerForm({ cycleId, initial }: { cycleId: string; init
 
   // Reordenar segurando e arrastando: pointer events cobrem mouse e toque
   // com o mesmo código. O item arrastado troca de posição com o item por
-  // baixo do ponteiro, ao vivo, enquanto a mão se move.
+  // baixo do ponteiro, ao vivo, enquanto a mão se move. Só a partir do
+  // primeiro arraste de verdade a lista passa a respeitar a ordem manual —
+  // até lá, ela sempre volta a ficar ordenada pelo dia de vencimento.
   const itemRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const draggingId = useRef<string | null>(null);
+  const houveArraste = useRef(false);
 
   function registrarItemRef(id: string, el: HTMLDivElement | null) {
     if (el) itemRefs.current.set(id, el);
@@ -62,6 +68,7 @@ export function FazerAcontecerForm({ cycleId, initial }: { cycleId: string; init
       const de = atual.findIndex((i) => i.id === dragId);
       const para = atual.findIndex((i) => i.id === alvoId);
       if (de === -1 || para === -1 || de === para) return atual;
+      houveArraste.current = true;
       const copia = [...atual];
       const [movido] = copia.splice(de, 1);
       copia.splice(para, 0, movido);
@@ -71,10 +78,14 @@ export function FazerAcontecerForm({ cycleId, initial }: { cycleId: string; init
 
   function onHandlePointerUp() {
     draggingId.current = null;
+    if (houveArraste.current) {
+      setOrdemManual(true);
+      houveArraste.current = false;
+    }
   }
 
   const [completedAt] = useState(initial.completed_at);
-  const payload: FazerAcontecerData = { reserva, itens, completed_at: completedAt };
+  const payload: FazerAcontecerData = { reserva, itens, ordem_manual: ordemManual, completed_at: completedAt };
 
   const autosaveStatus = useAutosave(payload, (draft) => autosalvarFazerAcontecerAction(cycleId, draft));
 

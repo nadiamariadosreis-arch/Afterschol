@@ -112,6 +112,7 @@ export const fazerAcontecerSchema = z.object({
     data: z.string().nullable(),
   }),
   itens: z.array(execucaoItem),
+  ordem_manual: z.boolean().default(false),
   completed_at: z.string().nullable(),
 });
 
