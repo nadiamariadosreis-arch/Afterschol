@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
@@ -10,24 +10,41 @@ export default function ResetPasswordPage() {
   const router = useRouter();
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [linkError, setLinkError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
+
+  // O link do e-mail chega com um código (?code=) que precisa ser trocado
+  // por uma sessão antes de dar pra alterar a senha — sem isso, updateUser
+  // fica sem sessão pra agir e a troca de senha nunca completa.
+  useEffect(() => {
+    const code = new URLSearchParams(window.location.search).get("code");
+    if (!code) return;
+    createClient()
+      .auth.exchangeCodeForSession(code)
+      .then(({ error }) => {
+        if (error) setLinkError("Este link expirou ou já foi usado. Solicite um novo.");
+        else window.history.replaceState(null, "", window.location.pathname);
+      });
+  }, []);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setPending(true);
     setError(null);
 
-    const supabase = createClient();
-    const { error } = await supabase.auth.updateUser({ password });
-
-    setPending(false);
-
-    if (error) {
+    try {
+      const supabase = createClient();
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) {
+        setError("Não foi possível redefinir a senha. Solicite um novo link.");
+        return;
+      }
+      router.push("/dashboard");
+    } catch {
       setError("Não foi possível redefinir a senha. Solicite um novo link.");
-      return;
+    } finally {
+      setPending(false);
     }
-
-    router.push("/dashboard");
   }
 
   return (
@@ -52,6 +69,7 @@ export default function ResetPasswordPage() {
               />
             </label>
 
+            {linkError ? <p className="text-orange-dark text-[15px]">{linkError}</p> : null}
             {error ? <p className="text-orange-dark text-[15px]">{error}</p> : null}
 
             <Button type="submit" disabled={pending} className="mt-2">
