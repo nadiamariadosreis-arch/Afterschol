@@ -206,6 +206,34 @@ export function gerarItensExecucao(planejar: PlanejarData | null): ExecucaoItem[
   });
 }
 
+/**
+ * Recalcula o checklist do Fazer Acontecer a partir do Planejar mais
+ * recente, preservando o que a família já fez ali: progresso (executado +
+ * data) e a ordem em que os itens estão (seja a ordem automática por
+ * vencimento, seja uma reordenada manualmente). Sem isso, o checklist é
+ * gerado só uma vez e fica "preso" — se uma dívida for desmarcada do Fazer
+ * Acontecer (ou uma conta do mês for cortada) depois desse primeiro
+ * momento, ela continuaria aparecendo ali pra sempre. Itens novos (uma
+ * dívida recém-marcada, um item novo da Organização do mês) entram no
+ * final, na ordem de vencimento entre eles.
+ */
+export function reconciliarItensExecucao(
+  itensAtuais: ExecucaoItem[],
+  planejar: PlanejarData | null,
+): ExecucaoItem[] {
+  const gerados = gerarItensExecucao(planejar);
+  const geradosPorId = new Map(gerados.map((i) => [i.id, i]));
+
+  const mantidos = itensAtuais
+    .filter((i) => geradosPorId.has(i.id))
+    .map((i) => ({ ...geradosPorId.get(i.id)!, executado: i.executado, data: i.data }));
+
+  const idsExistentes = new Set(mantidos.map((i) => i.id));
+  const novos = gerados.filter((i) => !idsExistentes.has(i.id));
+
+  return [...mantidos, ...novos];
+}
+
 export type Envelope = {
   id: string;
   nome: string;

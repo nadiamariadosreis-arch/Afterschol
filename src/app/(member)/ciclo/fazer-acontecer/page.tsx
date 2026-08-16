@@ -4,7 +4,7 @@ import { Callout } from "@/components/ui/Callout";
 import { Paywall } from "@/components/member/Paywall";
 import { temAcessoPago } from "@/lib/auth";
 import { emptyFazerAcontecer } from "@/lib/apfa/types";
-import { gerarItensExecucao } from "@/lib/apfa/calc";
+import { reconciliarItensExecucao } from "@/lib/apfa/calc";
 import { FazerAcontecerForm } from "./FazerAcontecerForm";
 
 export default async function FazerAcontecerPage() {
@@ -20,9 +20,10 @@ export default async function FazerAcontecerPage() {
   }
 
   const initial = cycle.fazer_acontecer ?? emptyFazerAcontecer();
-  if (initial.itens.length === 0) {
-    initial.itens = gerarItensExecucao(cycle.planejar);
-  }
+  // Recalcula sempre a partir do Planejar mais recente — assim uma dívida
+  // desmarcada do Fazer Acontecer (ou um item cortado da Organização do
+  // mês) some do checklist mesmo depois da primeira geração.
+  initial.itens = reconciliarItensExecucao(initial.itens, cycle.planejar);
 
   return (
     <div className="flex flex-col gap-8">
