@@ -7,6 +7,7 @@ const checklistItem = z.object({
   nome: z.string().min(1),
   processo: processoKey,
   valor: z.number().nonnegative(),
+  quem_paga: z.string().default(""),
 });
 
 export const percentuaisSchema = z.object({

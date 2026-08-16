@@ -14,6 +14,8 @@ export type ChecklistItem = {
   nome: string;
   processo: ProcessoKey;
   valor: number;
+  /** Quem da família paga esse item — usado pra agrupar o resumo por pessoa. */
+  quem_paga: string;
 };
 
 export type AvaliarData = {

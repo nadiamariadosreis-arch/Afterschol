@@ -2,6 +2,7 @@ import {
   PERCENTUAL_IDEAL,
   PROCESSO_ORDER,
   type AvaliarData,
+  type ChecklistItem,
   type Cycle,
   type EventoEspecial,
   type ExecucaoItem,
@@ -73,6 +74,50 @@ export function resumoPorCategoria(avaliar: AvaliarData | null): ResumoCategoria
     { nome: "Parcelas", valor: soma(avaliar.parcelas) },
     { nome: "Gastos anuais (rateado por mês)", valor: soma(avaliar.gastos_anuais) / 12 },
   ];
+}
+
+export type ResumoPessoa<T> = { pessoa: string; itens: T[]; total: number };
+
+const SEM_RESPONSAVEL = "Sem responsável definido";
+
+function agruparPorPessoa<T>(
+  itens: T[],
+  quemPaga: (item: T) => string,
+  valorDe: (item: T) => number,
+): ResumoPessoa<T>[] {
+  const mapa = new Map<string, T[]>();
+  for (const item of itens) {
+    const pessoa = quemPaga(item).trim() || SEM_RESPONSAVEL;
+    if (!mapa.has(pessoa)) mapa.set(pessoa, []);
+    mapa.get(pessoa)!.push(item);
+  }
+  return [...mapa.entries()]
+    .map(([pessoa, itens]) => ({ pessoa, itens, total: itens.reduce((sum, i) => sum + valorDe(i), 0) }))
+    .sort((a, b) => {
+      if (a.pessoa === SEM_RESPONSAVEL) return 1;
+      if (b.pessoa === SEM_RESPONSAVEL) return -1;
+      return a.pessoa.localeCompare(b.pessoa, "pt-BR");
+    });
+}
+
+/** Todo o checklist do Avaliar (contas fixas, gastos variáveis, parcelas e anuais), agrupado por quem paga. */
+export function resumoPorPessoaAvaliar(avaliar: AvaliarData | null): ResumoPessoa<ChecklistItem>[] {
+  if (!avaliar) return [];
+  const todos = [...avaliar.contas_fixas, ...avaliar.gastos_variaveis, ...avaliar.parcelas, ...avaliar.gastos_anuais];
+  return agruparPorPessoa(
+    todos.filter((i) => i.nome.trim()),
+    (i) => i.quem_paga,
+    (i) => i.valor,
+  );
+}
+
+/** A Organização do mês, agrupada por quem paga — usa o mesmo valor orçado dos envelopes do Acompanhar. */
+export function resumoPorPessoaMes(itens: ItemMes[], avaliar: AvaliarData | null): ResumoPessoa<ItemMes>[] {
+  return agruparPorPessoa(
+    itens.filter((i) => i.nome.trim()),
+    (i) => i.quem_paga,
+    (i) => valorOrcadoItemMes(i, avaliar),
+  );
 }
 
 export type ComparativoLinha = {

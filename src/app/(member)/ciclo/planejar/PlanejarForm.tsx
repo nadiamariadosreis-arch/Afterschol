@@ -13,6 +13,8 @@ import {
   itensMesFromEventos,
   mesclarItensMesComAvaliar,
   mesclarItensMesComEventos,
+  resumoPorPessoaMes,
+  valorOrcadoItemMes,
 } from "@/lib/apfa/calc";
 import { PROCESSO_INFO, MEIO_PAGAMENTO_LABEL, URGENCIA_LABEL } from "@/lib/apfa/processos";
 import {
@@ -133,7 +135,7 @@ export function PlanejarForm({
       {tab === "mes" ? (
         <>
           <MesTab itens={mes} setItens={setMes} avaliar={avaliar} eventos={reuniao.eventos_especiais} />
-          <MesResumo itens={mes} />
+          <MesResumo itens={mes} avaliar={avaliar} />
         </>
       ) : null}
       {tab === "cartao" ? <CartaoTab familyId={familyId} cartao={cartao} setCartao={setCartao} /> : null}
@@ -999,11 +1001,12 @@ function DividasResumo({ dividas }: { dividas: Divida[] }) {
   );
 }
 
-function MesResumo({ itens }: { itens: ItemMes[] }) {
+function MesResumo({ itens, avaliar }: { itens: ItemMes[]; avaliar: AvaliarData | null }) {
   if (!itens.length) return null;
 
   const podeCortar = itens.filter((i) => i.cortar).length;
   const totalPrevisto = itens.reduce((sum, i) => sum + (i.valor_estimado ?? 0), 0);
+  const porPessoa = resumoPorPessoaMes(itens, avaliar);
 
   return (
     <Card>
@@ -1043,6 +1046,33 @@ function MesResumo({ itens }: { itens: ItemMes[] }) {
           </tbody>
         </table>
       </div>
+
+      {porPessoa.length ? (
+        <div className="mt-6 pt-4 border-t border-line">
+          <h5 className="font-display-italic font-semibold text-[15px] text-ink mb-1">Por pessoa</h5>
+          <p className="text-ink/55 text-[12px] mb-3">
+            Preencha &ldquo;Quem paga&rdquo; em cada item acima pra ele aparecer aqui.
+          </p>
+          <div className="grid sm:grid-cols-2 gap-4">
+            {porPessoa.map((grupo) => (
+              <div key={grupo.pessoa} className="rounded-xl border border-line p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-semibold text-ink text-[14px]">{grupo.pessoa}</span>
+                  <span className="font-semibold text-orange-dark text-[13px]">{formatBRL(grupo.total)}</span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  {grupo.itens.map((item) => (
+                    <div key={item.id} className="flex items-center justify-between text-[13px]">
+                      <span className="text-ink/70 truncate">{item.nome}</span>
+                      <span className="text-ink/70 shrink-0 ml-2">{formatBRL(valorOrcadoItemMes(item, avaliar))}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
     </Card>
   );
 }

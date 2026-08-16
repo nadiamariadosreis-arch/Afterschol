@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/Card";
 import { formatBRL } from "@/lib/format";
-import { resumoPorCategoria, type ComparativoLinha } from "@/lib/apfa/calc";
+import { resumoPorCategoria, resumoPorPessoaAvaliar, type ComparativoLinha } from "@/lib/apfa/calc";
 import { PROCESSO_INFO } from "@/lib/apfa/processos";
 import type { AvaliarData } from "@/lib/apfa/types";
 
@@ -23,6 +23,7 @@ export function ResumoFinal({
   const sai = categorias.reduce((sum, c) => sum + c.valor, 0);
   const saldo = entra - sai;
   const maiorBarra = Math.max(entra, sai, 1);
+  const porPessoa = resumoPorPessoaAvaliar(avaliar);
 
   async function baixarPdf() {
     setGerandoPdf(true);
@@ -66,6 +67,28 @@ export function ResumoFinal({
         y += 6;
       }
       y += 6;
+
+      if (porPessoa.length) {
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(13);
+        doc.text("Por pessoa", 14, y);
+        y += 8;
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(11);
+        for (const grupo of porPessoa) {
+          doc.setFont("helvetica", "bold");
+          doc.text(grupo.pessoa, 14, y);
+          doc.text(formatBRL(grupo.total), 196, y, { align: "right" });
+          y += 6;
+          doc.setFont("helvetica", "normal");
+          for (const item of grupo.itens) {
+            doc.text(`  ${item.nome}`, 14, y);
+            doc.text(formatBRL(item.valor), 196, y, { align: "right" });
+            y += 6;
+          }
+        }
+        y += 6;
+      }
 
       doc.setFont("helvetica", "bold");
       doc.setFontSize(13);
@@ -132,6 +155,34 @@ export function ResumoFinal({
           </tr>
         </tbody>
       </table>
+
+      {porPessoa.length ? (
+        <div className="mb-6">
+          <h4 className="font-display-italic font-semibold text-[17px] text-ink mb-1">Por pessoa</h4>
+          <p className="text-ink/55 text-[13px] mb-4">
+            Os mesmos itens acima, separados por quem paga cada um — preencha o campo &ldquo;Quem
+            paga&rdquo; em cada item pra aparecer aqui.
+          </p>
+          <div className="grid sm:grid-cols-2 gap-4">
+            {porPessoa.map((grupo) => (
+              <div key={grupo.pessoa} className="rounded-xl border border-line p-4">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-semibold text-ink text-[15px]">{grupo.pessoa}</span>
+                  <span className="font-semibold text-orange-dark text-[14px]">{formatBRL(grupo.total)}</span>
+                </div>
+                <div className="flex flex-col gap-1">
+                  {grupo.itens.map((item) => (
+                    <div key={item.id} className="flex items-center justify-between text-[13px]">
+                      <span className="text-ink/70 truncate">{item.nome}</span>
+                      <span className="text-ink/70 shrink-0 ml-2">{formatBRL(item.valor)}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      ) : null}
 
       <button
         type="button"

@@ -19,7 +19,7 @@ function newId() {
 }
 
 function row(nome: string, processo: ProcessoKey): ChecklistItem {
-  return { id: newId(), nome, processo, valor: 0 };
+  return { id: newId(), nome, processo, valor: 0, quem_paga: "" };
 }
 
 const SUGESTOES = {
@@ -261,7 +261,7 @@ function ChecklistSection({
       {subtitulo ? <p className="text-ink/55 text-[13px] mb-4">{subtitulo}</p> : null}
       <div className="flex flex-col gap-2.5">
         {itens.map((item) => (
-          <div key={item.id} className="grid grid-cols-[1fr_140px_120px_auto] gap-2 items-center">
+          <div key={item.id} className="grid grid-cols-[1fr_140px_120px_130px_auto] gap-2 items-center">
             <input
               type="text"
               value={item.nome}
@@ -287,6 +287,13 @@ function ChecklistSection({
               value={item.valor || ""}
               onChange={(e) => updateItem(item.id, { valor: parseFloat(e.target.value) || 0 })}
               placeholder={anual ? "Valor anual" : "Valor"}
+              className="border border-line bg-cream rounded-lg px-3 py-2 text-[14px] outline-none focus:border-orange"
+            />
+            <input
+              type="text"
+              value={item.quem_paga}
+              onChange={(e) => updateItem(item.id, { quem_paga: e.target.value })}
+              placeholder="Quem paga"
               className="border border-line bg-cream rounded-lg px-3 py-2 text-[14px] outline-none focus:border-orange"
             />
             <button
