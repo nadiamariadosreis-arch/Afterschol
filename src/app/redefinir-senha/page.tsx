@@ -36,13 +36,12 @@ export default function ResetPasswordPage() {
       const supabase = createClient();
       const { error } = await supabase.auth.updateUser({ password });
       if (error) {
-        // TODO: trocar pela mensagem genérica depois de confirmar a causa raiz.
-        setError(`Não foi possível redefinir a senha: ${error.message}`);
+        setError("Não foi possível redefinir a senha. Solicite um novo código.");
         return;
       }
       router.push("/dashboard");
-    } catch (e) {
-      setError(`Não foi possível redefinir a senha: ${e instanceof Error ? e.message : "erro desconhecido"}`);
+    } catch {
+      setError("Não foi possível redefinir a senha. Solicite um novo código.");
     } finally {
       setPending(false);
     }

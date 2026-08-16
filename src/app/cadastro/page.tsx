@@ -5,6 +5,7 @@ import Link from "next/link";
 import { signupAction, type SignupState } from "./actions";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
+import { VerificarCodigoForm } from "@/components/auth/VerificarCodigoForm";
 
 const initialState: SignupState = {};
 
@@ -23,10 +24,13 @@ export default function CadastroPage() {
 
         <Card>
           {state.confirmEmail ? (
-            <p className="text-ink/80">
-              Quase lá! Enviamos um e-mail de confirmação — clique no link para ativar sua conta e
-              começar o Método A.P.F.A.
-            </p>
+            <VerificarCodigoForm
+              tipo="signup"
+              emailInicial={state.email}
+              pedirEmail={false}
+              destino="/dashboard"
+              descricao="Quase lá! Mandamos um código de 6 dígitos pro seu e-mail — digite ele abaixo pra ativar sua conta."
+            />
           ) : (
             <form action={formAction} className="flex flex-col gap-5">
               <label className="flex flex-col gap-2">

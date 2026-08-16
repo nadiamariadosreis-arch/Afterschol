@@ -1,14 +1,25 @@
 "use client";
 
-import { useActionState } from "react";
-import { requestPasswordResetAction, type ForgotPasswordState } from "../login/actions";
+import { useState } from "react";
+import { createClient } from "@/lib/supabase/client";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
-
-const initialState: ForgotPasswordState = {};
+import { VerificarCodigoForm } from "@/components/auth/VerificarCodigoForm";
 
 export default function ForgotPasswordPage() {
-  const [state, formAction, pending] = useActionState(requestPasswordResetAction, initialState);
+  const [email, setEmail] = useState("");
+  const [enviado, setEnviado] = useState(false);
+  const [pending, setPending] = useState(false);
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setPending(true);
+    const supabase = createClient();
+    await supabase.auth.resetPasswordForEmail(email);
+    setPending(false);
+    // Sempre avança, independente do e-mail existir ou não (não revela quais e-mails estão cadastrados).
+    setEnviado(true);
+  }
 
   return (
     <main className="flex-1 flex items-center justify-center px-6 py-16">
@@ -18,28 +29,30 @@ export default function ForgotPasswordPage() {
         </div>
 
         <Card>
-          {state.sent ? (
-            <p className="text-ink/80">
-              Se este e-mail estiver cadastrado, você vai receber um link para redefinir sua senha
-              em instantes.
-            </p>
+          {enviado ? (
+            <VerificarCodigoForm
+              tipo="recovery"
+              emailInicial={email}
+              pedirEmail={false}
+              destino="/redefinir-senha"
+              descricao={`Se ${email} estiver cadastrado, chega um código de 6 dígitos em instantes. Digite ele abaixo.`}
+            />
           ) : (
-            <form action={formAction} className="flex flex-col gap-5">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-5">
               <label className="flex flex-col gap-2">
                 <span className="text-[15px] text-ink/80">E-mail</span>
                 <input
                   type="email"
-                  name="email"
                   required
                   autoComplete="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="border border-line bg-cream rounded-xl px-4 py-2.5 font-body text-ink outline-none focus:border-orange"
                 />
               </label>
 
-              {state.error ? <p className="text-orange-dark text-[15px]">{state.error}</p> : null}
-
               <Button type="submit" disabled={pending} className="mt-2">
-                {pending ? "Enviando…" : "Enviar link de redefinição"}
+                {pending ? "Enviando…" : "Enviar código"}
               </Button>
             </form>
           )}

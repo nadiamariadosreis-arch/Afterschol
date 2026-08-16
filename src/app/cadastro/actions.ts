@@ -3,7 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
-export type SignupState = { error?: string; confirmEmail?: boolean };
+export type SignupState = { error?: string; confirmEmail?: boolean; email?: string };
 
 export async function signupAction(_prevState: SignupState, formData: FormData): Promise<SignupState> {
   const familyName = String(formData.get("familyName") ?? "").trim();
@@ -38,7 +38,7 @@ export async function signupAction(_prevState: SignupState, formData: FormData):
 
   // If e-mail confirmation is required, Supabase returns a user with no session yet.
   if (data.user && !data.session) {
-    return { confirmEmail: true };
+    return { confirmEmail: true, email };
   }
 
   redirect("/dashboard");

@@ -22,23 +22,3 @@ export async function loginAction(_prevState: LoginState, formData: FormData): P
 
   redirect("/dashboard");
 }
-
-export type ForgotPasswordState = { sent?: boolean; error?: string };
-
-export async function requestPasswordResetAction(
-  _prevState: ForgotPasswordState,
-  formData: FormData,
-): Promise<ForgotPasswordState> {
-  const email = String(formData.get("email") ?? "").trim();
-  if (!email) return { error: "Informe seu e-mail." };
-
-  const supabase = await createClient();
-  const origin = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-
-  await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${origin}/auth/confirm?next=/redefinir-senha`,
-  });
-
-  // Always return success (avoid leaking which e-mails exist).
-  return { sent: true };
-}
