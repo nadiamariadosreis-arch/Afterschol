@@ -87,7 +87,7 @@ function agruparPorPessoa<T>(
 ): ResumoPessoa<T>[] {
   const mapa = new Map<string, T[]>();
   for (const item of itens) {
-    const pessoa = quemPaga(item).trim() || SEM_RESPONSAVEL;
+    const pessoa = (quemPaga(item) || "").trim() || SEM_RESPONSAVEL;
     if (!mapa.has(pessoa)) mapa.set(pessoa, []);
     mapa.get(pessoa)!.push(item);
   }

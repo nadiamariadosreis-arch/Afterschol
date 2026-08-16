@@ -291,7 +291,7 @@ function ChecklistSection({
             />
             <input
               type="text"
-              value={item.quem_paga}
+              value={item.quem_paga ?? ""}
               onChange={(e) => updateItem(item.id, { quem_paga: e.target.value })}
               placeholder="Quem paga"
               className="border border-line bg-cream rounded-lg px-3 py-2 text-[14px] outline-none focus:border-orange"
