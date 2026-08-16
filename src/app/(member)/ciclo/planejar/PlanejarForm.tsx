@@ -439,45 +439,43 @@ function DividasTab({ dividas, setDividas }: { dividas: Divida[]; setDividas: (f
                   </label>
                 </div>
 
-                {div.forma_pagamento ? (
-                  <div className="rounded-lg bg-cream border border-line px-4 py-3 flex flex-col gap-2.5">
-                    <label className="flex items-center gap-2 text-[14px] font-semibold text-ink">
+                <div className="rounded-lg bg-cream border border-line px-4 py-3 flex flex-col gap-2.5">
+                  <label className="flex items-center gap-2 text-[14px] font-semibold text-ink">
+                    <input
+                      type="checkbox"
+                      checked={div.entra_fazer_acontecer}
+                      onChange={(e) =>
+                        update(div.id, {
+                          entra_fazer_acontecer: e.target.checked,
+                          valor_fazer_acontecer: e.target.checked ? (div.valor_fazer_acontecer ?? div.valor) : div.valor_fazer_acontecer,
+                        })
+                      }
+                    />
+                    Esta dívida entra no Fazer Acontecer deste mês
+                  </label>
+                  {div.entra_fazer_acontecer ? (
+                    <label className="flex flex-col gap-1.5 max-w-xs">
+                      <span className="text-[13px] text-ink/70">Valor que deve aparecer lá</span>
                       <input
-                        type="checkbox"
-                        checked={div.entra_fazer_acontecer}
+                        type="number"
+                        min={0}
+                        step="0.01"
+                        value={div.valor_fazer_acontecer ?? ""}
                         onChange={(e) =>
-                          update(div.id, {
-                            entra_fazer_acontecer: e.target.checked,
-                            valor_fazer_acontecer: e.target.checked ? (div.valor_fazer_acontecer ?? div.valor) : div.valor_fazer_acontecer,
-                          })
+                          update(div.id, { valor_fazer_acontecer: e.target.value ? parseFloat(e.target.value) : null })
                         }
+                        className="border border-line bg-white rounded-lg px-3 py-2 text-[14px] outline-none focus:border-orange"
                       />
-                      Esta dívida entra no Fazer Acontecer deste mês
+                      <span className="text-[12px] text-ink/50">
+                        Pode ser a parcela negociada — não precisa ser o valor total da dívida.
+                      </span>
                     </label>
-                    {div.entra_fazer_acontecer ? (
-                      <label className="flex flex-col gap-1.5 max-w-xs">
-                        <span className="text-[13px] text-ink/70">Valor que deve aparecer lá</span>
-                        <input
-                          type="number"
-                          min={0}
-                          step="0.01"
-                          value={div.valor_fazer_acontecer ?? ""}
-                          onChange={(e) =>
-                            update(div.id, { valor_fazer_acontecer: e.target.value ? parseFloat(e.target.value) : null })
-                          }
-                          className="border border-line bg-white rounded-lg px-3 py-2 text-[14px] outline-none focus:border-orange"
-                        />
-                        <span className="text-[12px] text-ink/50">
-                          Pode ser a parcela negociada — não precisa ser o valor total da dívida.
-                        </span>
-                      </label>
-                    ) : (
-                      <p className="text-[13px] text-ink/60">
-                        Não vai aparecer no checklist de execução deste mês — ainda em negociação.
-                      </p>
-                    )}
-                  </div>
-                ) : null}
+                  ) : (
+                    <p className="text-[13px] text-ink/60">
+                      Não vai aparecer no checklist de execução deste mês — ainda em negociação.
+                    </p>
+                  )}
+                </div>
               </div>
             ) : null}
             <div className="flex items-center gap-6 sm:col-span-2 mt-1">
