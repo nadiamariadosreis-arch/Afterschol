@@ -40,6 +40,8 @@ export default async function AcompanharPage() {
         initial={cycle.acompanhar ?? emptyAcompanhar()}
         percentuaisAtuais={cycle.percentuais}
         pistas={pistas}
+        planejar={cycle.planejar}
+        avaliar={cycle.avaliar}
       />
     </div>
   );

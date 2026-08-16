@@ -109,6 +109,14 @@ export const fazerAcontecerSchema = z.object({
   completed_at: z.string().nullable(),
 });
 
+const lancamentoEnvelope = z.object({
+  id: z.string(),
+  item_id: z.string(),
+  valor: z.number().nonnegative(),
+  data: z.string(),
+  descricao: z.string(),
+});
+
 const diagnosticoProcesso = z.object({
   deu_certo: z.string(),
   nao_deu_certo: z.string(),
@@ -128,5 +136,6 @@ export const acompanharSchema = z.object({
   cortes_feitos: z.string(),
   imprevistos: z.string(),
   proxima_reuniao_confirmada: z.enum(["sim", "nao", ""]),
+  lancamentos: z.array(lancamentoEnvelope).default([]),
   completed_at: z.string().nullable(),
 });

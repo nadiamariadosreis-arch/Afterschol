@@ -6,6 +6,8 @@ import {
   type EventoEspecial,
   type ExecucaoItem,
   type ItemMes,
+  type LancamentoEnvelope,
+  type MeioPagamento,
   type PlanejarData,
   type ProcessoKey,
 } from "./types";
@@ -186,6 +188,59 @@ export function gerarItensExecucao(planejar: PlanejarData | null): ExecucaoItem[
   }
 
   return itens;
+}
+
+export type Envelope = {
+  id: string;
+  nome: string;
+  processo: ProcessoKey;
+  diaPagamento: number | null;
+  meioPagamento: MeioPagamento;
+  orcado: number;
+  gasto: number;
+  disponivel: number;
+};
+
+/**
+ * Valor orçado de um item da Organização do mês: usa `valor_estimado` quando
+ * o item já tem um (eventos especiais, ou itens digitados manualmente); caso
+ * contrário, busca o valor original no checklist do Avaliar — é de lá que
+ * `itensMesFromAvaliar` gerou esse item.
+ */
+export function valorOrcadoItemMes(item: ItemMes, avaliar: AvaliarData | null): number {
+  if (item.valor_estimado != null) return item.valor_estimado;
+  const prefixo = "mes-avaliar-";
+  if (!avaliar || !item.id.startsWith(prefixo)) return 0;
+  const avaliarId = item.id.slice(prefixo.length);
+  const todos = [...avaliar.contas_fixas, ...avaliar.gastos_variaveis, ...avaliar.parcelas];
+  return todos.find((i) => i.id === avaliarId)?.valor ?? 0;
+}
+
+/**
+ * Envelopes do mês: um por item da Organização do mês definida no Planejar,
+ * com o quanto já foi gasto (soma dos lançamentos anotados no Acompanhar) e
+ * o quanto ainda está disponível.
+ */
+export function gerarEnvelopes(
+  planejar: PlanejarData | null,
+  avaliar: AvaliarData | null,
+  lancamentos: LancamentoEnvelope[],
+): Envelope[] {
+  if (!planejar) return [];
+  return planejar.organizacao_mes.map((item) => {
+    const orcado = valorOrcadoItemMes(item, avaliar);
+    const gasto = lancamentos.filter((l) => l.item_id === item.id).reduce((sum, l) => sum + l.valor, 0);
+    return {
+      id: item.id,
+      nome: item.nome,
+      processo: item.processo,
+      diaPagamento: item.dia_pagamento,
+      meioPagamento: item.meio_pagamento,
+      orcado,
+      gasto,
+      disponivel: orcado - gasto,
+    };
+  });
 }
 
 export function comparativo(

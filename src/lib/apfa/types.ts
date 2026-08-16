@@ -57,6 +57,16 @@ export type EventoEspecial = {
   valor_estimado: number;
 };
 
+/** Um gasto anotado num envelope (item da Organização do mês) durante o Acompanhar. */
+export type LancamentoEnvelope = {
+  id: string;
+  /** Referencia o `id` de um `ItemMes` em `planejar.organizacao_mes`. */
+  item_id: string;
+  valor: number;
+  data: string;
+  descricao: string;
+};
+
 export type FaturaItem = {
   id: string;
   descricao: string;
@@ -128,6 +138,8 @@ export type AcompanharData = {
   cortes_feitos: string;
   imprevistos: string;
   proxima_reuniao_confirmada: "sim" | "nao" | "";
+  /** Gastos anotados dia a dia nos envelopes do mês (Organização do mês do Planejar). */
+  lancamentos: LancamentoEnvelope[];
   completed_at: string | null;
 };
 
@@ -193,6 +205,7 @@ export function emptyAcompanhar(): AcompanharData {
     cortes_feitos: "",
     imprevistos: "",
     proxima_reuniao_confirmada: "",
+    lancamentos: [],
     completed_at: null,
   };
 }
