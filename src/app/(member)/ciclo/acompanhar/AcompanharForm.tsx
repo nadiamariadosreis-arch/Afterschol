@@ -69,6 +69,9 @@ export function AcompanharForm({
   function adicionarLancamento(l: Omit<LancamentoEnvelope, "id">) {
     setLancamentos((atual) => [...atual, { ...l, id: newId() }]);
   }
+  function atualizarLancamento(id: string, patch: Partial<LancamentoEnvelope>) {
+    setLancamentos((atual) => atual.map((l) => (l.id === id ? { ...l, ...patch } : l)));
+  }
   function removerLancamento(id: string) {
     setLancamentos((atual) => atual.filter((l) => l.id !== id));
   }
@@ -79,7 +82,13 @@ export function AcompanharForm({
       <input type="hidden" name="acompanhar" value={JSON.stringify(payload)} readOnly />
       <input type="hidden" name="percentuaisAtuais" value={JSON.stringify(percentuaisAtuais)} readOnly />
 
-      <EnvelopesSection envelopes={envelopes} lancamentos={lancamentos} onAdd={adicionarLancamento} onRemove={removerLancamento} />
+      <EnvelopesSection
+        envelopes={envelopes}
+        lancamentos={lancamentos}
+        onAdd={adicionarLancamento}
+        onUpdate={atualizarLancamento}
+        onRemove={removerLancamento}
+      />
 
       <div>
         <h3 className="font-display-italic font-semibold text-[20px] text-ink mb-1">Diagnóstico por processo</h3>
@@ -255,11 +264,13 @@ function EnvelopesSection({
   envelopes,
   lancamentos,
   onAdd,
+  onUpdate,
   onRemove,
 }: {
   envelopes: Envelope[];
   lancamentos: LancamentoEnvelope[];
   onAdd: (l: Omit<LancamentoEnvelope, "id">) => void;
+  onUpdate: (id: string, patch: Partial<LancamentoEnvelope>) => void;
   onRemove: (id: string) => void;
 }) {
   const [itemId, setItemId] = useState("");
@@ -273,8 +284,6 @@ function EnvelopesSection({
     setValor("");
     setDescricao("");
   }
-
-  const lancamentosOrdenados = [...lancamentos].reverse();
 
   return (
     <div>
@@ -350,72 +359,116 @@ function EnvelopesSection({
 
           <div className="grid sm:grid-cols-2 gap-4">
             {envelopes.map((env) => (
-              <EnvelopeCard key={env.id} envelope={env} />
+              <EnvelopeCard
+                key={env.id}
+                envelope={env}
+                lancamentos={lancamentos.filter((l) => l.item_id === env.id)}
+                onUpdate={onUpdate}
+                onRemove={onRemove}
+              />
             ))}
           </div>
-
-          {lancamentosOrdenados.length ? (
-            <Card>
-              <span className="text-[13px] font-semibold text-ink/70 mb-3 block">Gastos anotados</span>
-              <div className="flex flex-col gap-2">
-                {lancamentosOrdenados.map((l) => {
-                  const nomeEnvelope = envelopes.find((env) => env.id === l.item_id)?.nome ?? "Item removido";
-                  return (
-                    <div key={l.id} className="flex items-center gap-3 text-[13px]">
-                      <span className="w-24 text-ink/50 shrink-0">{l.data || "—"}</span>
-                      <span className="flex-1 text-ink truncate">
-                        {nomeEnvelope}
-                        {l.descricao ? <span className="text-ink/50"> — {l.descricao}</span> : null}
-                      </span>
-                      <span className="font-semibold text-ink shrink-0">{formatBRL(l.valor)}</span>
-                      <button
-                        type="button"
-                        onClick={() => onRemove(l.id)}
-                        aria-label="Remover gasto"
-                        className="text-ink/40 hover:text-orange-dark px-1 shrink-0"
-                      >
-                        ×
-                      </button>
-                    </div>
-                  );
-                })}
-              </div>
-            </Card>
-          ) : null}
         </div>
       )}
     </div>
   );
 }
 
-function EnvelopeCard({ envelope }: { envelope: Envelope }) {
+function EnvelopeCard({
+  envelope,
+  lancamentos,
+  onUpdate,
+  onRemove,
+}: {
+  envelope: Envelope;
+  lancamentos: LancamentoEnvelope[];
+  onUpdate: (id: string, patch: Partial<LancamentoEnvelope>) => void;
+  onRemove: (id: string) => void;
+}) {
+  const [aberto, setAberto] = useState(false);
   const sobrou = envelope.orcado > 0 ? (envelope.gasto / envelope.orcado) * 100 : envelope.gasto > 0 ? 100 : 0;
   const estourou = envelope.disponivel < 0;
 
   return (
     <div className="rounded-xl border border-line p-4 flex flex-col gap-2.5">
-      <div className="flex items-center justify-between gap-2">
-        <span className="font-semibold text-ink text-[15px] truncate">{envelope.nome || "Sem nome"}</span>
-        <span className="text-[12px] text-ink/50 shrink-0">
-          {MEIO_PAGAMENTO_LABEL[envelope.meioPagamento]}
-          {envelope.diaPagamento ? ` · dia ${envelope.diaPagamento}` : ""}
-        </span>
-      </div>
-      <div className="h-2.5 rounded-full bg-cream-dark overflow-hidden">
-        <div
-          className={`h-full rounded-full ${estourou ? "bg-orange-dark" : "bg-sage"}`}
-          style={{ width: `${Math.max(0, Math.min(100, sobrou))}%` }}
-        />
-      </div>
-      <div className="flex items-center justify-between text-[13px]">
-        <span className="text-ink/60">
-          Gasto: <strong className="text-ink">{formatBRL(envelope.gasto)}</strong>
-        </span>
-        <span className="text-ink/60">
-          Disponível: <strong className={estourou ? "text-orange-dark" : "text-ink"}>{formatBRL(envelope.disponivel)}</strong>
-        </span>
-      </div>
-      <span className="text-[12px] text-ink/40">Orçado: {formatBRL(envelope.orcado)}</span>
+      <button
+        type="button"
+        onClick={() => setAberto((a) => !a)}
+        className="flex flex-col gap-2.5 text-left w-full bg-transparent border-0 p-0 cursor-pointer"
+      >
+        <div className="flex items-center justify-between gap-2">
+          <span className="font-semibold text-ink text-[15px] truncate">{envelope.nome || "Sem nome"}</span>
+          <span className="text-[12px] text-ink/50 shrink-0">
+            {MEIO_PAGAMENTO_LABEL[envelope.meioPagamento]}
+            {envelope.diaPagamento ? ` · dia ${envelope.diaPagamento}` : ""}
+          </span>
+        </div>
+        <div className="h-2.5 rounded-full bg-cream-dark overflow-hidden">
+          <div
+            className={`h-full rounded-full ${estourou ? "bg-orange-dark" : "bg-sage"}`}
+            style={{ width: `${Math.max(0, Math.min(100, sobrou))}%` }}
+          />
+        </div>
+        <div className="flex items-center justify-between text-[13px]">
+          <span className="text-ink/60">
+            Gasto: <strong className="text-ink">{formatBRL(envelope.gasto)}</strong>
+          </span>
+          <span className="text-ink/60">
+            Disponível: <strong className={estourou ? "text-orange-dark" : "text-ink"}>{formatBRL(envelope.disponivel)}</strong>
+          </span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span className="text-[12px] text-ink/40">Orçado: {formatBRL(envelope.orcado)}</span>
+          <span className="text-[12px] font-semibold text-orange-dark">
+            {lancamentos.length
+              ? `${lancamentos.length} lançamento${lancamentos.length === 1 ? "" : "s"}`
+              : "Nenhum gasto ainda"}{" "}
+            {aberto ? "▲" : "▾"}
+          </span>
+        </div>
+      </button>
+
+      {aberto ? (
+        <div className="pt-2.5 border-t border-line flex flex-col gap-2">
+          {lancamentos.length === 0 ? (
+            <p className="text-[13px] text-ink/50">Nenhum gasto anotado aqui ainda.</p>
+          ) : (
+            lancamentos.map((l) => (
+              <div key={l.id} className="grid grid-cols-[112px_1fr_92px_auto] gap-1.5 items-center">
+                <input
+                  type="date"
+                  value={l.data}
+                  onChange={(e) => onUpdate(l.id, { data: e.target.value })}
+                  className="border border-line bg-cream rounded-lg px-2 py-1.5 text-[12px] outline-none focus:border-orange"
+                />
+                <input
+                  type="text"
+                  value={l.descricao}
+                  onChange={(e) => onUpdate(l.id, { descricao: e.target.value })}
+                  placeholder="O que foi"
+                  className="border border-line bg-cream rounded-lg px-2 py-1.5 text-[13px] outline-none focus:border-orange"
+                />
+                <input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={l.valor || ""}
+                  onChange={(e) => onUpdate(l.id, { valor: parseFloat(e.target.value) || 0 })}
+                  className="border border-line bg-cream rounded-lg px-2 py-1.5 text-[13px] outline-none focus:border-orange"
+                />
+                <button
+                  type="button"
+                  onClick={() => onRemove(l.id)}
+                  aria-label="Remover gasto"
+                  className="text-ink/40 hover:text-orange-dark px-1 shrink-0"
+                >
+                  ×
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+      ) : null}
     </div>
   );
 }
