@@ -89,6 +89,27 @@ export type WeekDay = {
   created_at: string;
 };
 
+export type GameCategory = {
+  id: string;
+  name: string;
+  sort_order: number;
+  created_at: string;
+};
+
+export type Game = {
+  id: string;
+  category_id: string | null;
+  title: string;
+  description: string | null;
+  age_range: string | null;
+  cover_image_path: string | null;
+  video_url: string | null;
+  pdf_path: string | null;
+  instructions: string | null;
+  sort_order: number;
+  created_at: string;
+};
+
 type Relationships = { Relationships: [] };
 
 export type Database = {
@@ -138,6 +159,16 @@ export type Database = {
         Row: WeekDay;
         Insert: Partial<WeekDay>;
         Update: Partial<WeekDay>;
+      } & Relationships;
+      game_categories: {
+        Row: GameCategory;
+        Insert: Partial<GameCategory>;
+        Update: Partial<GameCategory>;
+      } & Relationships;
+      games: {
+        Row: Game;
+        Insert: Partial<Game>;
+        Update: Partial<Game>;
       } & Relationships;
     };
     Views: Record<string, never>;

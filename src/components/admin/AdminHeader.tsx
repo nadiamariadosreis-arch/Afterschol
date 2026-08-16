@@ -9,6 +9,12 @@ export function AdminHeader() {
       </Link>
 
       <nav className="flex items-center gap-6 text-[15px] font-body">
+        <Link href="/admin/jogos" className="text-ink/80 hover:text-moss">
+          Jogos
+        </Link>
+        <Link href="/admin/categorias" className="text-ink/80 hover:text-moss">
+          Categorias
+        </Link>
         <Link href="/admin/virtudes" className="text-ink/80 hover:text-moss">
           Virtudes
         </Link>

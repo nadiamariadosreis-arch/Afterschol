@@ -53,7 +53,8 @@ export function Cover({
     );
   }
 
-  const palette = TRACK_PALETTES[trackSlug] ?? TRACK_PALETTES.letras;
+  const palettes = Object.values(TRACK_PALETTES);
+  const palette = TRACK_PALETTES[trackSlug] ?? palettes[hashSeed(trackSlug) % palettes.length];
   const seed = hashSeed(trackSlug + mark);
   const x1 = 15 + (seed % 60);
   const y1 = 10 + ((seed >> 3) % 45);

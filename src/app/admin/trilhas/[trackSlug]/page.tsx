@@ -7,54 +7,12 @@ import { Badge } from "@/components/ui/Badge";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Cover } from "@/components/member/Cover";
 import { PdfUploadField } from "@/components/admin/PdfUploadField";
+import { MarkdownHint, GUIDE_MARKDOWN_PLACEHOLDER } from "@/components/admin/MarkdownHint";
 import { coverImageUrl } from "@/lib/supabase/storage";
 import type { Virtue, Week } from "@/lib/supabase/types";
 import { createWeekAction, updateWeekAction, uploadTrackCoverAction } from "../actions";
 
 type WeekWithVirtue = Week & { virtues: Pick<Virtue, "name" | "number"> | null };
-
-const GUIDE_PLACEHOLDER = `# Guia dos Pais — Semana 1
-Volume 1 — Gratidão | Livro: "O Dia que Quase Foi Ruim"
-
-Bem-vindo(a) à primeira semana da nossa trilha!
-
-Parágrafo de introdução, texto livre.
-
-> Aviso importante que aparece destacado (ex: este material complementa, não substitui, a catequese paroquial).
-
-## O que seu filho vai viver esta semana
-- Primeiro ponto
-- Segundo ponto
-
-## Como usar este material
-- Primeiro ponto
-- Segundo ponto
-
-## Materiais desta semana
-- Livrinho
-- Cartão tal
-
-## A semana, dia a dia
-| Dia | O que fazer |
-| --- | --- |
-| Segunda | ... |
-| Terça | ... |
-
-## Uma palavra final
-Mensagem de encorajamento para fechar a semana.`;
-
-function GuideMarkdownHint() {
-  return (
-    <p className="text-ink/50 text-[13px]">
-      <code># Título</code> vira o cabeçalho, a linha logo abaixo vira o
-      subtítulo, <code>&gt; texto</code> vira um aviso destacado,{" "}
-      <code>## Seção</code> começa uma seção nova (listas curtas viram
-      etiquetas, listas longas viram lista com ícone, tabelas com{" "}
-      <code>|</code> viram tabela), e a última seção sempre vira o bloco de
-      encerramento.
-    </p>
-  );
-}
 
 export default async function TrackWeeksAdminPage({
   params,
@@ -167,12 +125,12 @@ export default async function TrackWeeksAdminPage({
               </label>
               <label className="flex flex-col gap-2 md:col-span-3">
                 <span className="text-[14px] text-ink/70">Guia dos Pais (Markdown)</span>
-                <GuideMarkdownHint />
+                <MarkdownHint />
                 <textarea
                   name="description"
                   defaultValue={week.description ?? ""}
                   rows={12}
-                  placeholder={GUIDE_PLACEHOLDER}
+                  placeholder={GUIDE_MARKDOWN_PLACEHOLDER}
                   className="border border-line bg-parchment rounded-sm px-3 py-2 font-mono text-[13px] text-ink outline-none focus:border-moss resize-y"
                 />
               </label>
@@ -253,11 +211,11 @@ export default async function TrackWeeksAdminPage({
 
           <label className="flex flex-col gap-2 md:col-span-2">
             <span className="text-[14px] text-ink/70">Guia dos Pais (Markdown, opcional)</span>
-            <GuideMarkdownHint />
+            <MarkdownHint />
             <textarea
               name="description"
               rows={12}
-              placeholder={GUIDE_PLACEHOLDER}
+              placeholder={GUIDE_MARKDOWN_PLACEHOLDER}
               className="border border-line bg-parchment rounded-sm px-3 py-2 font-mono text-[13px] text-ink outline-none focus:border-moss resize-y"
             />
           </label>

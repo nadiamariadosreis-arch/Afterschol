@@ -6,20 +6,16 @@ import { useState } from "react";
 import { logoutAction } from "@/app/actions";
 import { Logo } from "./Logo";
 
-type SidebarTrack = { slug: string; name: string; accessible: boolean };
-
 export function SidebarShell({
-  tracks,
   activeChildName,
   isAdmin,
 }: {
-  tracks: SidebarTrack[];
   activeChildName: string | null;
   isAdmin: boolean;
 }) {
   const [open, setOpen] = useState(false);
 
-  const nav = <NavContent tracks={tracks} activeChildName={activeChildName} isAdmin={isAdmin} />;
+  const nav = <NavContent activeChildName={activeChildName} isAdmin={isAdmin} />;
 
   return (
     <>
@@ -92,31 +88,6 @@ function HomeIcon() {
   );
 }
 
-function BookIcon() {
-  return (
-    <svg viewBox="0 0 20 20" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path
-        d="M3 4.5c2.5-1.2 5-.8 7 .5v11c-2-1.3-4.5-1.7-7-.5v-11Z"
-        strokeLinejoin="round"
-      />
-      <path
-        d="M17 4.5c-2.5-1.2-5-.8-7 .5v11c2-1.3 4.5-1.7 7-.5v-11Z"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function TrailIcon() {
-  return (
-    <svg viewBox="0 0 20 20" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5">
-      <path d="M3 17c3-6 4-9 7-13" strokeLinecap="round" />
-      <path d="M17 17c-3-6-4-9-7-13" strokeLinecap="round" />
-      <circle cx="10" cy="4" r="1.3" fill="currentColor" stroke="none" />
-    </svg>
-  );
-}
-
 function UserIcon() {
   return (
     <svg viewBox="0 0 20 20" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -127,11 +98,9 @@ function UserIcon() {
 }
 
 function NavContent({
-  tracks,
   activeChildName,
   isAdmin,
 }: {
-  tracks: SidebarTrack[];
   activeChildName: string | null;
   isAdmin: boolean;
 }) {
@@ -147,47 +116,8 @@ function NavContent({
             isActive("/dashboard") ? "bg-moss text-parchment" : "text-ink/80 hover:bg-parchment-dark"
           }`}
         >
-          <HomeIcon /> Início
+          <HomeIcon /> Catálogo de Jogos
         </Link>
-        <Link
-          href="/biblioteca"
-          className={`flex items-center gap-2.5 px-3 py-2 rounded-sm ${
-            isActive("/biblioteca") ? "bg-moss text-parchment" : "text-ink/80 hover:bg-parchment-dark"
-          }`}
-        >
-          <BookIcon /> Biblioteca
-        </Link>
-      </div>
-
-      <div className="flex flex-col gap-1">
-        <div className="px-3 text-[12px] tracking-[0.2em] uppercase text-moss mb-1">Trilhas</div>
-        {tracks.map((track) =>
-          track.accessible ? (
-            <Link
-              key={track.slug}
-              href={`/trilhas/${track.slug}`}
-              className={`flex items-center gap-2.5 px-3 py-2 rounded-sm ${
-                isActive(`/trilhas/${track.slug}`)
-                  ? "bg-moss text-parchment"
-                  : "text-ink/80 hover:bg-parchment-dark"
-              }`}
-            >
-              <TrailIcon /> {track.name}
-            </Link>
-          ) : (
-            <span
-              key={track.slug}
-              className="flex items-center gap-2.5 px-3 py-2 rounded-sm text-ink/35 justify-between"
-            >
-              <span className="flex items-center gap-2.5">
-                <TrailIcon /> {track.name}
-              </span>
-              <span className="text-[12px] border border-line rounded-full px-2 py-0.5 shrink-0">
-                bloqueada
-              </span>
-            </span>
-          ),
-        )}
       </div>
 
       <div className="flex flex-col gap-1 mt-auto">

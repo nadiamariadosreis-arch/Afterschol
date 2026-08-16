@@ -10,3 +10,7 @@ export function hasAccessToTrack(entitlementCodes: ProductCode[], track: Pick<Tr
 export function hasAccessToProduct(entitlementCodes: ProductCode[], productCode: ProductCode) {
   return entitlementCodes.includes("pacote_completo") || entitlementCodes.includes(productCode);
 }
+
+export function hasAccessToGames(entitlementCodes: ProductCode[]) {
+  return entitlementCodes.includes("pacote_completo");
+}
