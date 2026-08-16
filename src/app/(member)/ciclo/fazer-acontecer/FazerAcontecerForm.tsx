@@ -108,6 +108,7 @@ export function FazerAcontecerForm({ cycleId, initial }: { cycleId: string; init
                 <div className="flex-1 min-w-[180px]">
                   <span className="text-[12px] uppercase tracking-wide text-ink/40 font-semibold">{ORIGEM_LABEL[item.origem]}</span>
                   <p className="text-[15px] text-ink">{item.descricao}</p>
+                  {item.dia_vencimento ? <span className="text-[12px] text-ink/50">Vence dia {item.dia_vencimento}</span> : null}
                 </div>
                 {item.valor ? <span className="text-[14px] text-ink/70">{formatBRL(item.valor)}</span> : null}
                 {item.executado ? (

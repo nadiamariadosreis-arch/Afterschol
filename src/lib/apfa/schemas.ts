@@ -34,6 +34,11 @@ const divida = z.object({
   dolorosa: z.boolean(),
   origem_pagamento: z.string(),
   quitada: z.boolean(),
+  negociada: z.enum(["sim", "nao", ""]).default(""),
+  forma_pagamento: z.enum(["parcelado", "avista", ""]).default(""),
+  data_pagamento: z.string().default(""),
+  entra_fazer_acontecer: z.boolean().default(false),
+  valor_fazer_acontecer: z.number().nonnegative().nullable().default(null),
 });
 
 const itemMes = z.object({
@@ -96,6 +101,7 @@ const execucaoItem = z.object({
   valor: z.number().nonnegative(),
   executado: z.boolean(),
   data: z.string().nullable(),
+  dia_vencimento: z.number().nullable().default(null),
 });
 
 export const fazerAcontecerSchema = z.object({

@@ -144,23 +144,33 @@ export function mesclarItensMesComEventos(itensAtuais: ItemMes[], eventos: Event
   return [...itensAtuais, ...faltando];
 }
 
+function diaDoMes(data: string): number | null {
+  if (!data) return null;
+  const dia = parseInt(data.slice(8, 10), 10);
+  return Number.isFinite(dia) ? dia : null;
+}
+
 /**
  * Derives the Fazer Acontecer checklist from what was decided in Planejar —
- * one execution item per dívida ativa, item do mês, and fatura de cartão.
+ * um item de execução por dívida que a família marcou pra entrar este mês
+ * (dívida ainda em negociação fica de fora), item do mês e fatura de
+ * cartão — já ordenados pelo dia de vencimento (itens sem data definida
+ * vão para o final).
  */
 export function gerarItensExecucao(planejar: PlanejarData | null): ExecucaoItem[] {
   if (!planejar) return [];
   const itens: ExecucaoItem[] = [];
 
   for (const d of planejar.dividas) {
-    if (d.quitada) continue;
+    if (d.quitada || !d.entra_fazer_acontecer) continue;
     itens.push({
       id: `divida-${d.id}`,
       origem: "divida",
       descricao: `${d.nome}${d.origem_pagamento ? ` (${d.origem_pagamento})` : ""}`,
-      valor: d.valor,
+      valor: d.valor_fazer_acontecer ?? d.valor,
       executado: false,
       data: null,
+      dia_vencimento: diaDoMes(d.data_pagamento),
     });
   }
 
@@ -173,6 +183,7 @@ export function gerarItensExecucao(planejar: PlanejarData | null): ExecucaoItem[
       valor: m.valor_estimado ?? 0,
       executado: false,
       data: null,
+      dia_vencimento: m.dia_pagamento,
     });
   }
 
@@ -184,10 +195,15 @@ export function gerarItensExecucao(planejar: PlanejarData | null): ExecucaoItem[
       valor: c.valor_ultima_fatura,
       executado: false,
       data: null,
+      dia_vencimento: null,
     });
   }
 
-  return itens;
+  return itens.sort((a, b) => {
+    if (a.dia_vencimento == null) return b.dia_vencimento == null ? 0 : 1;
+    if (b.dia_vencimento == null) return -1;
+    return a.dia_vencimento - b.dia_vencimento;
+  });
 }
 
 export type Envelope = {

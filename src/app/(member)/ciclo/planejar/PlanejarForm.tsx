@@ -308,7 +308,21 @@ function DividasTab({ dividas, setDividas }: { dividas: Divida[]; setDividas: (f
   function add() {
     setDividas((d) => [
       ...d,
-      { id: newId(), nome: "", valor: 0, juros: null, urgencia: "media", dolorosa: false, origem_pagamento: "", quitada: false },
+      {
+        id: newId(),
+        nome: "",
+        valor: 0,
+        juros: null,
+        urgencia: "media",
+        dolorosa: false,
+        origem_pagamento: "",
+        quitada: false,
+        negociada: "",
+        forma_pagamento: "",
+        data_pagamento: "",
+        entra_fazer_acontecer: false,
+        valor_fazer_acontecer: null,
+      },
     ]);
   }
 
@@ -382,6 +396,90 @@ function DividasTab({ dividas, setDividas }: { dividas: Divida[]; setDividas: (f
                 className="border border-line bg-cream rounded-lg px-3 py-2 text-[14px] outline-none focus:border-orange"
               />
             </label>
+            {!div.quitada ? (
+              <div className="sm:col-span-2 border-t border-line pt-3 mt-1 flex flex-col gap-3">
+                <span className="text-[13px] font-semibold text-ink/70">Negociação</span>
+                <p className="text-[12px] text-ink/50 -mt-1.5">
+                  Muitas famílias endividadas não vão pagar a dívida toda já no mês que vem — tudo bem,
+                  é só marcar como está agora.
+                </p>
+                <div className="grid sm:grid-cols-3 gap-3">
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-[13px] text-ink/70">Conseguiu negociar?</span>
+                    <select
+                      value={div.negociada}
+                      onChange={(e) => update(div.id, { negociada: e.target.value as Divida["negociada"] })}
+                      className="border border-line bg-cream rounded-lg px-3 py-2 text-[14px] outline-none focus:border-orange"
+                    >
+                      <option value="">Ainda não sei</option>
+                      <option value="sim">Sim</option>
+                      <option value="nao">Não, ainda preciso negociar</option>
+                    </select>
+                  </label>
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-[13px] text-ink/70">Forma de pagamento</span>
+                    <select
+                      value={div.forma_pagamento}
+                      onChange={(e) => update(div.id, { forma_pagamento: e.target.value as Divida["forma_pagamento"] })}
+                      className="border border-line bg-cream rounded-lg px-3 py-2 text-[14px] outline-none focus:border-orange"
+                    >
+                      <option value="">Selecione</option>
+                      <option value="parcelado">Parcelado (por mês)</option>
+                      <option value="avista">À vista (valor cheio)</option>
+                    </select>
+                  </label>
+                  <label className="flex flex-col gap-1.5">
+                    <span className="text-[13px] text-ink/70">Data definida p/ pagamento</span>
+                    <input
+                      type="date"
+                      value={div.data_pagamento}
+                      onChange={(e) => update(div.id, { data_pagamento: e.target.value })}
+                      className="border border-line bg-cream rounded-lg px-3 py-2 text-[14px] outline-none focus:border-orange"
+                    />
+                  </label>
+                </div>
+
+                {div.forma_pagamento ? (
+                  <div className="rounded-lg bg-cream border border-line px-4 py-3 flex flex-col gap-2.5">
+                    <label className="flex items-center gap-2 text-[14px] font-semibold text-ink">
+                      <input
+                        type="checkbox"
+                        checked={div.entra_fazer_acontecer}
+                        onChange={(e) =>
+                          update(div.id, {
+                            entra_fazer_acontecer: e.target.checked,
+                            valor_fazer_acontecer: e.target.checked ? (div.valor_fazer_acontecer ?? div.valor) : div.valor_fazer_acontecer,
+                          })
+                        }
+                      />
+                      Esta dívida entra no Fazer Acontecer deste mês
+                    </label>
+                    {div.entra_fazer_acontecer ? (
+                      <label className="flex flex-col gap-1.5 max-w-xs">
+                        <span className="text-[13px] text-ink/70">Valor que deve aparecer lá</span>
+                        <input
+                          type="number"
+                          min={0}
+                          step="0.01"
+                          value={div.valor_fazer_acontecer ?? ""}
+                          onChange={(e) =>
+                            update(div.id, { valor_fazer_acontecer: e.target.value ? parseFloat(e.target.value) : null })
+                          }
+                          className="border border-line bg-white rounded-lg px-3 py-2 text-[14px] outline-none focus:border-orange"
+                        />
+                        <span className="text-[12px] text-ink/50">
+                          Pode ser a parcela negociada — não precisa ser o valor total da dívida.
+                        </span>
+                      </label>
+                    ) : (
+                      <p className="text-[13px] text-ink/60">
+                        Não vai aparecer no checklist de execução deste mês — ainda em negociação.
+                      </p>
+                    )}
+                  </div>
+                ) : null}
+              </div>
+            ) : null}
             <div className="flex items-center gap-6 sm:col-span-2 mt-1">
               <label className="flex items-center gap-2 text-[14px]">
                 <input type="checkbox" checked={div.dolorosa} onChange={(e) => update(div.id, { dolorosa: e.target.checked })} />

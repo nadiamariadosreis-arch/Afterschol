@@ -25,6 +25,8 @@ export type AvaliarData = {
   completed_at: string | null;
 };
 
+export type FormaPagamentoDivida = "parcelado" | "avista" | "";
+
 export type Divida = {
   id: string;
   nome: string;
@@ -34,6 +36,16 @@ export type Divida = {
   dolorosa: boolean;
   origem_pagamento: string;
   quitada: boolean;
+  /** Conseguiu negociar o valor/condições dessa dívida com o credor? */
+  negociada: "sim" | "nao" | "";
+  forma_pagamento: FormaPagamentoDivida;
+  /** Data combinada para o pagamento, se já definida. */
+  data_pagamento: string;
+  /** Só entra no checklist do Fazer Acontecer deste mês se a família marcar isso — muitas famílias
+   * endividadas não vão pagar a dívida toda já no mês seguinte, ainda precisam negociar. */
+  entra_fazer_acontecer: boolean;
+  /** Valor que aparece no Fazer Acontecer — pode ser a parcela negociada, não o total da dívida. */
+  valor_fazer_acontecer: number | null;
 };
 
 export type MeioPagamento = "cartao" | "dinheiro" | "pix" | "debito" | "transferencia";
@@ -109,6 +121,8 @@ export type ExecucaoItem = {
   valor: number;
   executado: boolean;
   data: string | null;
+  /** Dia do mês (1-31) em que o item vence, usado para ordenar o checklist. Null quando não há vencimento definido (ex: fatura de cartão sem dia marcado). */
+  dia_vencimento: number | null;
 };
 
 export type FazerAcontecerData = {
