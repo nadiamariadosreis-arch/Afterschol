@@ -9,10 +9,11 @@ import {
   type ItemMes,
   type LancamentoEnvelope,
   type MeioPagamento,
+  type MotivoCompra,
   type PlanejarData,
   type ProcessoKey,
 } from "./types";
-import { MESES_LABEL } from "./processos";
+import { MESES_LABEL, PROCESSO_INFO } from "./processos";
 
 /** Data intelligence: returns the cycle (year, month) the platform is currently on. */
 export function currentCycleDate(now: Date = new Date()): { year: number; month: number } {
@@ -362,4 +363,114 @@ export function comparativo(
       diferencaPct: realPct - idealPct,
     };
   });
+}
+
+const FRASE_CONCENTRACAO: Record<ProcessoKey, string> = {
+  essencial: "despesas essenciais",
+  compromissos: "compromissos já assumidos",
+  futuro: "construir o futuro",
+  presente: "viver bem o presente",
+};
+
+/**
+ * Resumo curto e educativo — "Entenda sua situação" — construído a partir do
+ * comparativo Ideal x Real: onde a renda está concentrada, a margem
+ * disponível e os pontos de maior desequilíbrio (pra mais e pra menos).
+ * Linguagem sempre de diagnóstico, nunca de julgamento.
+ */
+export function entendaSuaSituacao(linhas: ComparativoLinha[], renda: number): string[] {
+  if (renda <= 0) return [];
+  const totalReal = linhas.reduce((sum, l) => sum + l.realValor, 0);
+  if (totalReal <= 0) return [];
+
+  const frases: string[] = [];
+  const saldoPct = ((renda - totalReal) / renda) * 100;
+
+  const maisConcentrado = [...linhas].sort((a, b) => b.realPct - a.realPct)[0];
+  if (maisConcentrado.realPct >= 40) {
+    frases.push(
+      `Hoje, a maior parte da sua renda está concentrada em ${FRASE_CONCENTRACAO[maisConcentrado.processo]} (${maisConcentrado.realPct.toFixed(0)}%).`,
+    );
+  }
+
+  if (saldoPct < 0) {
+    frases.push(
+      "Neste momento, o que sai está passando do que entra — vale olhar com calma onde existe espaço para ajustar.",
+    );
+  } else if (saldoPct < 10) {
+    frases.push("Sua renda atual consegue cobrir seus compromissos, mas existe pouca margem para decisões.");
+  } else {
+    frases.push(`Existe uma margem de cerca de ${saldoPct.toFixed(0)}% da renda ainda sem destino definido.`);
+  }
+
+  const ordenadoPorDiferenca = [...linhas].sort((a, b) => b.diferencaPct - a.diferencaPct);
+  const maisAcima = ordenadoPorDiferenca[0];
+  const maisAbaixo = ordenadoPorDiferenca[ordenadoPorDiferenca.length - 1];
+
+  if (maisAcima.diferencaPct > 5) {
+    frases.push(
+      `${PROCESSO_INFO[maisAcima.processo].titulo} merece atenção: hoje está recebendo uma parte maior da renda do que o combinado.`,
+    );
+  }
+
+  if (maisAbaixo.diferencaPct < -5 && maisAbaixo.processo !== maisAcima.processo) {
+    frases.push(
+      `Uma parte pequena da sua renda está sendo destinada a ${FRASE_CONCENTRACAO[maisAbaixo.processo]} — existe espaço para crescer aqui, se fizer sentido para a família.`,
+    );
+  }
+
+  return frases;
+}
+
+export type RevisaoCategoria = { processo: ProcessoKey; planejado: number; realizado: number; diferenca: number };
+
+/** Planejado x Realizado por processo — usa os mesmos envelopes já calculados no Acompanhar. */
+export function planejadoRealizadoPorProcesso(envelopes: Envelope[]): RevisaoCategoria[] {
+  const totais: Record<ProcessoKey, { planejado: number; realizado: number }> = {
+    essencial: { planejado: 0, realizado: 0 },
+    compromissos: { planejado: 0, realizado: 0 },
+    futuro: { planejado: 0, realizado: 0 },
+    presente: { planejado: 0, realizado: 0 },
+  };
+  for (const env of envelopes) {
+    totais[env.processo].planejado += env.orcado;
+    totais[env.processo].realizado += env.gasto;
+  }
+  return PROCESSO_ORDER.map((processo) => ({
+    processo,
+    planejado: totais[processo].planejado,
+    realizado: totais[processo].realizado,
+    diferenca: totais[processo].realizado - totais[processo].planejado,
+  }));
+}
+
+/** Sua margem financeira: renda menos as despesas e compromissos já planejados para o mês. */
+export function margemFinanceira(avaliar: AvaliarData | null, envelopes: Envelope[]): number {
+  const renda = avaliar?.renda_mensal ?? 0;
+  const totalPlanejado = envelopes.reduce((sum, e) => sum + e.orcado, 0);
+  return renda - totalPlanejado;
+}
+
+export type RendaFuturaComprometida = { parcelas: number; renda: number; percentual: number };
+
+/** Quanto da renda futura já está comprometido com parcelas — usa as parcelas já registradas no Avaliar. */
+export function rendaFuturaComprometida(avaliar: AvaliarData | null): RendaFuturaComprometida {
+  const renda = avaliar?.renda_mensal ?? 0;
+  const parcelas = (avaliar?.parcelas ?? []).reduce((sum, i) => sum + i.valor, 0);
+  return { parcelas, renda, percentual: renda > 0 ? (parcelas / renda) * 100 : 0 };
+}
+
+export type ResumoMotivo = { motivo: MotivoCompra; valor: number; quantidade: number };
+
+/** Padrão de motivo de compra nos lançamentos do mês — só considera os que foram classificados. */
+export function resumoPorMotivo(lancamentos: LancamentoEnvelope[]): ResumoMotivo[] {
+  const mapa = new Map<MotivoCompra, { valor: number; quantidade: number }>();
+  for (const l of lancamentos) {
+    if (!l.motivo) continue;
+    const atual = mapa.get(l.motivo) ?? { valor: 0, quantidade: 0 };
+    mapa.set(l.motivo, { valor: atual.valor + l.valor, quantidade: atual.quantidade + 1 });
+  }
+  return [...mapa.entries()]
+    .map(([motivo, v]) => ({ motivo, ...v }))
+    .sort((a, b) => b.valor - a.valor);
 }

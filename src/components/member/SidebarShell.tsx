@@ -97,6 +97,14 @@ function NavContent() {
 
       <div className="flex flex-col gap-1 mt-auto">
         <Link
+          href="/desafios"
+          className={`flex items-center gap-2.5 px-3 py-2 rounded-full font-semibold ${
+            isActive("/desafios") ? "bg-orange text-white" : "text-ink/80 hover:bg-cream-dark"
+          }`}
+        >
+          Desafios
+        </Link>
+        <Link
           href="/historico"
           className={`flex items-center gap-2.5 px-3 py-2 rounded-full font-semibold ${
             isActive("/historico") ? "bg-orange text-white" : "text-ink/80 hover:bg-cream-dark"

@@ -46,6 +46,13 @@ the code is the source of truth for exact data shapes.
   purchase — inviting the family by email if they don't have an account
   yet, or just flipping the flag if they already self-registered for the
   free Avaliar.
+- `/desafios` is a separate, ungated tab (not one of the 4 pilares) for
+  optional behavioral challenges. The fixed catalog (weekly/monthly) lives
+  in `src/lib/apfa/desafios.ts`; per-family progress (`iniciado_em` /
+  `concluido_em`) is its own table, `public.desafios_progresso`
+  (`supabase/migrations/0004_desafios.sql`), keyed by `family_id, chave` —
+  it doesn't live in `cycles` because challenges aren't scoped to a
+  monthly cycle.
 
 ## Conventions to keep
 

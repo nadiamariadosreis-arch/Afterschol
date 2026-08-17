@@ -82,6 +82,17 @@ export const URGENCIA_LABEL: Record<string, string> = {
   baixa: "Baixa",
 };
 
+export const MOTIVO_COMPRA_LABEL: Record<string, string> = {
+  necessidade: "Necessidade",
+  planejamento: "Planejamento",
+  conveniencia: "Conveniência",
+  prazer: "Prazer",
+  impulso: "Impulso",
+  ansiedade: "Ansiedade/estresse",
+  pressao_social: "Pressão social",
+  outro: "Outro",
+};
+
 export const MESES_LABEL = [
   "Janeiro",
   "Fevereiro",

@@ -117,12 +117,25 @@ export const fazerAcontecerSchema = z.object({
   completed_at: z.string().nullable(),
 });
 
+const motivoCompra = z.enum([
+  "necessidade",
+  "planejamento",
+  "conveniencia",
+  "prazer",
+  "impulso",
+  "ansiedade",
+  "pressao_social",
+  "outro",
+  "",
+]);
+
 const lancamentoEnvelope = z.object({
   id: z.string(),
   item_id: z.string(),
   valor: z.number().nonnegative(),
   data: z.string(),
   descricao: z.string(),
+  motivo: motivoCompra.default(""),
 });
 
 const diagnosticoProcesso = z.object({

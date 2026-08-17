@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { AutosaveIndicator } from "@/components/ui/AutosaveIndicator";
 import { useAutosave } from "@/lib/useAutosave";
 import { PROCESSO_INFO } from "@/lib/apfa/processos";
-import { comparativo } from "@/lib/apfa/calc";
+import { comparativo, entendaSuaSituacao } from "@/lib/apfa/calc";
 import { ResumoFinal } from "./ResumoFinal";
 import { formatBRL } from "@/lib/format";
 import { PROCESSO_ORDER, type AvaliarData, type ChecklistItem, type ProcessoKey } from "@/lib/apfa/types";
@@ -90,6 +90,8 @@ export function AvaliarForm({ cycleId, initial, initialPercentuais, cicloLabel }
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [percentuais, rendaMensal, contasFixas, gastosVariaveis, parcelas, gastosAnuais],
   );
+
+  const situacao = useMemo(() => entendaSuaSituacao(linhas, rendaMensal), [linhas, rendaMensal]);
 
   return (
     <form action={formAction} className="flex flex-col gap-8">
@@ -197,8 +199,8 @@ export function AvaliarForm({ cycleId, initial, initialPercentuais, cicloLabel }
                     {dentro
                       ? "✓ dentro do combinado"
                       : acima
-                        ? "▲ acima do ideal — está saindo mais dinheiro aqui do que deveria"
-                        : "▼ abaixo do ideal — sobra espaço aqui"}
+                        ? "Hoje, uma parte maior da sua renda está concentrada aqui"
+                        : "Existe espaço para ajustar esta categoria, se quiser"}
                   </span>
                 </div>
                 <span className="text-ink/60 text-[13px]">
@@ -217,6 +219,24 @@ export function AvaliarForm({ cycleId, initial, initialPercentuais, cicloLabel }
           })}
         </div>
       </Card>
+
+      {situacao.length ? (
+        <Card>
+          <h3 className="font-display-italic font-semibold text-[20px] text-ink mb-1">Entenda sua situação</h3>
+          <p className="text-ink/60 text-[14px] mb-4">
+            Um resumo simples do que os números acima mostram — não é uma nota, é um retrato de onde
+            sua renda está indo hoje.
+          </p>
+          <ul className="flex flex-col gap-2.5">
+            {situacao.map((frase, i) => (
+              <li key={i} className="text-[15px] text-ink/80 flex gap-2.5">
+                <span className="text-orange-dark shrink-0">•</span>
+                {frase}
+              </li>
+            ))}
+          </ul>
+        </Card>
+      ) : null}
 
       <ResumoFinal avaliar={avaliarPayload} linhas={linhas} cicloLabel={cicloLabel} />
 

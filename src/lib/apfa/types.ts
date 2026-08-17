@@ -71,6 +71,17 @@ export type EventoEspecial = {
   valor_estimado: number;
 };
 
+export type MotivoCompra =
+  | "necessidade"
+  | "planejamento"
+  | "conveniencia"
+  | "prazer"
+  | "impulso"
+  | "ansiedade"
+  | "pressao_social"
+  | "outro"
+  | "";
+
 /** Um gasto anotado num envelope (item da Organização do mês) durante o Acompanhar. */
 export type LancamentoEnvelope = {
   id: string;
@@ -79,6 +90,8 @@ export type LancamentoEnvelope = {
   valor: number;
   data: string;
   descricao: string;
+  /** Por que a compra foi feita — ajuda a família a perceber padrões, sem julgar. Opcional. */
+  motivo: MotivoCompra;
 };
 
 export type FaturaItem = {

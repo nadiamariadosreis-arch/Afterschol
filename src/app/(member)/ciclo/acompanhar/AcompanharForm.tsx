@@ -8,12 +8,14 @@ import { AutosaveIndicator } from "@/components/ui/AutosaveIndicator";
 import { useAutosave } from "@/lib/useAutosave";
 import { formatBRL } from "@/lib/format";
 import { gerarEnvelopes, type Envelope } from "@/lib/apfa/calc";
-import { PROCESSO_INFO, MEIO_PAGAMENTO_LABEL } from "@/lib/apfa/processos";
+import { PROCESSO_INFO, MEIO_PAGAMENTO_LABEL, MOTIVO_COMPRA_LABEL } from "@/lib/apfa/processos";
+import { RevisaoMensal } from "./RevisaoMensal";
 import {
   PROCESSO_ORDER,
   type AcompanharData,
   type AvaliarData,
   type LancamentoEnvelope,
+  type MotivoCompra,
   type PlanejarData,
   type ProcessoKey,
   type MotivoDesvio,
@@ -89,6 +91,8 @@ export function AcompanharForm({
         onUpdate={atualizarLancamento}
         onRemove={removerLancamento}
       />
+
+      <RevisaoMensal envelopes={envelopes} avaliar={avaliar} lancamentos={lancamentos} />
 
       <div>
         <h3 className="font-display-italic font-semibold text-[20px] text-ink mb-1">Diagnóstico por processo</h3>
@@ -277,12 +281,14 @@ function EnvelopesSection({
   const [data, setData] = useState("");
   const [valor, setValor] = useState("");
   const [descricao, setDescricao] = useState("");
+  const [motivo, setMotivo] = useState<MotivoCompra>("");
 
   function registrar() {
     if (!itemId || !valor) return;
-    onAdd({ item_id: itemId, valor: parseFloat(valor) || 0, data, descricao });
+    onAdd({ item_id: itemId, valor: parseFloat(valor) || 0, data, descricao, motivo });
     setValor("");
     setDescricao("");
+    setMotivo("");
   }
 
   return (
@@ -345,16 +351,33 @@ function EnvelopesSection({
                 + Registrar
               </Button>
             </div>
-            <label className="flex flex-col gap-1.5">
-              <span className="text-[12px] text-ink/60">O que foi (opcional)</span>
-              <input
-                type="text"
-                value={descricao}
-                onChange={(e) => setDescricao(e.target.value)}
-                placeholder="Ex: feira da semana"
-                className="border border-line bg-cream rounded-lg px-3 py-2 text-[14px] outline-none focus:border-orange"
-              />
-            </label>
+            <div className="grid sm:grid-cols-2 gap-2">
+              <label className="flex flex-col gap-1.5">
+                <span className="text-[12px] text-ink/60">O que foi (opcional)</span>
+                <input
+                  type="text"
+                  value={descricao}
+                  onChange={(e) => setDescricao(e.target.value)}
+                  placeholder="Ex: feira da semana"
+                  className="border border-line bg-cream rounded-lg px-3 py-2 text-[14px] outline-none focus:border-orange"
+                />
+              </label>
+              <label className="flex flex-col gap-1.5">
+                <span className="text-[12px] text-ink/60">Por que você fez essa compra? (opcional)</span>
+                <select
+                  value={motivo}
+                  onChange={(e) => setMotivo(e.target.value as MotivoCompra)}
+                  className="border border-line bg-cream rounded-lg px-3 py-2 text-[14px] outline-none focus:border-orange"
+                >
+                  <option value="">Selecione</option>
+                  {Object.entries(MOTIVO_COMPRA_LABEL).map(([valor, label]) => (
+                    <option key={valor} value={valor}>
+                      {label}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            </div>
           </Card>
 
           <div className="grid sm:grid-cols-2 gap-4">

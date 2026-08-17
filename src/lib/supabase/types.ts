@@ -33,6 +33,15 @@ export type CycleRow = {
   updated_at: string;
 };
 
+export type DesafioProgressoRow = {
+  id: string;
+  family_id: string;
+  chave: string;
+  iniciado_em: string;
+  concluido_em: string | null;
+  created_at: string;
+};
+
 type Relationships = { Relationships: [] };
 
 export type Database = {
@@ -47,6 +56,11 @@ export type Database = {
         Row: CycleRow;
         Insert: Partial<CycleRow> & { family_id: string; year: number; month: number };
         Update: Partial<CycleRow>;
+      } & Relationships;
+      desafios_progresso: {
+        Row: DesafioProgressoRow;
+        Insert: Partial<DesafioProgressoRow> & { family_id: string; chave: string };
+        Update: Partial<DesafioProgressoRow>;
       } & Relationships;
     };
     Views: Record<string, never>;
