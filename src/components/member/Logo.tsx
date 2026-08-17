@@ -1,13 +1,13 @@
 import Link from "next/link";
 
-export function Logo({ compact = false }: { compact?: boolean }) {
+export function Logo({ compact = false, light = false }: { compact?: boolean; light?: boolean }) {
   return (
     <Link href="/dashboard" className="flex items-center gap-3 shrink-0">
       <svg
         aria-hidden
         viewBox="0 0 48 48"
         className="w-9 h-9 shrink-0"
-        style={{ color: "#4a5d45" }}
+        style={{ color: light ? "#c9d9ba" : "#4a5d45" }}
       >
         <path
           d="M6 12c6-3 12-2 18 1v25c-6-3-12-4-18-1V12Z"
@@ -30,11 +30,19 @@ export function Logo({ compact = false }: { compact?: boolean }) {
         />
       </svg>
       <div>
-        <div className="font-display italic font-semibold text-ink text-[19px] leading-none">
+        <div
+          className={`font-display italic font-semibold text-[19px] leading-none ${
+            light ? "text-white" : "text-ink"
+          }`}
+        >
           Trilha das Virtudes
         </div>
         {!compact ? (
-          <div className="text-[10px] tracking-[0.14em] uppercase text-moss mt-1.5 hidden sm:block">
+          <div
+            className={`text-[10px] tracking-[0.14em] uppercase mt-1.5 hidden sm:block ${
+              light ? "text-white/50" : "text-moss"
+            }`}
+          >
             Histórias que formam o coração e fazem o conhecimento florescer
           </div>
         ) : null}

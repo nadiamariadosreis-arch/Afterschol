@@ -38,7 +38,7 @@ export default async function GameDetailPage({
 
   return (
     <div className="flex flex-col gap-8">
-      <Link href="/dashboard" className="text-flame text-[14px] hover:underline underline-offset-4 w-fit">
+      <Link href="/dashboard" className="text-navy text-[14px] hover:underline underline-offset-4 w-fit">
         ← Voltar ao catálogo
       </Link>
 
@@ -55,7 +55,7 @@ export default async function GameDetailPage({
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2 flex-wrap">
             {game.game_categories ? (
-              <span className="bg-flame text-white text-[12px] tracking-[0.08em] uppercase font-semibold rounded-full px-4 py-1">
+              <span className="bg-navy text-white text-[12px] tracking-[0.08em] uppercase font-semibold rounded-full px-4 py-1">
                 {game.game_categories.name}
               </span>
             ) : null}
@@ -77,7 +77,7 @@ export default async function GameDetailPage({
           {game.pdf_path ? (
             <a
               href={`/api/pdf-jogo/${game.id}?mode=download`}
-              className="inline-flex items-center justify-center gap-2 rounded-sm px-6 py-2.5 font-body text-[15px] tracking-wide bg-flame text-white hover:bg-flame-dark border border-flame transition-colors duration-150 w-fit"
+              className="inline-flex items-center justify-center gap-2 rounded-full px-6 py-2.5 font-body font-semibold text-[15px] bg-navy text-white hover:bg-ink transition-colors duration-150 w-fit"
             >
               <svg viewBox="0 0 20 20" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.6">
                 <path d="M10 3v10" strokeLinecap="round" />

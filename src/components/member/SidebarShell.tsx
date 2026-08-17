@@ -19,32 +19,14 @@ export function SidebarShell({
 
   return (
     <>
-      <header className="border-b border-line bg-parchment px-6 md:px-10 py-4 flex items-center justify-between gap-4">
-        <Logo />
-
-        <div className="hidden md:flex items-center gap-5 text-[14px] font-body">
-          {activeChildName ? (
-            <Link href="/perfis" className="text-ink/60 hover:text-moss">
-              {activeChildName} · trocar perfil
-            </Link>
-          ) : null}
-          {isAdmin ? (
-            <Link href="/admin" className="text-navy hover:text-moss">
-              Administração
-            </Link>
-          ) : null}
-          <form action={logoutAction}>
-            <button type="submit" className="text-terracotta hover:underline underline-offset-4">
-              Sair
-            </button>
-          </form>
-        </div>
-
+      {/* Mobile-only top bar — desktop uses the full-height sidebar instead */}
+      <header className="md:hidden border-b border-line bg-parchment px-6 py-4 flex items-center justify-between gap-4">
+        <Logo compact />
         <button
           type="button"
           onClick={() => setOpen(true)}
           aria-label="Abrir menu"
-          className="md:hidden text-ink border border-line rounded-sm px-3 py-1.5 text-[14px] shrink-0"
+          className="text-ink border border-line rounded-sm px-3 py-1.5 text-[14px] shrink-0"
         >
           Menu
         </button>
@@ -54,14 +36,17 @@ export function SidebarShell({
         <div className="md:hidden fixed inset-0 z-50 bg-ink/40" onClick={() => setOpen(false)}>
           {/* Clicks anywhere in the panel bubble up and close it too — every
               item here (nav link, logout button) is a "done, dismiss" action. */}
-          <div className="absolute left-0 top-0 bottom-0 w-72 bg-parchment border-r border-line p-6 overflow-y-auto">
+          <div
+            className="absolute left-0 top-0 bottom-0 w-72 bg-navy p-6 overflow-y-auto flex flex-col"
+            onClick={(e) => e.stopPropagation()}
+          >
             <div className="flex items-center justify-between mb-8">
-              <Logo compact />
+              <Logo compact light />
               <button
                 type="button"
                 onClick={() => setOpen(false)}
                 aria-label="Fechar menu"
-                className="text-ink/60 text-[20px] leading-none"
+                className="text-white/60 text-[20px] leading-none"
               >
                 ×
               </button>
@@ -72,7 +57,10 @@ export function SidebarShell({
       ) : null}
 
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex md:flex-col md:fixed md:left-0 md:top-[81px] md:bottom-0 md:w-64 md:border-r md:border-line md:bg-parchment md:px-6 md:py-8 md:overflow-y-auto">
+      <aside className="hidden md:flex md:flex-col md:fixed md:left-0 md:top-0 md:bottom-0 md:w-64 md:bg-navy md:px-6 md:py-8 md:overflow-y-auto">
+        <div className="mb-10">
+          <Logo compact light />
+        </div>
         {nav}
       </aside>
     </>
@@ -112,35 +100,34 @@ function NavContent({
       <div className="flex flex-col gap-1">
         <Link
           href="/dashboard"
-          className={`flex items-center gap-2.5 px-3 py-2 rounded-sm ${
-            isActive("/dashboard") ? "bg-flame text-white" : "text-ink/80 hover:bg-parchment-dark"
+          className={`flex items-center gap-2.5 px-3 py-2 rounded-full transition-colors ${
+            isActive("/dashboard") ? "bg-white text-navy font-semibold" : "text-white/70 hover:bg-white/10"
           }`}
         >
-          <HomeIcon /> Catálogo de Jogos
+          <HomeIcon /> Início
         </Link>
       </div>
 
       <div className="flex flex-col gap-1 mt-auto">
         <Link
           href="/conta"
-          className={`flex items-center gap-2.5 px-3 py-2 rounded-sm ${
-            isActive("/conta") ? "bg-flame text-white" : "text-ink/80 hover:bg-parchment-dark"
+          className={`flex items-center gap-2.5 px-3 py-2 rounded-full transition-colors ${
+            isActive("/conta") ? "bg-white text-navy font-semibold" : "text-white/70 hover:bg-white/10"
           }`}
         >
           <UserIcon /> Minha Conta
         </Link>
-        {/* Admin link, child switcher and sair live in the top header on
-            desktop; repeated here so the mobile drawer is self-contained. */}
-        <div className="md:hidden flex flex-col gap-1 mt-2 pt-2 border-t border-line">
+
+        <div className="flex flex-col gap-1 mt-2 pt-4 border-t border-white/10">
           {isAdmin ? (
-            <Link href="/admin" className="px-3 py-2 rounded-sm text-navy hover:bg-parchment-dark">
+            <Link href="/admin" className="px-3 py-2 rounded-full text-white/60 hover:bg-white/10 text-[14px]">
               Administração
             </Link>
           ) : null}
           {activeChildName ? (
             <Link
               href="/perfis"
-              className="px-3 py-2 rounded-sm text-ink/50 hover:bg-parchment-dark text-[14px]"
+              className="px-3 py-2 rounded-full text-white/50 hover:bg-white/10 text-[14px]"
             >
               {activeChildName} · trocar perfil
             </Link>
@@ -148,7 +135,7 @@ function NavContent({
           <form action={logoutAction}>
             <button
               type="submit"
-              className="w-full text-left px-3 py-2 rounded-sm text-terracotta hover:bg-parchment-dark"
+              className="w-full text-left px-3 py-2 rounded-full text-white/50 hover:bg-white/10 text-[14px]"
             >
               Sair
             </button>

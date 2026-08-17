@@ -4,8 +4,6 @@ import { createClient } from "@/lib/supabase/server";
 import { getActiveChildProfileId } from "@/lib/active-profile";
 import { hasAccessToGames } from "@/lib/entitlements";
 import { LinkButton } from "@/components/ui/Button";
-import { Cover } from "@/components/member/Cover";
-import { coverImageUrl } from "@/lib/supabase/storage";
 import type { Game, GameCategory, ProductCode } from "@/lib/supabase/types";
 import { GamesGrid } from "@/components/member/GamesGrid";
 
@@ -42,11 +40,9 @@ export default async function DashboardPage() {
     supabase.from("game_categories").select("*").order("sort_order"),
   ]);
 
-  const heroGame = (games ?? [])[0] ?? null;
-
   return (
     <div className="flex flex-col gap-10">
-      <HeroBanner childName={child.name} game={heroGame} />
+      <HeroBanner childName={child.name} />
       <GamesGrid games={games ?? []} categories={categories ?? []} />
     </div>
   );
@@ -76,7 +72,7 @@ function LockedState({
         <LinkButton
           href={product!.checkout_url!}
           variant="primary"
-          className="mt-2 !bg-flame !border-flame hover:!bg-flame-dark"
+          className="mt-2 !bg-navy !border-navy hover:!bg-ink"
         >
           Adquirir acesso
         </LinkButton>
@@ -85,56 +81,82 @@ function LockedState({
   );
 }
 
-function HeroBanner({ childName, game }: { childName: string; game: Game | null }) {
+function HeroBanner({ childName }: { childName: string }) {
   return (
-    <div className="relative overflow-hidden rounded-2xl min-h-[320px] md:min-h-[380px] flex items-end">
-      <div className="absolute inset-0">
-        {game ? (
-          <Cover
-            trackSlug={game.id}
-            mark={game.title.charAt(0)}
-            imageUrl={coverImageUrl(game.cover_image_path)}
-            className="absolute inset-0 w-full h-full rounded-none"
-          />
-        ) : (
-          <div
-            className="absolute inset-0"
-            style={{
-              background: [
-                "radial-gradient(circle at 80% 15%, #7a3a1a55, transparent 55%)",
-                "linear-gradient(135deg, #2b1810, #4a2313)",
-              ].join(", "),
-            }}
-          />
-        )}
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(0deg, rgba(20,12,8,0.92) 0%, rgba(20,12,8,0.55) 45%, rgba(20,12,8,0.15) 75%, transparent 100%)",
-          }}
-        />
-      </div>
-
-      <div className="relative p-8 md:p-12 max-w-xl">
+    <div className="relative overflow-hidden rounded-2xl bg-card border border-line grid md:grid-cols-[1.2fr_1fr] items-center">
+      <div className="p-8 md:p-12">
         <div className="font-body text-[13px] tracking-[0.28em] uppercase text-flame mb-3">
           Olá, {childName}!
         </div>
-        <h1 className="font-display italic font-semibold text-[32px] md:text-[42px] text-white leading-tight">
-          {game ? game.title : "Bem-vinda ao catálogo"}
+        <h1 className="font-heading font-bold text-[30px] md:text-[38px] text-navy leading-[1.15]">
+          Jogos que desenvolvem habilidades para a vida toda.
         </h1>
-        <p className="text-white/75 mt-4 text-[16px] max-w-sm">
-          {game?.description ?? "Escolha um jogo educativo para começar a brincar e aprender."}
+        <p className="text-ink/60 mt-4 text-[16px] max-w-sm">
+          Diversão com propósito. Formação que fica.
         </p>
-        {game ? (
-          <LinkButton
-            href={`/jogos/${game.id}`}
-            variant="primary"
-            className="mt-7 self-start !bg-flame !border-flame hover:!bg-flame-dark"
-          >
-            Ver jogo
-          </LinkButton>
-        ) : null}
+        <a
+          href="#jogos"
+          className="inline-flex items-center justify-center gap-2 rounded-full px-7 py-3 font-body font-semibold text-[15px] bg-navy text-white hover:bg-ink transition-colors mt-7"
+        >
+          Explorar jogos
+        </a>
+      </div>
+
+      <div className="relative hidden md:block h-full min-h-[300px]">
+        <HeroIllustration />
+      </div>
+    </div>
+  );
+}
+
+function HeroIllustration() {
+  return (
+    <div className="absolute inset-0">
+      <div
+        className="absolute w-16 h-16 rounded-full"
+        style={{ background: "#e4ecf7", top: "12%", left: "12%" }}
+      />
+      <div
+        className="absolute w-10 h-10 rounded-full"
+        style={{ background: "#faf0d6", top: "68%", left: "18%" }}
+      />
+      <div
+        className="absolute w-12 h-12 rounded-full"
+        style={{ background: "#f2e0e6", top: "20%", left: "78%" }}
+      />
+      <div
+        className="absolute w-8 h-8 rounded-full"
+        style={{ background: "#e7f1e2", top: "72%", left: "80%" }}
+      />
+
+      <div
+        className="absolute rounded-2xl shadow-lg flex items-center justify-center"
+        style={{
+          width: "180px",
+          height: "180px",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%) rotate(-4deg)",
+          background: "linear-gradient(135deg, #f7e3da, #f2e0e6)",
+        }}
+      >
+        <svg viewBox="0 0 48 48" className="w-16 h-16" style={{ color: "#a15230" }}>
+          <path
+            d="M6 12c6-3 12-2 18 1v25c-6-3-12-4-18-1V12Z"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinejoin="round"
+          />
+          <path
+            d="M42 12c-6-3-12-2-18 1v25c6-3 12-4 18-1V12Z"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinejoin="round"
+          />
+          <path d="M24 13v25" stroke="currentColor" strokeWidth="1.2" />
+        </svg>
       </div>
     </div>
   );
