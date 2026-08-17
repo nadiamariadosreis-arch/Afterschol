@@ -2,6 +2,7 @@ import { requireMember, temAcessoPago } from "@/lib/auth";
 import { Card } from "@/components/ui/Card";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ChangePasswordForm } from "./ChangePasswordForm";
+import { EditFamilyName } from "./EditFamilyName";
 
 export default async function AccountPage() {
   const profile = await requireMember();
@@ -11,6 +12,11 @@ export default async function AccountPage() {
   return (
     <div className="max-w-2xl mx-auto flex flex-col gap-8">
       <SectionHeading eyebrow="Minha Conta" title={profile.family_name ?? profile.email} />
+
+      <Card>
+        <h3 className="font-display-italic font-semibold text-[20px] text-ink mb-1">Nome da família</h3>
+        <EditFamilyName familyId={profile.id} nomeInicial={profile.family_name ?? ""} />
+      </Card>
 
       <Card>
         <h3 className="font-display-italic font-semibold text-[20px] text-ink mb-1">E-mail</h3>
