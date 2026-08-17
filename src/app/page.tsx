@@ -2,6 +2,7 @@ import Link from "next/link";
 import { LinkButton } from "@/components/ui/Button";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Sunburst } from "@/components/ui/Sunburst";
+import { CheckoutLink } from "@/components/CheckoutLink";
 
 const PROCESSOS = [
   { titulo: "Essencial", pct: "60%", resumo: "Manter a vida funcionando." },
@@ -116,14 +117,12 @@ export default function LandingPage() {
             medo.
           </p>
           <div className="mt-9 flex flex-wrap items-center gap-4">
-            <a
+            <CheckoutLink
               href={checkoutUrl}
-              target="_blank"
-              rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 rounded-full px-8 py-3.5 font-body font-bold text-[17px] bg-white text-orange-dark hover:bg-cream shadow-lg transition-colors"
             >
               Quero o Método completo — R$ 97 →
-            </a>
+            </CheckoutLink>
             <Link
               href="/cadastro"
               className="inline-flex items-center justify-center gap-2 rounded-full px-6 py-2.5 font-body font-semibold text-[15px] bg-transparent text-white border border-white/40 hover:border-white transition-colors"
@@ -241,14 +240,12 @@ export default function LandingPage() {
               Compra única — sem mensalidade, sem cobrança recorrente. O Avaliar continua grátis pra
               sempre, mesmo depois do ano acabar.
             </p>
-            <a
+            <CheckoutLink
               href={checkoutUrl}
-              target="_blank"
-              rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 rounded-full px-8 py-3.5 font-body font-bold text-[17px] bg-white text-orange-dark hover:bg-cream shadow-lg transition-colors mt-8"
             >
               Quero começar agora →
-            </a>
+            </CheckoutLink>
           </div>
         </section>
 
@@ -286,14 +283,12 @@ export default function LandingPage() {
             família colocar em prática este mês.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
-            <a
+            <CheckoutLink
               href={checkoutUrl}
-              target="_blank"
-              rel="noopener noreferrer"
               className="inline-flex items-center justify-center gap-2 rounded-full px-8 py-3.5 font-body font-bold text-[17px] bg-orange text-white hover:bg-orange-dark shadow-lg transition-colors"
             >
               Quero o Método completo — R$ 97 →
-            </a>
+            </CheckoutLink>
             <LinkButton href="/cadastro" variant="secondary">
               Testar grátis o Avaliar
             </LinkButton>
