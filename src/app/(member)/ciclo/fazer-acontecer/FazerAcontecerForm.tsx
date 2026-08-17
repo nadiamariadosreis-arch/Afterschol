@@ -4,6 +4,7 @@ import { useActionState, useRef, useState } from "react";
 import type { PointerEvent as ReactPointerEvent } from "react";
 import { salvarFazerAcontecerAction, autosalvarFazerAcontecerAction, type FazerAcontecerState } from "./actions";
 import { Card } from "@/components/ui/Card";
+import { Callout } from "@/components/ui/Callout";
 import { Button } from "@/components/ui/Button";
 import { AutosaveIndicator } from "@/components/ui/AutosaveIndicator";
 import { useAutosave } from "@/lib/useAutosave";
@@ -93,6 +94,13 @@ export function FazerAcontecerForm({ cycleId, initial }: { cycleId: string; init
     <form action={formAction} className="flex flex-col gap-6">
       <input type="hidden" name="cycleId" value={cycleId} />
       <input type="hidden" name="fazerAcontecer" value={JSON.stringify(payload)} readOnly />
+
+      {!reserva.guardado ? (
+        <Callout tone="orange" title="Lembrete">
+          Não deixe o aporte deste mês pra depois — assim que o dinheiro entrar, separe primeiro a
+          parte combinada pra reserva e pro futuro da família.
+        </Callout>
+      ) : null}
 
       <Card className="flex flex-col gap-4">
         <div>
