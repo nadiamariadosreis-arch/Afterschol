@@ -13,7 +13,7 @@ export default function ConfirmarCadastroPage() {
             tipo="signup"
             pedirEmail
             destino="/dashboard"
-            descricao="Digite o e-mail que você cadastrou e o código de 6 dígitos que mandamos pra ele."
+            descricao="Digite o e-mail que você cadastrou e o código que mandamos pra ele."
           />
         </Card>
       </div>

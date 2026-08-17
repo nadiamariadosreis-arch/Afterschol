@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import type { EmailOtpType } from "@supabase/supabase-js";
 
 /**
- * Confirma um código de 6 dígitos (recuperação de senha, convite ou
+ * Confirma o código recebido por e-mail (recuperação de senha, convite ou
  * confirmação de cadastro) em vez de depender de um link clicável — apps de
  * e-mail (o Gmail no Android é o mais comum) às vezes abrem o link sozinhos
  * pra escanear se é seguro antes da pessoa clicar, o que "gasta" o link de
@@ -72,13 +72,13 @@ export function VerificarCodigoForm({
       ) : null}
 
       <label className="flex flex-col gap-2">
-        <span className="text-[15px] text-ink/80">Código de 6 dígitos</span>
+        <span className="text-[15px] text-ink/80">Código recebido por e-mail</span>
         <input
           type="text"
           inputMode="numeric"
           autoComplete="one-time-code"
           required
-          maxLength={6}
+          maxLength={12}
           value={codigo}
           onChange={(e) => setCodigo(e.target.value.replace(/\D/g, ""))}
           className="border border-line bg-cream rounded-xl px-4 py-2.5 font-body text-ink outline-none focus:border-orange tracking-[0.3em] text-center text-[20px]"

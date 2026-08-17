@@ -38,7 +38,7 @@ export default function ForgotPasswordPage() {
               emailInicial={email}
               pedirEmail={false}
               destino="/redefinir-senha"
-              descricao={`Se ${email} estiver cadastrado, chega um código de 6 dígitos em instantes. Digite ele abaixo.`}
+              descricao={`Se ${email} estiver cadastrado, chega um código em instantes. Digite ele abaixo.`}
             />
           ) : (
             <form onSubmit={handleSubmit} className="flex flex-col gap-5">

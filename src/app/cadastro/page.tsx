@@ -29,7 +29,7 @@ export default function CadastroPage() {
               emailInicial={state.email}
               pedirEmail={false}
               destino="/dashboard"
-              descricao="Quase lá! Mandamos um código de 6 dígitos pro seu e-mail — digite ele abaixo pra ativar sua conta."
+              descricao="Quase lá! Mandamos um código pro seu e-mail — digite ele abaixo pra ativar sua conta."
             />
           ) : (
             <form action={formAction} className="flex flex-col gap-5">
