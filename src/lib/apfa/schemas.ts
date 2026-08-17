@@ -138,6 +138,13 @@ const lancamentoEnvelope = z.object({
   motivo: motivoCompra.default(""),
 });
 
+const entradaRegistrada = z.object({
+  id: z.string(),
+  data: z.string(),
+  valor: z.number().nonnegative(),
+  origem: z.string(),
+});
+
 const diagnosticoProcesso = z.object({
   deu_certo: z.string(),
   nao_deu_certo: z.string(),
@@ -158,5 +165,6 @@ export const acompanharSchema = z.object({
   imprevistos: z.string(),
   proxima_reuniao_confirmada: z.enum(["sim", "nao", ""]),
   lancamentos: z.array(lancamentoEnvelope).default([]),
+  entradas: z.array(entradaRegistrada).default([]),
   completed_at: z.string().nullable(),
 });

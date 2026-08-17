@@ -7,13 +7,14 @@ import { Button } from "@/components/ui/Button";
 import { AutosaveIndicator } from "@/components/ui/AutosaveIndicator";
 import { useAutosave } from "@/lib/useAutosave";
 import { formatBRL } from "@/lib/format";
-import { gerarEnvelopes, type Envelope } from "@/lib/apfa/calc";
+import { gerarEnvelopes, contasVencendoEm7Dias, type Envelope } from "@/lib/apfa/calc";
 import { PROCESSO_INFO, MEIO_PAGAMENTO_LABEL, MOTIVO_COMPRA_LABEL } from "@/lib/apfa/processos";
 import { RevisaoMensal } from "./RevisaoMensal";
 import {
   PROCESSO_ORDER,
   type AcompanharData,
   type AvaliarData,
+  type EntradaRegistrada,
   type LancamentoEnvelope,
   type MotivoCompra,
   type PlanejarData,
@@ -52,6 +53,11 @@ export function AcompanharForm({
   const [proximaReuniaoConfirmada, setProximaReuniaoConfirmada] = useState(initial.proxima_reuniao_confirmada);
   // Ciclos salvos antes desse campo existir não têm lancamentos — cai pra lista vazia.
   const [lancamentos, setLancamentos] = useState<LancamentoEnvelope[]>(initial.lancamentos ?? []);
+  // Idem para entradas.
+  const [entradas, setEntradas] = useState<EntradaRegistrada[]>(initial.entradas ?? []);
+  // Capturado uma vez, no primeiro render — evita recalcular "hoje" a cada
+  // renderização (o que quebraria a regra de pureza dos componentes).
+  const [hoje] = useState(() => new Date());
 
   const [completedAt] = useState(initial.completed_at);
   const payload: AcompanharData = {
@@ -61,6 +67,7 @@ export function AcompanharForm({
     imprevistos,
     proxima_reuniao_confirmada: proximaReuniaoConfirmada,
     lancamentos,
+    entradas,
     completed_at: completedAt,
   };
 
@@ -78,11 +85,26 @@ export function AcompanharForm({
     setLancamentos((atual) => atual.filter((l) => l.id !== id));
   }
 
+  function adicionarEntrada(e: Omit<EntradaRegistrada, "id">) {
+    setEntradas((atual) => [...atual, { ...e, id: newId() }]);
+  }
+  function removerEntrada(id: string) {
+    setEntradas((atual) => atual.filter((e) => e.id !== id));
+  }
+
   return (
     <form action={formAction} className="flex flex-col gap-6">
       <input type="hidden" name="cycleId" value={cycleId} />
       <input type="hidden" name="acompanhar" value={JSON.stringify(payload)} readOnly />
       <input type="hidden" name="percentuaisAtuais" value={JSON.stringify(percentuaisAtuais)} readOnly />
+
+      <EntradasSection
+        entradas={entradas}
+        planejar={planejar}
+        hoje={hoje}
+        onAdd={adicionarEntrada}
+        onRemove={removerEntrada}
+      />
 
       <EnvelopesSection
         envelopes={envelopes}
@@ -261,6 +283,132 @@ export function AcompanharForm({
         <AutosaveIndicator status={autosaveStatus} />
       </div>
     </form>
+  );
+}
+
+function EntradasSection({
+  entradas,
+  planejar,
+  hoje,
+  onAdd,
+  onRemove,
+}: {
+  entradas: EntradaRegistrada[];
+  planejar: PlanejarData | null;
+  hoje: Date;
+  onAdd: (e: Omit<EntradaRegistrada, "id">) => void;
+  onRemove: (id: string) => void;
+}) {
+  const [data, setData] = useState("");
+  const [valor, setValor] = useState("");
+  const [origem, setOrigem] = useState("");
+
+  function registrar() {
+    if (!valor) return;
+    onAdd({ data, valor: parseFloat(valor) || 0, origem });
+    setValor("");
+    setOrigem("");
+  }
+
+  const contasVencendo = contasVencendoEm7Dias(planejar, hoje);
+
+  return (
+    <div>
+      <h3 className="font-display-italic font-semibold text-[20px] text-ink mb-1">Entradas do mês</h3>
+      <p className="text-ink/60 text-[14px] mb-4">
+        Anote o dinheiro que vai entrando — salário, freela, algum extra. Assim que anotar, a
+        plataforma já mostra o que está vencendo nos próximos 7 dias, pra te ajudar a decidir o que
+        fazer com esse valor.
+      </p>
+
+      <Card className="flex flex-col gap-3 mb-4">
+        <span className="text-[13px] font-semibold text-ink/70">Anotar uma entrada</span>
+        <div className="grid sm:grid-cols-[1fr_1fr_1.3fr_auto] gap-2 items-end">
+          <label className="flex flex-col gap-1.5">
+            <span className="text-[12px] text-ink/60">Data</span>
+            <input
+              type="date"
+              value={data}
+              onChange={(e) => setData(e.target.value)}
+              className="border border-line bg-cream rounded-lg px-3 py-2 text-[14px] outline-none focus:border-orange"
+            />
+          </label>
+          <label className="flex flex-col gap-1.5">
+            <span className="text-[12px] text-ink/60">Valor</span>
+            <input
+              type="number"
+              min={0}
+              step="0.01"
+              value={valor}
+              onChange={(e) => setValor(e.target.value)}
+              className="border border-line bg-cream rounded-lg px-3 py-2 text-[14px] outline-none focus:border-orange"
+            />
+          </label>
+          <label className="flex flex-col gap-1.5">
+            <span className="text-[12px] text-ink/60">De onde veio (opcional)</span>
+            <input
+              type="text"
+              value={origem}
+              onChange={(e) => setOrigem(e.target.value)}
+              placeholder="Ex: salário, freela, extra"
+              className="border border-line bg-cream rounded-lg px-3 py-2 text-[14px] outline-none focus:border-orange"
+            />
+          </label>
+          <Button type="button" onClick={registrar} className="shrink-0">
+            + Registrar
+          </Button>
+        </div>
+      </Card>
+
+      {entradas.length ? (
+        <Card className="flex flex-col gap-2 mb-4">
+          {entradas.map((e) => (
+            <div key={e.id} className="flex items-center justify-between text-[14px] border-b border-line pb-2 last:border-0 last:pb-0">
+              <span className="text-ink/70">
+                {e.data ? new Date(e.data + "T00:00:00").toLocaleDateString("pt-BR") : "Sem data"}
+                {e.origem ? ` · ${e.origem}` : ""}
+              </span>
+              <div className="flex items-center gap-3">
+                <span className="font-semibold text-mint">{formatBRL(e.valor)}</span>
+                <button
+                  type="button"
+                  onClick={() => onRemove(e.id)}
+                  aria-label="Remover entrada"
+                  className="text-ink/40 hover:text-orange-dark px-1"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          ))}
+        </Card>
+      ) : null}
+
+      {entradas.length ? (
+        <Card>
+          <h4 className="font-display-italic font-semibold text-[16px] text-ink mb-1">Contas vencendo nos próximos 7 dias</h4>
+          <p className="text-ink/55 text-[13px] mb-3">
+            Puxado direto da Organização do mês, pra você ter noção do que já está por vir.
+          </p>
+          {contasVencendo.length === 0 ? (
+            <p className="text-ink/60 text-[14px]">Nenhuma conta vencendo nos próximos 7 dias.</p>
+          ) : (
+            <div className="flex flex-col gap-2">
+              {contasVencendo.map((c) => (
+                <div key={c.id} className="flex items-center justify-between text-[14px]">
+                  <span className="text-ink/75">
+                    {c.nome} <span className="text-ink/45">· {PROCESSO_INFO[c.processo].titulo}</span>
+                  </span>
+                  <span className="text-[13px] font-semibold text-orange-dark">
+                    {c.diasRestantes === 0 ? "vence hoje" : c.diasRestantes === 1 ? "vence amanhã" : `vence em ${c.diasRestantes} dias`}
+                  </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </Card>
+      ) : null}
+    </div>
   );
 }
 

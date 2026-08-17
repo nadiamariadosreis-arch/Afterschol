@@ -94,6 +94,14 @@ export type LancamentoEnvelope = {
   motivo: MotivoCompra;
 };
 
+/** Uma entrada de dinheiro anotada no Acompanhar — salário, freela, extra... */
+export type EntradaRegistrada = {
+  id: string;
+  data: string;
+  valor: number;
+  origem: string;
+};
+
 export type FaturaItem = {
   id: string;
   descricao: string;
@@ -172,6 +180,8 @@ export type AcompanharData = {
   proxima_reuniao_confirmada: "sim" | "nao" | "";
   /** Gastos anotados dia a dia nos envelopes do mês (Organização do mês do Planejar). */
   lancamentos: LancamentoEnvelope[];
+  /** Entradas de dinheiro anotadas durante o mês. */
+  entradas: EntradaRegistrada[];
   completed_at: string | null;
 };
 
@@ -239,6 +249,7 @@ export function emptyAcompanhar(): AcompanharData {
     imprevistos: "",
     proxima_reuniao_confirmada: "",
     lancamentos: [],
+    entradas: [],
     completed_at: null,
   };
 }

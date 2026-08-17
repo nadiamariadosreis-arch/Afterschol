@@ -460,6 +460,33 @@ export function rendaFuturaComprometida(avaliar: AvaliarData | null): RendaFutur
   return { parcelas, renda, percentual: renda > 0 ? (parcelas / renda) * 100 : 0 };
 }
 
+export type ContaVencendo = { id: string; nome: string; processo: ProcessoKey; diaPagamento: number; diasRestantes: number };
+
+/**
+ * Itens da Organização do mês que vencem nos próximos 7 dias a partir de
+ * `hoje` — ajuda a família a ver, assim que uma entrada de dinheiro é
+ * anotada, o que já está por vir. Vira o mês automaticamente quando o dia
+ * de pagamento já passou neste mês.
+ */
+export function contasVencendoEm7Dias(planejar: PlanejarData | null, hoje: Date = new Date()): ContaVencendo[] {
+  if (!planejar) return [];
+  const hojeSemHora = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
+
+  return planejar.organizacao_mes
+    .filter((item) => !item.cortar && item.dia_pagamento != null && item.nome.trim())
+    .map((item) => {
+      const dia = item.dia_pagamento!;
+      let ocorrencia = new Date(hojeSemHora.getFullYear(), hojeSemHora.getMonth(), dia);
+      if (ocorrencia < hojeSemHora) {
+        ocorrencia = new Date(hojeSemHora.getFullYear(), hojeSemHora.getMonth() + 1, dia);
+      }
+      const diasRestantes = Math.round((ocorrencia.getTime() - hojeSemHora.getTime()) / (1000 * 60 * 60 * 24));
+      return { id: item.id, nome: item.nome, processo: item.processo, diaPagamento: dia, diasRestantes };
+    })
+    .filter((c) => c.diasRestantes >= 0 && c.diasRestantes <= 7)
+    .sort((a, b) => a.diasRestantes - b.diasRestantes);
+}
+
 export type ResumoMotivo = { motivo: MotivoCompra; valor: number; quantidade: number };
 
 /** Padrão de motivo de compra nos lançamentos do mês — só considera os que foram classificados. */
