@@ -44,7 +44,7 @@ export function GamesGrid({
       ) : null}
 
       {filtered.length > 0 ? (
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {filtered.map((game) => (
             <GameCard key={game.id} game={game} />
           ))}
@@ -71,8 +71,8 @@ function FilterChip({
       onClick={onClick}
       className={`px-4 py-1.5 rounded-full text-[13px] font-medium border transition-colors ${
         active
-          ? "bg-moss text-parchment border-moss"
-          : "bg-transparent text-ink/70 border-line hover:border-moss"
+          ? "bg-flame text-white border-flame"
+          : "bg-transparent text-ink/70 border-line hover:border-flame"
       }`}
     >
       {children}
@@ -84,28 +84,35 @@ function GameCard({ game }: { game: GameWithCategory }) {
   return (
     <Link
       href={`/jogos/${game.id}`}
-      className="group flex flex-col gap-2 rounded-sm overflow-hidden"
+      className="group relative aspect-video rounded-xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow"
     >
-      <div className="relative aspect-[3/4] rounded-sm overflow-hidden border border-line shadow-sm group-hover:shadow-md transition-shadow">
-        <Cover
-          trackSlug={game.id}
-          mark={game.title.charAt(0)}
-          imageUrl={coverImageUrl(game.cover_image_path)}
-          className="absolute inset-0 w-full h-full rounded-none"
-        />
-      </div>
-      <div>
-        <h3 className="font-heading font-semibold text-[15px] text-ink leading-snug line-clamp-2">
+      <Cover
+        trackSlug={game.id}
+        mark={game.title.charAt(0)}
+        imageUrl={coverImageUrl(game.cover_image_path)}
+        className="absolute inset-0 w-full h-full rounded-none scale-100 group-hover:scale-105 transition-transform duration-300"
+      />
+      <div
+        className="absolute inset-0"
+        style={{
+          background:
+            "linear-gradient(0deg, rgba(20,12,8,0.9) 0%, rgba(20,12,8,0.35) 55%, transparent 85%)",
+        }}
+      />
+
+      {game.game_categories ? (
+        <span className="absolute top-3 left-3 bg-flame text-white text-[11px] tracking-[0.1em] uppercase font-semibold px-3 py-1 rounded-full">
+          {game.game_categories.name}
+        </span>
+      ) : null}
+
+      <div className="absolute inset-x-0 bottom-0 p-4">
+        <h3 className="font-heading font-semibold text-[16px] text-white leading-snug line-clamp-2">
           {game.title}
         </h3>
-        <div className="flex items-center gap-2 mt-0.5">
-          {game.game_categories ? (
-            <span className="text-[12px] text-moss-dark">{game.game_categories.name}</span>
-          ) : null}
-          {game.age_range ? (
-            <span className="text-[12px] text-ink/40">{game.age_range}</span>
-          ) : null}
-        </div>
+        {game.age_range ? (
+          <span className="text-[12px] text-white/70 mt-0.5 block">{game.age_range}</span>
+        ) : null}
       </div>
     </Link>
   );

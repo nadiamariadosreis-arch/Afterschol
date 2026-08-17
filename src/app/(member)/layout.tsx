@@ -21,7 +21,7 @@ export default async function MemberLayout({ children }: { children: React.React
   return (
     <>
       <SidebarShell activeChildName={activeChildName} isAdmin={profile.role === "admin"} />
-      <main className="flex-1 md:pl-64 px-6 md:px-12 py-10 max-w-6xl w-full">{children}</main>
+      <main className="flex-1 md:pl-64 px-6 md:px-12 py-10 max-w-6xl w-full bg-cream">{children}</main>
     </>
   );
 }

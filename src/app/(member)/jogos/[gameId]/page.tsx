@@ -38,12 +38,12 @@ export default async function GameDetailPage({
 
   return (
     <div className="flex flex-col gap-8">
-      <Link href="/dashboard" className="text-moss text-[14px] hover:underline underline-offset-4 w-fit">
+      <Link href="/dashboard" className="text-flame text-[14px] hover:underline underline-offset-4 w-fit">
         ← Voltar ao catálogo
       </Link>
 
-      <div className="grid md:grid-cols-[280px_1fr] gap-8 items-start">
-        <div className="relative aspect-[3/4] rounded-sm overflow-hidden border border-line shadow-sm">
+      <div className="grid md:grid-cols-[320px_1fr] gap-8 items-start">
+        <div className="relative aspect-video rounded-xl overflow-hidden shadow-sm">
           <Cover
             trackSlug={game.id}
             mark={game.title.charAt(0)}
@@ -55,7 +55,7 @@ export default async function GameDetailPage({
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2 flex-wrap">
             {game.game_categories ? (
-              <span className="bg-moss/10 border border-moss/30 text-moss-dark text-[13px] rounded-full px-4 py-1">
+              <span className="bg-flame text-white text-[12px] tracking-[0.08em] uppercase font-semibold rounded-full px-4 py-1">
                 {game.game_categories.name}
               </span>
             ) : null}
@@ -77,7 +77,7 @@ export default async function GameDetailPage({
           {game.pdf_path ? (
             <a
               href={`/api/pdf-jogo/${game.id}?mode=download`}
-              className="inline-flex items-center justify-center gap-2 rounded-sm px-6 py-2.5 font-body text-[15px] tracking-wide bg-moss text-parchment hover:bg-moss-dark border border-moss transition-colors duration-150 w-fit"
+              className="inline-flex items-center justify-center gap-2 rounded-sm px-6 py-2.5 font-body text-[15px] tracking-wide bg-flame text-white hover:bg-flame-dark border border-flame transition-colors duration-150 w-fit"
             >
               <svg viewBox="0 0 20 20" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="1.6">
                 <path d="M10 3v10" strokeLinecap="round" />
@@ -91,7 +91,7 @@ export default async function GameDetailPage({
       </div>
 
       {game.video_url ? (
-        <section className="border border-line rounded-sm bg-card overflow-hidden">
+        <section className="border border-line rounded-2xl bg-card overflow-hidden">
           <div className="p-5 border-b border-line">
             <h2 className="font-heading font-semibold text-[18px] text-ink">Como jogar</h2>
           </div>

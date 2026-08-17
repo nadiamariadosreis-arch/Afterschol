@@ -113,7 +113,7 @@ function NavContent({
         <Link
           href="/dashboard"
           className={`flex items-center gap-2.5 px-3 py-2 rounded-sm ${
-            isActive("/dashboard") ? "bg-moss text-parchment" : "text-ink/80 hover:bg-parchment-dark"
+            isActive("/dashboard") ? "bg-flame text-white" : "text-ink/80 hover:bg-parchment-dark"
           }`}
         >
           <HomeIcon /> Catálogo de Jogos
@@ -124,7 +124,7 @@ function NavContent({
         <Link
           href="/conta"
           className={`flex items-center gap-2.5 px-3 py-2 rounded-sm ${
-            isActive("/conta") ? "bg-moss text-parchment" : "text-ink/80 hover:bg-parchment-dark"
+            isActive("/conta") ? "bg-flame text-white" : "text-ink/80 hover:bg-parchment-dark"
           }`}
         >
           <UserIcon /> Minha Conta

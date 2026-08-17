@@ -62,8 +62,8 @@ function LockedState({
   const canBuy = product?.available_for_sale && product.checkout_url;
 
   return (
-    <div className="rounded-sm border border-line bg-card p-10 md:p-16 text-center flex flex-col items-center gap-4">
-      <div className="font-body text-[13px] tracking-[0.28em] uppercase text-moss">
+    <div className="rounded-2xl border border-line bg-card p-10 md:p-16 text-center flex flex-col items-center gap-4">
+      <div className="font-body text-[13px] tracking-[0.28em] uppercase text-flame">
         Olá, {childName}!
       </div>
       <h1 className="font-display italic font-semibold text-[32px] text-ink">
@@ -73,7 +73,11 @@ function LockedState({
         Assim que o acesso for confirmado, todos os jogos aparecem aqui.
       </p>
       {canBuy ? (
-        <LinkButton href={product!.checkout_url!} variant="primary" className="mt-2">
+        <LinkButton
+          href={product!.checkout_url!}
+          variant="primary"
+          className="mt-2 !bg-flame !border-flame hover:!bg-flame-dark"
+        >
           Adquirir acesso
         </LinkButton>
       ) : null}
@@ -83,33 +87,8 @@ function LockedState({
 
 function HeroBanner({ childName, game }: { childName: string; game: Game | null }) {
   return (
-    <div className="relative overflow-hidden rounded-sm border border-line grid md:grid-cols-[1.1fr_1fr] bg-card">
-      <div
-        className="p-8 md:p-12 flex flex-col justify-center"
-        style={{
-          background: [
-            "radial-gradient(circle at 90% 10%, #eef2ec, transparent 55%)",
-            "linear-gradient(120deg, #ffffff, #f6f6f4)",
-          ].join(", "),
-        }}
-      >
-        <div className="font-body text-[13px] tracking-[0.28em] uppercase text-moss mb-3">
-          Olá, {childName}!
-        </div>
-        <h1 className="font-display italic font-semibold text-[34px] md:text-[40px] text-ink leading-tight">
-          {game ? game.title : "Bem-vinda ao catálogo"}
-        </h1>
-        <p className="text-ink/70 mt-4 text-[16px] max-w-sm">
-          {game?.description ?? "Escolha um jogo educativo para começar a brincar e aprender."}
-        </p>
-        {game ? (
-          <LinkButton href={`/jogos/${game.id}`} variant="primary" className="mt-7 self-start">
-            Ver jogo
-          </LinkButton>
-        ) : null}
-      </div>
-
-      <div className="relative h-56 md:h-auto">
+    <div className="relative overflow-hidden rounded-2xl min-h-[320px] md:min-h-[380px] flex items-end">
+      <div className="absolute inset-0">
         {game ? (
           <Cover
             trackSlug={game.id}
@@ -117,6 +96,44 @@ function HeroBanner({ childName, game }: { childName: string; game: Game | null 
             imageUrl={coverImageUrl(game.cover_image_path)}
             className="absolute inset-0 w-full h-full rounded-none"
           />
+        ) : (
+          <div
+            className="absolute inset-0"
+            style={{
+              background: [
+                "radial-gradient(circle at 80% 15%, #7a3a1a55, transparent 55%)",
+                "linear-gradient(135deg, #2b1810, #4a2313)",
+              ].join(", "),
+            }}
+          />
+        )}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(0deg, rgba(20,12,8,0.92) 0%, rgba(20,12,8,0.55) 45%, rgba(20,12,8,0.15) 75%, transparent 100%)",
+          }}
+        />
+      </div>
+
+      <div className="relative p-8 md:p-12 max-w-xl">
+        <div className="font-body text-[13px] tracking-[0.28em] uppercase text-flame mb-3">
+          Olá, {childName}!
+        </div>
+        <h1 className="font-display italic font-semibold text-[32px] md:text-[42px] text-white leading-tight">
+          {game ? game.title : "Bem-vinda ao catálogo"}
+        </h1>
+        <p className="text-white/75 mt-4 text-[16px] max-w-sm">
+          {game?.description ?? "Escolha um jogo educativo para começar a brincar e aprender."}
+        </p>
+        {game ? (
+          <LinkButton
+            href={`/jogos/${game.id}`}
+            variant="primary"
+            className="mt-7 self-start !bg-flame !border-flame hover:!bg-flame-dark"
+          >
+            Ver jogo
+          </LinkButton>
         ) : null}
       </div>
     </div>

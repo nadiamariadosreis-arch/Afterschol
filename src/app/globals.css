@@ -11,6 +11,9 @@
   --color-navy: #333a4d;
   --color-line: #e2e2e2;
   --color-card: #ffffff;
+  --color-flame: #e2632f;
+  --color-flame-dark: #c94f22;
+  --color-cream: #f7f1e6;
 
   --font-display: var(--font-playfair), serif;
   --font-heading: var(--font-inter), sans-serif;
