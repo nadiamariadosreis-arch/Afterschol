@@ -1,7 +1,5 @@
-import { redirect } from "next/navigation";
 import { requireFamily } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { getActiveChildProfileId } from "@/lib/active-profile";
 import { hasAccessToGames } from "@/lib/entitlements";
 import { LinkButton } from "@/components/ui/Button";
 import type { Game, GameCategory, ProductCode } from "@/lib/supabase/types";
@@ -11,24 +9,19 @@ type GameWithCategory = Game & { game_categories: Pick<GameCategory, "id" | "nam
 
 export default async function DashboardPage() {
   const profile = await requireFamily();
-  const activeChildId = await getActiveChildProfileId();
-  if (!activeChildId) redirect("/perfis");
-
   const supabase = await createClient();
 
-  const [{ data: entitlements }, { data: product }, { data: child }] = await Promise.all([
+  const [{ data: entitlements }, { data: product }] = await Promise.all([
     supabase.from("entitlements").select("product_code").eq("family_id", profile.id),
     supabase.from("products").select("*").eq("code", "pacote_completo").maybeSingle(),
-    supabase.from("child_profiles").select("*").eq("id", activeChildId).maybeSingle(),
   ]);
-
-  if (!child) redirect("/perfis");
 
   const entitlementCodes = (entitlements ?? []).map((e) => e.product_code) as ProductCode[];
   const accessible = hasAccessToGames(entitlementCodes);
+  const greeting = profile.full_name ?? profile.email;
 
   if (!accessible) {
-    return <LockedState childName={child.name} product={product} />;
+    return <LockedState greeting={greeting} product={product} />;
   }
 
   const [{ data: games }, { data: categories }] = await Promise.all([
@@ -42,17 +35,17 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-10">
-      <HeroBanner childName={child.name} />
+      <HeroBanner greeting={greeting} />
       <GamesGrid games={games ?? []} categories={categories ?? []} />
     </div>
   );
 }
 
 function LockedState({
-  childName,
+  greeting,
   product,
 }: {
-  childName: string;
+  greeting: string;
   product: { available_for_sale: boolean; checkout_url: string | null } | null | undefined;
 }) {
   const canBuy = product?.available_for_sale && product.checkout_url;
@@ -60,7 +53,7 @@ function LockedState({
   return (
     <div className="rounded-2xl border border-line bg-card p-10 md:p-16 text-center flex flex-col items-center gap-4">
       <div className="font-body text-[13px] tracking-[0.28em] uppercase text-flame">
-        Olá, {childName}!
+        Olá, {greeting}!
       </div>
       <h1 className="font-display italic font-semibold text-[32px] text-ink">
         Seu catálogo de jogos ainda não foi liberado
@@ -81,12 +74,12 @@ function LockedState({
   );
 }
 
-function HeroBanner({ childName }: { childName: string }) {
+function HeroBanner({ greeting }: { greeting: string }) {
   return (
     <div className="relative overflow-hidden rounded-2xl bg-card border border-line grid md:grid-cols-[1.2fr_1fr] items-center">
       <div className="p-8 md:p-12">
         <div className="font-body text-[13px] tracking-[0.28em] uppercase text-flame mb-3">
-          Olá, {childName}!
+          Olá, {greeting}!
         </div>
         <h1 className="font-heading font-bold text-[30px] md:text-[38px] text-navy leading-[1.15]">
           Jogos que desenvolvem habilidades para a vida toda.

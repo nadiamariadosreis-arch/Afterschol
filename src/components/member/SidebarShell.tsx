@@ -6,16 +6,10 @@ import { useState } from "react";
 import { logoutAction } from "@/app/actions";
 import { Logo } from "./Logo";
 
-export function SidebarShell({
-  activeChildName,
-  isAdmin,
-}: {
-  activeChildName: string | null;
-  isAdmin: boolean;
-}) {
+export function SidebarShell({ isAdmin }: { isAdmin: boolean }) {
   const [open, setOpen] = useState(false);
 
-  const nav = <NavContent activeChildName={activeChildName} isAdmin={isAdmin} />;
+  const nav = <NavContent isAdmin={isAdmin} />;
 
   return (
     <>
@@ -85,13 +79,7 @@ function UserIcon() {
   );
 }
 
-function NavContent({
-  activeChildName,
-  isAdmin,
-}: {
-  activeChildName: string | null;
-  isAdmin: boolean;
-}) {
+function NavContent({ isAdmin }: { isAdmin: boolean }) {
   const pathname = usePathname();
   const isActive = (href: string) => pathname === href || pathname.startsWith(href + "/");
 
@@ -122,14 +110,6 @@ function NavContent({
           {isAdmin ? (
             <Link href="/admin" className="px-3 py-2 rounded-full text-white/60 hover:bg-white/10 text-[14px]">
               Administração
-            </Link>
-          ) : null}
-          {activeChildName ? (
-            <Link
-              href="/perfis"
-              className="px-3 py-2 rounded-full text-white/50 hover:bg-white/10 text-[14px]"
-            >
-              {activeChildName} · trocar perfil
             </Link>
           ) : null}
           <form action={logoutAction}>
