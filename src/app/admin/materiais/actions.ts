@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { requireAdmin } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import type { Game } from "@/lib/supabase/types";
+import type { Material } from "@/lib/supabase/types";
 
 const IMAGE_EXTENSION: Record<string, string> = {
   "image/jpeg": "jpg",
@@ -13,9 +13,9 @@ const IMAGE_EXTENSION: Record<string, string> = {
   "image/webp": "webp",
 };
 
-async function uploadCover(gameId: string, file: File): Promise<string | null> {
+async function uploadCover(materialId: string, file: File): Promise<string | null> {
   const extension = IMAGE_EXTENSION[file.type] ?? "jpg";
-  const path = `jogos/${gameId}.${extension}`;
+  const path = `materiais/${materialId}.${extension}`;
   const bytes = new Uint8Array(await file.arrayBuffer());
 
   const admin = createAdminClient();
@@ -27,7 +27,7 @@ async function uploadCover(gameId: string, file: File): Promise<string | null> {
   return error ? null : path;
 }
 
-function readGameFields(formData: FormData) {
+function readMaterialFields(formData: FormData) {
   return {
     title: String(formData.get("title") ?? "").trim(),
     category_id: String(formData.get("categoryId") ?? "").trim() || null,
@@ -39,78 +39,80 @@ function readGameFields(formData: FormData) {
   };
 }
 
-export async function createGameAction(formData: FormData) {
+export async function createMaterialAction(formData: FormData) {
   await requireAdmin();
 
-  const fields = readGameFields(formData);
+  const fields = readMaterialFields(formData);
   const pdfPath = String(formData.get("pdfPath") ?? "").trim();
   if (!fields.title) return;
 
   const supabase = await createClient();
-  const { data: game, error } = await supabase
-    .from("games")
+  const { data: material, error } = await supabase
+    .from("materials")
     .insert({ ...fields, pdf_path: pdfPath || null })
     .select("id")
     .single();
 
-  if (error || !game) {
-    redirect(`/admin/jogos?error=${encodeURIComponent(error?.message ?? "Não foi possível criar o jogo.")}`);
+  if (error || !material) {
+    redirect(
+      `/admin/materiais?error=${encodeURIComponent(error?.message ?? "Não foi possível criar o material.")}`,
+    );
   }
 
   const cover = formData.get("cover") as File | null;
   if (cover && cover.size > 0) {
-    const path = await uploadCover(game.id, cover);
+    const path = await uploadCover(material.id, cover);
     if (path) {
       const admin = createAdminClient();
-      await admin.from("games").update({ cover_image_path: path }).eq("id", game.id);
+      await admin.from("materials").update({ cover_image_path: path }).eq("id", material.id);
     }
   }
 
-  revalidatePath("/admin/jogos");
+  revalidatePath("/admin/materiais");
   revalidatePath("/dashboard");
 }
 
-export async function updateGameAction(formData: FormData) {
+export async function updateMaterialAction(formData: FormData) {
   await requireAdmin();
 
-  const gameId = String(formData.get("gameId") ?? "");
-  if (!gameId) return;
+  const materialId = String(formData.get("materialId") ?? "");
+  if (!materialId) return;
 
-  const fields = readGameFields(formData);
+  const fields = readMaterialFields(formData);
   const pdfPath = String(formData.get("pdfPath") ?? "").trim();
 
-  const update: Partial<Game> = { ...fields };
+  const update: Partial<Material> = { ...fields };
   if (pdfPath) update.pdf_path = pdfPath;
 
   const supabase = await createClient();
-  const { error } = await supabase.from("games").update(update).eq("id", gameId);
+  const { error } = await supabase.from("materials").update(update).eq("id", materialId);
 
   if (error) {
-    redirect(`/admin/jogos?error=${encodeURIComponent(error.message)}`);
+    redirect(`/admin/materiais?error=${encodeURIComponent(error.message)}`);
   }
 
   const cover = formData.get("cover") as File | null;
   if (cover && cover.size > 0) {
-    const path = await uploadCover(gameId, cover);
+    const path = await uploadCover(materialId, cover);
     if (path) {
       const admin = createAdminClient();
-      await admin.from("games").update({ cover_image_path: path }).eq("id", gameId);
+      await admin.from("materials").update({ cover_image_path: path }).eq("id", materialId);
     }
   }
 
-  revalidatePath("/admin/jogos");
+  revalidatePath("/admin/materiais");
   revalidatePath("/dashboard");
 }
 
-export async function deleteGameAction(formData: FormData) {
+export async function deleteMaterialAction(formData: FormData) {
   await requireAdmin();
 
-  const gameId = String(formData.get("gameId") ?? "");
-  if (!gameId) return;
+  const materialId = String(formData.get("materialId") ?? "");
+  if (!materialId) return;
 
   const supabase = await createClient();
-  await supabase.from("games").delete().eq("id", gameId);
+  await supabase.from("materials").delete().eq("id", materialId);
 
-  revalidatePath("/admin/jogos");
+  revalidatePath("/admin/materiais");
   revalidatePath("/dashboard");
 }

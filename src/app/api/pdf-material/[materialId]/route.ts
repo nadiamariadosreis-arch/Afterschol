@@ -1,15 +1,15 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { hasAccessToGames } from "@/lib/entitlements";
+import { hasAccessToCatalog } from "@/lib/entitlements";
 import { watermarkPdf } from "@/lib/watermark";
-import type { Game, ProductCode } from "@/lib/supabase/types";
+import type { Material, ProductCode } from "@/lib/supabase/types";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ gameId: string }> },
+  { params }: { params: Promise<{ materialId: string }> },
 ) {
-  const { gameId } = await params;
+  const { materialId } = await params;
   const mode = request.nextUrl.searchParams.get("mode"); // "download" | null
 
   const supabase = await createClient();
@@ -25,13 +25,13 @@ export async function GET(
     .single();
   if (!profile) return NextResponse.json({ error: "Perfil não encontrado." }, { status: 403 });
 
-  const { data: game } = await supabase
-    .from("games")
+  const { data: material } = await supabase
+    .from("materials")
     .select("*")
-    .eq("id", gameId)
-    .returns<Game[]>()
+    .eq("id", materialId)
+    .returns<Material[]>()
     .maybeSingle();
-  if (!game) return NextResponse.json({ error: "Jogo não encontrado." }, { status: 404 });
+  if (!material) return NextResponse.json({ error: "Material não encontrado." }, { status: 404 });
 
   if (profile.role !== "admin") {
     const { data: entitlements } = await supabase
@@ -40,17 +40,17 @@ export async function GET(
       .eq("family_id", profile.id);
     const entitlementCodes = (entitlements ?? []).map((e) => e.product_code) as ProductCode[];
 
-    if (!hasAccessToGames(entitlementCodes)) {
-      return NextResponse.json({ error: "Sem acesso ao catálogo de jogos." }, { status: 403 });
+    if (!hasAccessToCatalog(entitlementCodes)) {
+      return NextResponse.json({ error: "Sem acesso ao portal." }, { status: 403 });
     }
   }
 
-  if (!game.pdf_path) {
+  if (!material.pdf_path) {
     return NextResponse.json({ error: "Arquivo não disponível." }, { status: 404 });
   }
 
   const admin = createAdminClient();
-  const { data: file, error } = await admin.storage.from("content").download(game.pdf_path);
+  const { data: file, error } = await admin.storage.from("content").download(material.pdf_path);
   if (error || !file) {
     return NextResponse.json({ error: "Não foi possível carregar o arquivo." }, { status: 500 });
   }
@@ -59,7 +59,7 @@ export async function GET(
   const label = `${profile.full_name ?? profile.email} · ${profile.email}`;
   const watermarked = await watermarkPdf(originalBytes, label);
 
-  const filename = `${game.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.pdf`;
+  const filename = `${material.title.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.pdf`;
 
   return new NextResponse(Buffer.from(watermarked), {
     headers: {

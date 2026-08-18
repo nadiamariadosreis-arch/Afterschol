@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { Card } from "@/components/ui/Card";
 import { Button } from "@/components/ui/Button";
 import { SectionHeading } from "@/components/ui/SectionHeading";
+import { Cover } from "@/components/member/Cover";
+import { coverImageUrl } from "@/lib/supabase/storage";
 import { createCategoryAction, deleteCategoryAction, updateCategoryAction } from "./actions";
 
 export default async function CategoriesAdminPage({
@@ -12,13 +14,13 @@ export default async function CategoriesAdminPage({
   const { error: saveError } = await searchParams;
   const supabase = await createClient();
   const { data: categories } = await supabase
-    .from("game_categories")
+    .from("categories")
     .select("*")
     .order("sort_order");
 
   return (
     <div>
-      <SectionHeading eyebrow="Jogos" title="Categorias" />
+      <SectionHeading eyebrow="Portal de Catequese" title="Categorias" />
 
       {saveError ? (
         <div className="mb-6 bg-terracotta/10 border border-terracotta/40 rounded-sm px-5 py-4">
@@ -28,13 +30,20 @@ export default async function CategoriesAdminPage({
       ) : null}
 
       <p className="text-ink/60 text-[14px] mb-6">
-        As categorias organizam as prateleiras/filtros do catálogo de jogos
-        (ex: Atenção, Memória). A ordem aqui define a ordem de exibição.
+        As categorias são as &quot;pastas&quot; que os pais veem primeiro (ex: Pré
+        Eucaristia, Memorização, Natal). Cada uma pode ter sua própria capa.
+        A ordem aqui define a ordem de exibição.
       </p>
 
       <div className="flex flex-col gap-3 mb-10">
         {(categories ?? []).map((category) => (
-          <Card key={category.id} className="flex items-center gap-3 flex-wrap !p-4">
+          <Card key={category.id} className="flex items-center gap-4 flex-wrap !p-4">
+            <Cover
+              trackSlug={category.id}
+              mark={category.name.charAt(0)}
+              imageUrl={coverImageUrl(category.cover_image_path)}
+              className="w-20 h-20 shrink-0 rounded-sm"
+            />
             <form action={updateCategoryAction} className="flex items-center gap-3 flex-1 flex-wrap">
               <input type="hidden" name="categoryId" value={category.id} />
               <input
@@ -49,6 +58,12 @@ export default async function CategoriesAdminPage({
                 name="sortOrder"
                 defaultValue={category.sort_order}
                 className="w-20 border border-line bg-parchment rounded-sm px-3 py-2 font-body text-ink outline-none focus:border-moss"
+              />
+              <input
+                type="file"
+                name="cover"
+                accept="image/png,image/jpeg,image/webp"
+                className="text-[13px] max-w-[160px]"
               />
               <Button type="submit" variant="secondary" className="!px-4 !py-1.5 !text-[13px]">
                 Salvar
@@ -79,7 +94,7 @@ export default async function CategoriesAdminPage({
               type="text"
               name="name"
               required
-              placeholder="Ex: Atenção"
+              placeholder="Ex: Pré Eucaristia"
               className="border border-line bg-parchment rounded-sm px-3 py-2 font-body text-ink outline-none focus:border-moss"
             />
           </label>
@@ -91,6 +106,10 @@ export default async function CategoriesAdminPage({
               defaultValue={0}
               className="w-20 border border-line bg-parchment rounded-sm px-3 py-2 font-body text-ink outline-none focus:border-moss"
             />
+          </label>
+          <label className="flex flex-col gap-2">
+            <span className="text-[14px] text-ink/70">Capa (imagem, opcional)</span>
+            <input type="file" name="cover" accept="image/png,image/jpeg,image/webp" className="text-[13px]" />
           </label>
           <Button type="submit" variant="primary">
             Adicionar

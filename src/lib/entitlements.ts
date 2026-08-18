@@ -11,6 +11,6 @@ export function hasAccessToProduct(entitlementCodes: ProductCode[], productCode:
   return entitlementCodes.includes("pacote_completo") || entitlementCodes.includes(productCode);
 }
 
-export function hasAccessToGames(entitlementCodes: ProductCode[]) {
+export function hasAccessToCatalog(entitlementCodes: ProductCode[]) {
   return entitlementCodes.includes("pacote_completo");
 }

@@ -1,11 +1,9 @@
 import { requireFamily } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
-import { hasAccessToGames } from "@/lib/entitlements";
+import { hasAccessToCatalog } from "@/lib/entitlements";
 import { LinkButton } from "@/components/ui/Button";
-import type { Game, GameCategory, ProductCode } from "@/lib/supabase/types";
-import { GamesGrid } from "@/components/member/GamesGrid";
-
-type GameWithCategory = Game & { game_categories: Pick<GameCategory, "id" | "name"> | null };
+import type { ProductCode } from "@/lib/supabase/types";
+import { CategoriesGrid } from "@/components/member/CategoriesGrid";
 
 export default async function DashboardPage() {
   const profile = await requireFamily();
@@ -17,26 +15,28 @@ export default async function DashboardPage() {
   ]);
 
   const entitlementCodes = (entitlements ?? []).map((e) => e.product_code) as ProductCode[];
-  const accessible = hasAccessToGames(entitlementCodes);
+  const accessible = hasAccessToCatalog(entitlementCodes);
   const greeting = profile.full_name ?? profile.email;
 
   if (!accessible) {
     return <LockedState greeting={greeting} product={product} />;
   }
 
-  const [{ data: games }, { data: categories }] = await Promise.all([
-    supabase
-      .from("games")
-      .select("*, game_categories(id, name)")
-      .order("sort_order")
-      .returns<GameWithCategory[]>(),
-    supabase.from("game_categories").select("*").order("sort_order"),
+  const [{ data: categories }, { data: materials }] = await Promise.all([
+    supabase.from("categories").select("*").order("sort_order"),
+    supabase.from("materials").select("id, category_id"),
   ]);
+
+  const countByCategory = new Map<string, number>();
+  for (const m of materials ?? []) {
+    if (!m.category_id) continue;
+    countByCategory.set(m.category_id, (countByCategory.get(m.category_id) ?? 0) + 1);
+  }
 
   return (
     <div className="flex flex-col gap-10">
       <HeroBanner greeting={greeting} />
-      <GamesGrid games={games ?? []} categories={categories ?? []} />
+      <CategoriesGrid categories={categories ?? []} countByCategory={countByCategory} />
     </div>
   );
 }
@@ -56,10 +56,10 @@ function LockedState({
         Olá, {greeting}!
       </div>
       <h1 className="font-display italic font-semibold text-[32px] text-ink">
-        Seu catálogo de jogos ainda não foi liberado
+        Seu portal de catequese ainda não foi liberado
       </h1>
       <p className="text-ink/60 max-w-md">
-        Assim que o acesso for confirmado, todos os jogos aparecem aqui.
+        Assim que o acesso for confirmado, todos os materiais aparecem aqui.
       </p>
       {canBuy ? (
         <LinkButton
@@ -82,16 +82,16 @@ function HeroBanner({ greeting }: { greeting: string }) {
           Olá, {greeting}!
         </div>
         <h1 className="font-heading font-bold text-[30px] md:text-[38px] text-navy leading-[1.15]">
-          Jogos que desenvolvem habilidades para a vida toda.
+          Tudo para viver a catequese em casa e na sala de aula.
         </h1>
         <p className="text-ink/60 mt-4 text-[16px] max-w-sm">
-          Diversão com propósito. Formação que fica.
+          Apostilas, memorização, orações, lembrancinhas e muito mais — organizados por tema.
         </p>
         <a
-          href="#jogos"
+          href="#categorias"
           className="inline-flex items-center justify-center gap-2 rounded-full px-7 py-3 font-body font-semibold text-[15px] bg-navy text-white hover:bg-ink transition-colors mt-7"
         >
-          Explorar jogos
+          Explorar materiais
         </a>
       </div>
 

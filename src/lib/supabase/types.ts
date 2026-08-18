@@ -89,14 +89,15 @@ export type WeekDay = {
   created_at: string;
 };
 
-export type GameCategory = {
+export type Category = {
   id: string;
   name: string;
+  cover_image_path: string | null;
   sort_order: number;
   created_at: string;
 };
 
-export type Game = {
+export type Material = {
   id: string;
   category_id: string | null;
   title: string;
@@ -160,15 +161,15 @@ export type Database = {
         Insert: Partial<WeekDay>;
         Update: Partial<WeekDay>;
       } & Relationships;
-      game_categories: {
-        Row: GameCategory;
-        Insert: Partial<GameCategory>;
-        Update: Partial<GameCategory>;
+      categories: {
+        Row: Category;
+        Insert: Partial<Category>;
+        Update: Partial<Category>;
       } & Relationships;
-      games: {
-        Row: Game;
-        Insert: Partial<Game>;
-        Update: Partial<Game>;
+      materials: {
+        Row: Material;
+        Insert: Partial<Material>;
+        Update: Partial<Material>;
       } & Relationships;
     };
     Views: Record<string, never>;

@@ -3,13 +3,13 @@ import { createClient } from "@/lib/supabase/server";
 import { LinkButton } from "@/components/ui/Button";
 import { Logo } from "@/components/member/Logo";
 import { SkillIcon, paletteFor } from "@/components/member/skillVisuals";
-import type { GameCategory, Product } from "@/lib/supabase/types";
+import type { Category, Product } from "@/lib/supabase/types";
 
 export default async function LandingPage() {
   const supabase = await createClient();
 
   const [{ data: categories }, { data: product }] = await Promise.all([
-    supabase.from("game_categories").select("*").order("sort_order"),
+    supabase.from("categories").select("*").order("sort_order"),
     supabase.from("products").select("*").eq("code", "pacote_completo").maybeSingle(),
   ]);
 
@@ -32,22 +32,22 @@ export default async function LandingPage() {
           <div className="relative overflow-hidden rounded-2xl bg-card border border-line grid md:grid-cols-[1.2fr_1fr] items-center max-w-6xl mx-auto">
             <div className="p-8 md:p-14">
               <div className="font-body text-[13px] tracking-[0.28em] uppercase text-flame mb-3">
-                Plataforma cristã de jogos pedagógicos
+                Portal cristão de catequese
               </div>
               <h1 className="font-heading font-bold text-[34px] md:text-[46px] text-navy leading-[1.15]">
-                Jogos que desenvolvem habilidades para a vida toda.
+                Tudo para viver a catequese em casa e na sala de aula.
               </h1>
               <p className="text-ink/60 mt-4 text-[17px] max-w-md">
-                Diversão com propósito, formação que fica. Uma coleção de
-                jogos educativos pensados para desenvolver atenção, memória,
-                autocontrole e linguagem — com a fé no centro.
+                Apostilas de educação clássica, memorização, orações,
+                encontros prontos, lembrancinhas e materiais para cada tema
+                do ano litúrgico — organizados por categoria.
               </p>
               <div className="mt-8 flex flex-wrap gap-4">
                 <a
-                  href="#habilidades"
+                  href="#categorias"
                   className="inline-flex items-center justify-center gap-2 rounded-full px-7 py-3 font-body font-semibold text-[15px] bg-navy text-white hover:bg-ink transition-colors"
                 >
-                  Explorar jogos
+                  Explorar categorias
                 </a>
               </div>
             </div>
@@ -57,17 +57,17 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        <section id="habilidades" className="px-6 md:px-[8vw] py-10 md:py-16 max-w-6xl mx-auto">
+        <section id="categorias" className="px-6 md:px-[8vw] py-10 md:py-16 max-w-6xl mx-auto">
           <div className="font-body text-[13px] tracking-[0.28em] uppercase text-flame mb-3">
             Como funciona
           </div>
           <h2 className="font-heading font-bold text-[28px] md:text-[32px] text-navy mb-10">
-            Um jogo para cada habilidade que seu filho está desenvolvendo
+            Uma categoria para cada momento da catequese
           </h2>
 
           {categories && categories.length > 0 ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
-              {categories.map((c: GameCategory, i: number) => {
+              {categories.map((c: Category, i: number) => {
                 const palette = paletteFor(i);
                 return (
                   <div
@@ -88,9 +88,9 @@ export default async function LandingPage() {
           ) : null}
 
           <p className="text-ink/60 max-w-2xl mt-10">
-            Cada jogo vem com o material para baixar e imprimir, um vídeo
-            mostrando como jogar e instruções passo a passo — para você
-            escolher com confiança o jogo certo para o momento do seu filho.
+            Cada categoria reúne os materiais em PDF prontos para baixar e
+            imprimir — com vídeo explicando como usar e instruções passo a
+            passo, quando fizer sentido.
           </p>
         </section>
 
@@ -102,7 +102,7 @@ export default async function LandingPage() {
                   {product.name}
                 </h3>
                 <p className="text-white/70 mt-1 max-w-md">
-                  {product.description ?? "Acesso a todo o catálogo de jogos."}
+                  {product.description ?? "Acesso a todo o portal de catequese."}
                 </p>
               </div>
               <BuyButton product={product} />
