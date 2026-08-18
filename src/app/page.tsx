@@ -5,23 +5,23 @@ import { Sunburst } from "@/components/ui/Sunburst";
 import { CheckoutLink } from "@/components/CheckoutLink";
 
 const PROCESSOS = [
-  { titulo: "Essencial", pct: "60%", resumo: "Manter a vida funcionando." },
-  { titulo: "Compromissos", pct: "10%", resumo: "Resolver o que já foi assumido." },
-  { titulo: "Futuro", pct: "15%", resumo: "Construir o amanhã." },
-  { titulo: "Presente", pct: "15%", resumo: "Viver bem o hoje." },
+  { titulo: "Essencial", pct: "60%", resumo: "Aquilo que mantém sua casa funcionando." },
+  { titulo: "Compromissos", pct: "10%", resumo: "Aquilo que você já prometeu pagar." },
+  { titulo: "Futuro", pct: "15%", resumo: "Aquilo que você constrói hoje pra não depender do acaso amanhã." },
+  { titulo: "Presente", pct: "15%", resumo: "Porque organizar não é virar uma máquina de economizar." },
 ];
 
 const PILARES = [
   {
     n: "01",
     titulo: "Avaliar",
-    resumo: "Sentar uma vez, olhar o cenário real, sem julgamento.",
+    resumo: "Descubra onde você está — sem julgamento, só diagnóstico.",
     gratis: true,
   },
   {
     n: "02",
     titulo: "Planejar",
-    resumo: "Decidir o plano do mês, com um plano de ação real para o que dói.",
+    resumo: "Decida pra onde o dinheiro vai antes de gastar, não depois.",
     gratis: false,
   },
   {
@@ -33,30 +33,45 @@ const PILARES = [
   {
     n: "04",
     titulo: "Acompanhar",
-    resumo: "Revisão contínua, com perguntas — não cobrança.",
+    resumo: "Compare planejado e realizado. Aprenda, não se culpe.",
     gratis: false,
   },
 ];
 
 const DORES = [
-  "Chegar no fim do mês sem saber pra onde o dinheiro foi.",
+  "Baixar uma planilha, anotar por uns dias, e a vida acontecer — a planilha fica perfeita, sua vida continua desorganizada.",
+  "Saber que deveria economizar, que não deveria parcelar, e mesmo assim continuar tomando as mesmas decisões.",
+  "Chegar no fim do mês sem saber pra onde o dinheiro foi — de novo.",
   "Discutir com o cônjuge sobre dinheiro — sempre a mesma discussão.",
-  "Viver apagando incêndio: uma conta atrasada resolvida, outra já vencendo.",
-  "Sentir que devia estar guardando pro futuro dos filhos, mas nunca sobra nada.",
   "Abrir o aplicativo do banco com um aperto no peito, e fechar de novo sem olhar direito.",
 ];
 
 const RECEBE = [
-  "Acesso completo à plataforma por 1 ano — Planejar, Fazer Acontecer e Acompanhar.",
-  "O Avaliar liberado hoje mesmo, de graça, pra você sentir como funciona antes de decidir.",
-  "Os 4 pilares guiados, mês a mês, como um curso — nunca como uma planilha em branco.",
-  "Tudo salvo automaticamente enquanto você preenche — nada se perde.",
-  "Um resumo do mês com gráfico: quanto entra, quanto sai, quanto sobra.",
-  "Histórico de todos os ciclos anteriores, com o planner de cada mês pra revisar quando quiser.",
-  "Funciona no celular e no computador — dá até pra instalar como app, direto da tela inicial.",
+  { titulo: "Avaliação financeira", resumo: "Pra descobrir onde você está, sem julgamento." },
+  { titulo: "Os 4 destinos do dinheiro", resumo: "Pra dar um propósito claro a cada real que entra." },
+  { titulo: "Entenda sua situação", resumo: "Pra transformar número em compreensão." },
+  { titulo: "Planejamento guiado", resumo: "Pra decidir pra onde o dinheiro vai antes de gastar." },
+  { titulo: "Revisão mensal — planejado × realizado", resumo: "Pra comparar o que foi combinado com o que aconteceu de verdade." },
+  { titulo: "Sua margem financeira", resumo: "Pra saber quanto realmente sobra pra decidir." },
+  { titulo: "Renda futura comprometida", resumo: "Pra enxergar o peso das parcelas antes que vire sufoco." },
+  { titulo: "Registro de gastos + motivo da compra", resumo: "Pra perceber seus próprios padrões — impulso, ansiedade, necessidade." },
+  { titulo: "Desafios da semana e do mês", resumo: "Pra praticar um comportamento novo de cada vez." },
+  { titulo: "Histórico de todos os ciclos", resumo: "Pra acompanhar sua evolução mês a mês." },
 ];
 
 const FAQ = [
+  {
+    p: "Já tentei me organizar antes e não deu certo.",
+    r: "Você não precisa de mais uma planilha — precisa aprender a tomar decisões melhores mesmo sem uma aberta na sua frente. É isso que o método treina, não só o que anotar.",
+  },
+  {
+    p: "Minha renda é pequena, será que adianta?",
+    r: "Quanto menor a margem, mais cada decisão pesa — é exatamente pra esse cenário que o método serve: entender o que está acontecendo com cada real que você já tem, não sonhar com uma renda maior.",
+  },
+  {
+    p: "Tenho medo de começar e abandonar.",
+    r: "Então não comece tentando mudar tudo de uma vez. Comece pela avaliação, escolha um desafio, acompanhe um mês. Mudança sustentável não precisa começar grande — precisa começar.",
+  },
   {
     p: "Preciso entender de finanças pra usar?",
     r: "Não. O método foi feito pra quem nunca organizou nada — cada pilar te guia passo a passo, com sugestões prontas pra você só ajustar.",
@@ -68,10 +83,6 @@ const FAQ = [
   {
     p: "O que acontece depois de 1 ano?",
     r: "Seu histórico continua salvo. Pra seguir usando Planejar, Fazer Acontecer e Acompanhar, é só renovar — o Avaliar continua liberado de graça, sempre.",
-  },
-  {
-    p: "Funciona mesmo se eu não tenho reserva nenhuma hoje?",
-    r: "Sim — é justamente pra esse ponto de partida que o método existe. O primeiro pilar é sentar e olhar o cenário real, exatamente como ele está agora.",
   },
   {
     p: "Preciso instalar algum aplicativo?",
@@ -107,21 +118,23 @@ export default function LandingPage() {
             Finanças para famílias católicas
           </div>
           <h1 className="font-display-italic font-semibold text-[36px] md:text-[52px] text-white leading-[1.15]">
-            O método que tira o dinheiro da cabeça da sua família — e coloca ele na mesa, com fé.
+            Seu problema não é falta de dinheiro.
           </h1>
-          <p className="text-[18px] md:text-[19px] text-white/85 max-w-2xl mt-6 leading-relaxed">
-            A maioria das famílias não trava por falta de planilha — trava na hora de decidir. O
-            Método A.P.F.A. é um ritual mensal de 4 passos que organiza o que entra e o que sai, sem
-            culpa e sem terrorismo financeiro. Ordem não é o oposto da fé — é o que abre espaço pra
-            ela: quem sabe onde está, consegue confiar de verdade na Providência, em vez de viver com
-            medo.
+          <p className="text-[19px] md:text-[21px] text-white/90 max-w-2xl mt-5 leading-relaxed">
+            Talvez você só ainda não tenha aprendido a governar o dinheiro que chega até você.
+          </p>
+          <p className="text-[17px] md:text-[18px] text-white/80 max-w-2xl mt-5 leading-relaxed">
+            O salário cai. Você paga uma conta. Passa no mercado. Usa o cartão. Faz um Pix. Duas
+            semanas depois, você olha pra conta e pensa: <em>&ldquo;como eu consegui gastar tudo
+            isso?&rdquo;</em> O Método A.P.F.A. é o ritual mensal de 4 passos que muda essa pergunta —
+            sem culpa e sem terrorismo financeiro, com fé.
           </p>
           <div className="mt-9 flex flex-wrap items-center gap-4">
             <CheckoutLink
               href={checkoutUrl}
               className="inline-flex items-center justify-center gap-2 rounded-full px-8 py-3.5 font-body font-bold text-[17px] bg-white text-orange-dark hover:bg-cream shadow-lg transition-colors"
             >
-              Quero o Método completo — R$ 97 →
+              Quero o Método completo — R$ 47 →
             </CheckoutLink>
             <Link
               href="/cadastro"
@@ -153,18 +166,19 @@ export default function LandingPage() {
             ))}
           </div>
           <p className="text-ink/70 text-[16px] mt-8 leading-relaxed">
-            Nenhuma família fecha as contas por força de vontade sozinha — fecha porque tem um
-            momento fixo, todo mês, pra sentar e decidir junto. É isso que o Método A.P.F.A. entrega:
-            não mais uma planilha em branco esperando disciplina, mas um caminho guiado que a família
-            simplesmente segue.
+            Porque o problema não acontece quando você está sentado diante de uma planilha. O
+            problema acontece na vida real — no supermercado, no cartão, quando você está cansado e
+            ninguém está vendo. É ali que sua vida financeira é construída. Por isso o Método A.P.F.A.
+            não é mais uma planilha em branco esperando disciplina — é um caminho guiado que a
+            família simplesmente segue, mês a mês.
           </p>
         </section>
 
         <section className="mb-20">
           <SectionHeading
-            eyebrow="Os 4 processos"
-            title="Um lugar para cada parte do dinheiro"
-            subtitle="Categorias simples, de uso diário — sem jargão financeiro. A plataforma sugere o cenário ideal a partir da sua renda, e sua família ajusta."
+            eyebrow="Os 4 destinos"
+            title="Todo real que entra precisa responder a uma pergunta"
+            subtitle="Pra que você veio? A plataforma sugere o cenário ideal a partir da sua renda, e sua família ajusta."
           />
           <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-5">
             {PROCESSOS.map((p) => (
@@ -177,6 +191,18 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
+        </section>
+
+        <section className="mb-20 max-w-3xl">
+          <SectionHeading
+            eyebrow="Renda × margem"
+            title="Você não vive da sua renda. Você vive da sua margem."
+          />
+          <p className="text-ink/75 text-[17px] leading-relaxed">
+            Renda R$ 5.000. Já comprometido: R$ 4.200. Você não tem R$ 5.000 pra decidir — tem
+            R$ 800 de margem. É essa margem que determina o quanto sua família consegue respirar, e é
+            isso que a plataforma te ajuda a enxergar, todo mês.
+          </p>
         </section>
 
         <section className="mb-20">
@@ -212,16 +238,19 @@ export default function LandingPage() {
 
         <section className="mb-20 max-w-3xl">
           <div className="font-body text-[13px] tracking-[0.24em] uppercase text-orange-dark font-bold mb-3">
-            O que você recebe
+            O que você encontra dentro
           </div>
           <h2 className="font-display-italic font-semibold text-[30px] text-ink mb-8">
-            Tudo pronto pra sentar com a família hoje
+            Não pra te transformar numa pessoa obcecada por dinheiro
           </h2>
-          <div className="flex flex-col gap-3.5">
+          <div className="flex flex-col gap-4">
             {RECEBE.map((item) => (
-              <div key={item} className="flex items-start gap-3.5">
+              <div key={item.titulo} className="flex items-start gap-3.5">
                 <span className="text-mint font-bold text-[16px] leading-none mt-0.5 shrink-0">✓</span>
-                <p className="text-ink/75 text-[16px]">{item}</p>
+                <p className="text-[16px]">
+                  <span className="text-ink font-semibold">{item.titulo}.</span>{" "}
+                  <span className="text-ink/70">{item.resumo}</span>
+                </p>
               </div>
             ))}
           </div>
@@ -234,7 +263,7 @@ export default function LandingPage() {
               Acesso completo por 1 ano
             </p>
             <p className="font-display-italic font-semibold text-white text-[52px] md:text-[64px] leading-none">
-              R$ 97
+              R$ 47
             </p>
             <p className="text-white/80 text-[16px] mt-3 max-w-xl mx-auto">
               Compra única — sem mensalidade, sem cobrança recorrente. O Avaliar continua grátis pra
@@ -256,9 +285,9 @@ export default function LandingPage() {
           </h2>
           <p className="text-ink/70 text-[16px] leading-relaxed">
             Todo mundo que compra online no Brasil tem 7 dias pra se arrepender — é lei (Art. 49 do
-            Código de Defesa do Consumidor), não é promessa nossa. Então entra, use o Avaliar, veja o
-            diagnóstico da sua família de verdade. Se em 7 dias você sentir que não é pra vocês, é só
-            pedir o reembolso.
+            Código de Defesa do Consumidor), não é promessa nossa. Entre, conheça, use o Avaliar, veja
+            o diagnóstico da sua família de verdade. Se em 7 dias você sentir que não é pra vocês, é
+            só pedir o reembolso.
           </p>
         </section>
 
@@ -276,18 +305,18 @@ export default function LandingPage() {
 
         <section className="text-center max-w-2xl mx-auto">
           <h2 className="font-display-italic font-semibold text-[28px] md:text-[32px] text-ink mb-3">
-            O primeiro passo é grátis e leva menos de 15 minutos.
+            Daqui a um ano, você vai continuar recebendo dinheiro.
           </h2>
           <p className="text-ink/70 text-[16px] mb-8">
-            Comece agora pelo Avaliar, sem compromisso — ou já garanta o método completo pra sua
-            família colocar em prática este mês.
+            A pergunta não é essa — é o que vai acontecer com o dinheiro que chegar até você. Comece
+            agora pelo Avaliar, grátis e sem compromisso, e descubra onde sua família está hoje.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <CheckoutLink
               href={checkoutUrl}
               className="inline-flex items-center justify-center gap-2 rounded-full px-8 py-3.5 font-body font-bold text-[17px] bg-orange text-white hover:bg-orange-dark shadow-lg transition-colors"
             >
-              Quero o Método completo — R$ 97 →
+              Quero o Método completo — R$ 47 →
             </CheckoutLink>
             <LinkButton href="/cadastro" variant="secondary">
               Testar grátis o Avaliar
