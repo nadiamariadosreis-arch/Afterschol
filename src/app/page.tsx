@@ -2,16 +2,16 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { LinkButton } from "@/components/ui/Button";
 import { Logo } from "@/components/member/Logo";
-import { SkillIcon, paletteFor } from "@/components/member/skillVisuals";
-import type { Category, Product } from "@/lib/supabase/types";
+import type { Product } from "@/lib/supabase/types";
 
 export default async function LandingPage() {
   const supabase = await createClient();
 
-  const [{ data: categories }, { data: product }] = await Promise.all([
-    supabase.from("categories").select("*").order("sort_order"),
-    supabase.from("products").select("*").eq("code", "pacote_completo").maybeSingle(),
-  ]);
+  const { data: product } = await supabase
+    .from("products")
+    .select("*")
+    .eq("code", "pacote_completo")
+    .maybeSingle();
 
   return (
     <div className="bg-cream min-h-screen flex flex-col">
@@ -35,19 +35,20 @@ export default async function LandingPage() {
                 Portal cristão de catequese
               </div>
               <h1 className="font-heading font-bold text-[34px] md:text-[46px] text-navy leading-[1.15]">
-                Tudo para viver a catequese em casa e na sala de aula.
+                Tudo para viver a catequese em casa e na paróquia.
               </h1>
               <p className="text-ink/60 mt-4 text-[17px] max-w-md">
                 Apostilas de educação clássica, memorização, orações,
-                encontros prontos, lembrancinhas e materiais para cada tema
-                do ano litúrgico — organizados por categoria.
+                encontros prontos, lembrancinhas e jogos católicos —
+                organizados por categoria, prontos para famílias e
+                catequistas usarem em casa ou na sala de catequese.
               </p>
               <div className="mt-8 flex flex-wrap gap-4">
                 <a
-                  href="#categorias"
+                  href="#acesso"
                   className="inline-flex items-center justify-center gap-2 rounded-full px-7 py-3 font-body font-semibold text-[15px] bg-navy text-white hover:bg-ink transition-colors"
                 >
-                  Explorar categorias
+                  Conhecer o acesso
                 </a>
               </div>
             </div>
@@ -57,45 +58,8 @@ export default async function LandingPage() {
           </div>
         </section>
 
-        <section id="categorias" className="px-6 md:px-[8vw] py-10 md:py-16 max-w-6xl mx-auto">
-          <div className="font-body text-[13px] tracking-[0.28em] uppercase text-flame mb-3">
-            Como funciona
-          </div>
-          <h2 className="font-heading font-bold text-[28px] md:text-[32px] text-navy mb-10">
-            Uma categoria para cada momento da catequese
-          </h2>
-
-          {categories && categories.length > 0 ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-4">
-              {categories.map((c: Category, i: number) => {
-                const palette = paletteFor(i);
-                return (
-                  <div
-                    key={c.id}
-                    className="flex flex-col items-center gap-2.5 rounded-2xl p-5 text-center shadow-sm"
-                    style={{ backgroundColor: palette.bg }}
-                  >
-                    <span style={{ color: palette.fg }}>
-                      <SkillIcon name={c.name} />
-                    </span>
-                    <span className="font-heading font-semibold text-[14px] text-ink leading-snug">
-                      {c.name}
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          ) : null}
-
-          <p className="text-ink/60 max-w-2xl mt-10">
-            Cada categoria reúne os materiais em PDF prontos para baixar e
-            imprimir — com vídeo explicando como usar e instruções passo a
-            passo, quando fizer sentido.
-          </p>
-        </section>
-
         {product ? (
-          <section className="px-6 md:px-[8vw] pb-16 max-w-6xl mx-auto">
+          <section id="acesso" className="px-6 md:px-[8vw] pb-16 max-w-6xl mx-auto">
             <div className="rounded-2xl bg-navy text-white p-8 md:p-12 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
               <div>
                 <h3 className="font-heading font-bold text-[24px]">
