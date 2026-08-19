@@ -68,13 +68,16 @@ Tudo fica salvo na conta do usuário e pode ser revisitado/editado a qualquer mo
 
 Priorizando o fluxo ponta a ponta funcionando antes de refinar visual:
 
-- [ ] Autenticação (email + senha)
-- [ ] Módulo de nicho (sugestão via IA)
-- [ ] Módulo de identidade (briefing gerado + editável)
-- [ ] Gerador de pautas de conteúdo (lista, não calendário ainda)
-- [ ] Calendário editorial (arrastar pautas para dias da semana)
-- [ ] Simulador de grid (visualização estática do layout planejado)
-- [ ] Histórico: tudo salvo por usuário
+- [x] Autenticação (email + senha)
+- [x] Módulo de nicho (sugestão via IA)
+- [x] Módulo de identidade (briefing gerado + editável)
+- [x] Gerador de pautas de conteúdo
+- [x] Calendário editorial (arrastar pautas para dias, drag and drop nativo)
+- [x] Simulador de grid (visualização do layout planejado, reordenável por drag and drop)
+- [x] Checklist de crescimento orgânico
+- [x] Histórico: tudo salvo por usuário (dashboard lista os perfis/projetos)
+
+Código em `src/`, schema em `supabase/migrations/0001_init.sql`. Setup em `docs/DEV.md`.
 
 Fora do escopo do MVP (fases futuras): cobrança/assinatura, integração real com a API do
 Instagram, colaboração em equipe, exportação para agendadores de terceiros.
@@ -89,7 +92,6 @@ Instagram, colaboração em equipe, exportação para agendadores de terceiros.
 
 ## 7. Em aberto
 
-- Nome do produto.
-- Se o simulador de grid entra na fase 1 ou fica para a fase 2 (é a parte mais trabalhosa
-  visualmente).
-- Se a IA de conteúdo gera legendas prontas ou apenas roteiros/temas.
+- Nome do produto (código usa "Estúdio de Crescimento" como placeholder).
+- Cobrança/assinatura (Stripe) — fica para depois do MVP validado.
+- Integração real com a API do Instagram — hoje é 100% planejamento, sem puxar dados reais.
