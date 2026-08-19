@@ -9,7 +9,7 @@ export function getAnthropicClient() {
   return client;
 }
 
-const MODEL = "claude-sonnet-4-5";
+const MODEL = "claude-opus-5";
 
 /**
  * Pede ao modelo um JSON estruturado e faz o parse.
@@ -21,6 +21,7 @@ export async function generateJSON<T>(prompt: string): Promise<T> {
   const message = await anthropic.messages.create({
     model: MODEL,
     max_tokens: 2048,
+    output_config: { effort: "medium" },
     messages: [{ role: "user", content: prompt }],
   });
 
