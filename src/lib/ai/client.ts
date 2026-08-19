@@ -9,7 +9,7 @@ export function getAnthropicClient() {
   return client;
 }
 
-const MODEL = "claude-opus-5";
+const MODEL = "claude-sonnet-5";
 
 /**
  * Pede ao modelo um JSON estruturado e faz o parse.
