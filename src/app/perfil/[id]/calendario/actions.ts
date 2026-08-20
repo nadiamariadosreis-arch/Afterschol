@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import { awardXp, withLevelUpParam } from "@/lib/gamification";
 
 export async function scheduleContentPiece(
   profileId: string,
@@ -36,5 +37,7 @@ export async function finishCalendar(profileId: string) {
     .update({ status: "ativo" })
     .eq("id", profileId);
 
-  redirect(`/perfil/${profileId}/grid`);
+  const progress = await awardXp(supabase, user.id, 50);
+
+  redirect(withLevelUpParam(`/perfil/${profileId}/grid`, progress));
 }

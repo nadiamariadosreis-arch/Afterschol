@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { generateJSON } from "@/lib/ai/client";
 import { contentPiecesPrompt } from "@/lib/ai/prompts";
+import { awardXp } from "@/lib/gamification";
 import type { ContentFormat } from "@/lib/types";
 
 interface GeneratedPiece {
@@ -15,10 +16,12 @@ interface GeneratedPiece {
   caption: string;
 }
 
+type ContentState = { error: string | null; leveledUpTo?: number };
+
 export async function generateContentPieces(
   profileId: string,
-  _prevState: { error: string | null },
-) {
+  _prevState: ContentState,
+): Promise<ContentState> {
   const supabase = await createClient();
   const {
     data: { user },
@@ -77,5 +80,8 @@ export async function generateContentPieces(
     .eq("status", "conteudo");
 
   revalidatePath(`/perfil/${profileId}/conteudo`);
-  return { error: null };
+
+  const progress = await awardXp(supabase, user.id, 30);
+
+  return { error: null, leveledUpTo: progress.leveledUp ? progress.level : undefined };
 }

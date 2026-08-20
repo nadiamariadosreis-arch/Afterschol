@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { generateJSON } from "@/lib/ai/client";
 import { nicheSuggestionsPrompt } from "@/lib/ai/prompts";
+import { awardXp, withLevelUpParam } from "@/lib/gamification";
 import type { NicheSuggestion } from "@/lib/types";
 
 export async function generateNicheSuggestions(
@@ -74,5 +75,7 @@ export async function chooseNiche(profileId: string, nicheId: string, index: num
     .eq("id", profileId);
   if (profileError) throw new Error(profileError.message);
 
-  redirect(`/perfil/${profileId}/identidade`);
+  const progress = await awardXp(supabase, user.id, 50);
+
+  redirect(withLevelUpParam(`/perfil/${profileId}/identidade`, progress));
 }

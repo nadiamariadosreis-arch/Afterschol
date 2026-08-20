@@ -1,10 +1,11 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 import Link from "next/link";
 import { generateContentPieces } from "./actions";
 import { Badge, Button, Card } from "@/components/ui";
 import { StaggerItem, StaggerList } from "@/components/motion";
+import { LevelUpModal } from "@/components/level-up-modal";
 import type { ContentPiece } from "@/lib/types";
 
 const FORMAT_LABELS: Record<ContentPiece["format"], string> = {
@@ -23,9 +24,12 @@ export function ContentClient({
 }) {
   const boundGenerate = generateContentPieces.bind(null, profileId);
   const [state, formAction, pending] = useActionState(boundGenerate, { error: null });
+  const [dismissedState, setDismissedState] = useState<typeof state | null>(null);
+  const modalLevel = state !== dismissedState ? (state.leveledUpTo ?? null) : null;
 
   return (
     <div className="mt-6 space-y-6">
+      <LevelUpModal level={modalLevel} onClose={() => setDismissedState(state)} />
       <form action={formAction} className="flex items-center gap-3">
         <Button type="submit" disabled={pending}>
           {pending

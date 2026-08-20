@@ -7,21 +7,34 @@ import { scheduleContentPiece, finishCalendar } from "./actions";
 import { Badge, Button, Card } from "@/components/ui";
 import type { ContentPiece } from "@/lib/types";
 
-const WEEKDAY_FORMATTER = new Intl.DateTimeFormat("pt-BR", { weekday: "short" });
-const DAY_FORMATTER = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "2-digit" });
+const WEEKDAY_LABELS = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
+const MONTH_FORMATTER = new Intl.DateTimeFormat("pt-BR", { month: "long", year: "numeric" });
 
 function toDateKey(date: Date) {
   return date.toISOString().slice(0, 10);
 }
 
-function nextDays(count: number) {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  return Array.from({ length: count }, (_, i) => {
-    const date = new Date(today);
-    date.setDate(date.getDate() + i);
-    return date;
-  });
+function startOfMonth(date: Date) {
+  return new Date(date.getFullYear(), date.getMonth(), 1);
+}
+
+/** Matriz de semanas (7 dias cada) cobrindo o mês, com dias de meses vizinhos pra completar as semanas. */
+function monthMatrix(monthAnchor: Date) {
+  const first = startOfMonth(monthAnchor);
+  const gridStart = new Date(first);
+  gridStart.setDate(gridStart.getDate() - first.getDay());
+
+  const weeks: Date[][] = [];
+  const cursor = new Date(gridStart);
+  for (let w = 0; w < 6; w++) {
+    const week: Date[] = [];
+    for (let d = 0; d < 7; d++) {
+      week.push(new Date(cursor));
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    weeks.push(week);
+  }
+  return weeks;
 }
 
 export function CalendarClient({
@@ -32,7 +45,11 @@ export function CalendarClient({
   pieces: ContentPiece[];
 }) {
   const [draggingId, setDraggingId] = useState<string | null>(null);
-  const days = useMemo(() => nextDays(14), []);
+  const [monthAnchor, setMonthAnchor] = useState(() => startOfMonth(new Date()));
+  const today = toDateKey(new Date());
+  const currentMonthIndex = monthAnchor.getMonth();
+
+  const weeks = useMemo(() => monthMatrix(monthAnchor), [monthAnchor]);
 
   const unscheduled = pieces.filter((p) => !p.scheduled_date);
   const byDate = useMemo(() => {
@@ -50,6 +67,10 @@ export function CalendarClient({
     if (!draggingId) return;
     scheduleContentPiece(profileId, draggingId, dateKey);
     setDraggingId(null);
+  }
+
+  function changeMonth(delta: number) {
+    setMonthAnchor((prev) => new Date(prev.getFullYear(), prev.getMonth() + delta, 1));
   }
 
   if (pieces.length === 0) {
@@ -92,38 +113,70 @@ export function CalendarClient({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-7">
-        {days.map((date) => {
-          const key = toDateKey(date);
-          const items = byDate.get(key) ?? [];
-          return (
-            <div
-              key={key}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={() => handleDrop(key)}
-              className="min-h-32 rounded-lg border border-line bg-card p-2"
-            >
-              <p className="text-xs font-medium capitalize text-ink-soft">
-                {WEEKDAY_FORMATTER.format(date)} · {DAY_FORMATTER.format(date)}
-              </p>
-              <div className="mt-2 space-y-1">
-                {items.map((piece) => (
-                  <motion.div
-                    key={piece.id}
-                    layoutId={piece.id}
-                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                    whileHover={{ scale: 1.05 }}
-                    draggable
-                    onDragStart={() => setDraggingId(piece.id)}
-                    className="cursor-grab rounded-md bg-cream-dark px-2 py-1 text-xs active:cursor-grabbing"
-                  >
-                    {piece.theme}
-                  </motion.div>
-                ))}
-              </div>
+      <div>
+        <div className="mb-3 flex items-center justify-between">
+          <p className="font-display text-lg font-semibold capitalize text-ink">
+            {MONTH_FORMATTER.format(monthAnchor)}
+          </p>
+          <div className="flex gap-1">
+            <Button variant="secondary" onClick={() => changeMonth(-1)} className="px-3 py-1">
+              ←
+            </Button>
+            <Button variant="secondary" onClick={() => changeMonth(1)} className="px-3 py-1">
+              →
+            </Button>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-7 gap-px overflow-hidden rounded-lg border border-line bg-line text-center">
+          {WEEKDAY_LABELS.map((label) => (
+            <div key={label} className="bg-cream-dark py-1 text-xs font-medium text-ink-soft">
+              {label}
             </div>
-          );
-        })}
+          ))}
+          {weeks.map((week) =>
+            week.map((date) => {
+              const key = toDateKey(date);
+              const items = byDate.get(key) ?? [];
+              const inMonth = date.getMonth() === currentMonthIndex;
+              const isToday = key === today;
+              return (
+                <div
+                  key={key}
+                  onDragOver={(e) => e.preventDefault()}
+                  onDrop={() => handleDrop(key)}
+                  className={`min-h-24 bg-card p-1.5 text-left ${inMonth ? "" : "opacity-40"}`}
+                >
+                  <p
+                    className={`mb-1 text-xs ${
+                      isToday
+                        ? "inline-flex h-5 w-5 items-center justify-center rounded-full bg-orange font-medium text-white"
+                        : "text-ink-soft"
+                    }`}
+                  >
+                    {date.getDate()}
+                  </p>
+                  <div className="space-y-1">
+                    {items.map((piece) => (
+                      <motion.div
+                        key={piece.id}
+                        layoutId={piece.id}
+                        transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                        whileHover={{ scale: 1.05 }}
+                        draggable
+                        onDragStart={() => setDraggingId(piece.id)}
+                        className="cursor-grab truncate rounded-md bg-cream-dark px-1.5 py-1 text-[11px] active:cursor-grabbing"
+                        title={piece.theme}
+                      >
+                        {piece.theme}
+                      </motion.div>
+                    ))}
+                  </div>
+                </div>
+              );
+            }),
+          )}
+        </div>
       </div>
 
       <Card className="flex items-center justify-between">

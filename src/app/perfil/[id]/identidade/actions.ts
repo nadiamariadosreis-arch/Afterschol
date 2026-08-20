@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { generateJSON } from "@/lib/ai/client";
 import { identityBriefPrompt } from "@/lib/ai/prompts";
+import { awardXp, withLevelUpParam } from "@/lib/gamification";
 
 interface IdentityBrief {
   username_suggestion: string;
@@ -117,5 +118,7 @@ export async function saveIdentityEdits(profileId: string, identityId: string, f
 
   await supabase.from("profiles").update({ status: "conteudo" }).eq("id", profileId);
 
-  redirect(`/perfil/${profileId}/conteudo`);
+  const progress = await awardXp(supabase, user.id, 50);
+
+  redirect(withLevelUpParam(`/perfil/${profileId}/conteudo`, progress));
 }
