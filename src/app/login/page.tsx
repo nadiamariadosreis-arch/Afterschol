@@ -38,6 +38,11 @@ export default function LoginPage() {
               required
               autoComplete="current-password"
             />
+            <p className="text-right text-xs">
+              <Link href="/esqueci-senha" className="text-ink-soft underline hover:text-ink">
+                Esqueci minha senha
+              </Link>
+            </p>
           </div>
           {state.error && <p className="text-sm text-red-600">{state.error}</p>}
           <Button type="submit" className="w-full" disabled={pending}>
