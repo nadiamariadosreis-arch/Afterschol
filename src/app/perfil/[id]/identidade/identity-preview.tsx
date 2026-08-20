@@ -17,7 +17,7 @@ export function IdentityPreview({
     <div className="sticky top-6">
       <p className="mb-2 text-sm font-medium text-ink">Como fica na prática</p>
       <div
-        className="aspect-square w-full max-w-[280px] overflow-hidden rounded-2xl border border-line shadow-sm"
+        className="aspect-square w-full max-w-[280px] overflow-hidden rounded-2xl border border-line shadow-sm transition-colors duration-300"
         style={{ backgroundColor: bg }}
       >
         <div className="flex h-full flex-col justify-between p-5">

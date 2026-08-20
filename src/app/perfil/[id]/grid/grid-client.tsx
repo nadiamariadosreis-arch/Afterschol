@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { reorderGrid } from "./actions";
 import type { ContentPiece, Identity } from "@/lib/types";
 
@@ -77,8 +78,11 @@ export function GridClient({
           </p>
         )}
         {ordered.map((piece, index) => (
-          <div
+          <motion.div
             key={piece.id}
+            layout
+            transition={{ type: "spring", stiffness: 500, damping: 35 }}
+            whileHover={{ scale: 0.97 }}
             draggable
             onDragStart={() => setDraggingIndex(index)}
             onDragOver={(e) => e.preventDefault()}
@@ -88,7 +92,7 @@ export function GridClient({
           >
             <span className="text-lg text-ink-soft">{FORMAT_ICON[piece.format]}</span>
             <span className="line-clamp-2 text-[11px] text-ink-soft">{piece.theme}</span>
-          </div>
+          </motion.div>
         ))}
       </div>
     </div>

@@ -13,7 +13,12 @@ export default function CadastroPage() {
 
   return (
     <main className="flex flex-1 items-center justify-center px-4 py-16">
-      <Card className="w-full max-w-sm">
+      <Card
+        className="w-full max-w-sm"
+        initial={{ opacity: 0, y: 12 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.3, ease: "easeOut" }}
+      >
         <h1 className="font-display text-lg font-semibold">Criar conta</h1>
         <p className="mt-1 text-sm text-ink-soft">
           Comece a estruturar um Instagram novo do zero.

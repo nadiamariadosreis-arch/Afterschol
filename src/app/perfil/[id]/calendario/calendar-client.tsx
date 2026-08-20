@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { scheduleContentPiece, finishCalendar } from "./actions";
 import { Badge, Button, Card } from "@/components/ui";
 import type { ContentPiece } from "@/lib/types";
@@ -76,14 +77,17 @@ export function CalendarClient({
             <span className="text-sm text-ink-soft">Todas as pautas foram agendadas.</span>
           )}
           {unscheduled.map((piece) => (
-            <div
+            <motion.div
               key={piece.id}
+              layoutId={piece.id}
+              transition={{ type: "spring", stiffness: 400, damping: 30 }}
+              whileHover={{ scale: 1.03 }}
               draggable
               onDragStart={() => setDraggingId(piece.id)}
               className="cursor-grab rounded-lg border border-line bg-card px-3 py-2 text-sm shadow-sm active:cursor-grabbing"
             >
               <Badge>{piece.format}</Badge> {piece.theme}
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
@@ -104,14 +108,17 @@ export function CalendarClient({
               </p>
               <div className="mt-2 space-y-1">
                 {items.map((piece) => (
-                  <div
+                  <motion.div
                     key={piece.id}
+                    layoutId={piece.id}
+                    transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                    whileHover={{ scale: 1.05 }}
                     draggable
                     onDragStart={() => setDraggingId(piece.id)}
                     className="cursor-grab rounded-md bg-cream-dark px-2 py-1 text-xs active:cursor-grabbing"
                   >
                     {piece.theme}
-                  </div>
+                  </motion.div>
                 ))}
               </div>
             </div>

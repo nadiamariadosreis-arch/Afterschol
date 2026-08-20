@@ -4,6 +4,7 @@ import { useActionState } from "react";
 import Link from "next/link";
 import { generateContentPieces } from "./actions";
 import { Badge, Button, Card } from "@/components/ui";
+import { StaggerItem, StaggerList } from "@/components/motion";
 import type { ContentPiece } from "@/lib/types";
 
 const FORMAT_LABELS: Record<ContentPiece["format"], string> = {
@@ -38,40 +39,42 @@ export function ContentClient({
 
       {pieces.length > 0 && (
         <>
-          <div className="space-y-3">
+          <StaggerList className="space-y-3">
             {pieces.map((piece) => (
-              <Card key={piece.id}>
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <div className="flex items-center gap-2">
-                      <Badge>{FORMAT_LABELS[piece.format]}</Badge>
-                      {piece.scheduled_date && (
-                        <span className="text-xs text-ink-soft">
-                          Agendado: {piece.scheduled_date}
-                        </span>
+              <StaggerItem key={piece.id}>
+                <Card hoverable>
+                  <div className="flex items-start justify-between gap-4">
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <Badge>{FORMAT_LABELS[piece.format]}</Badge>
+                        {piece.scheduled_date && (
+                          <span className="text-xs text-ink-soft">
+                            Agendado: {piece.scheduled_date}
+                          </span>
+                        )}
+                      </div>
+                      <h3 className="mt-2 font-medium">{piece.theme}</h3>
+                      {piece.hook && (
+                        <p className="mt-1 text-sm text-ink-soft">
+                          <span className="font-medium">Gancho:</span> {piece.hook}
+                        </p>
+                      )}
+                      {piece.script && (
+                        <p className="mt-1 text-sm text-ink-soft">
+                          <span className="font-medium">Roteiro:</span> {piece.script}
+                        </p>
+                      )}
+                      {piece.caption && (
+                        <p className="mt-1 text-sm text-ink-soft">
+                          <span className="font-medium">Legenda:</span> {piece.caption}
+                        </p>
                       )}
                     </div>
-                    <h3 className="mt-2 font-medium">{piece.theme}</h3>
-                    {piece.hook && (
-                      <p className="mt-1 text-sm text-ink-soft">
-                        <span className="font-medium">Gancho:</span> {piece.hook}
-                      </p>
-                    )}
-                    {piece.script && (
-                      <p className="mt-1 text-sm text-ink-soft">
-                        <span className="font-medium">Roteiro:</span> {piece.script}
-                      </p>
-                    )}
-                    {piece.caption && (
-                      <p className="mt-1 text-sm text-ink-soft">
-                        <span className="font-medium">Legenda:</span> {piece.caption}
-                      </p>
-                    )}
                   </div>
-                </div>
-              </Card>
+                </Card>
+              </StaggerItem>
             ))}
-          </div>
+          </StaggerList>
           <Link href={`/perfil/${profileId}/calendario`}>
             <Button variant="secondary">Ir para o calendário →</Button>
           </Link>

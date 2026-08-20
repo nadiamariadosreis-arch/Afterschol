@@ -1,3 +1,7 @@
+"use client";
+
+import { StaggerItem, StaggerList } from "@/components/motion";
+
 const ITEMS = [
   "Poste com uma frequência que você consegue sustentar (melhor 3x/semana sempre do que 7x por 2 semanas e sumir).",
   "Use os primeiros 3 segundos do reels para o gancho — sem enrolação antes de entregar valor.",
@@ -14,14 +18,14 @@ export function GrowthChecklist() {
       <h2 className="text-sm font-semibold text-ink">
         6. Checklist de crescimento orgânico
       </h2>
-      <ul className="mt-3 space-y-2">
+      <StaggerList className="mt-3 space-y-2">
         {ITEMS.map((item) => (
-          <li key={item} className="flex items-start gap-2 text-sm text-ink-soft">
+          <StaggerItem key={item} className="flex items-start gap-2 text-sm text-ink-soft">
             <input type="checkbox" className="mt-1 h-4 w-4 shrink-0 accent-orange" />
             <span>{item}</span>
-          </li>
+          </StaggerItem>
         ))}
-      </ul>
+      </StaggerList>
     </div>
   );
 }

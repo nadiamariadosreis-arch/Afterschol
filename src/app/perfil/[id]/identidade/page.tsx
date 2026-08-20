@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { PageFade } from "@/components/motion";
 import type { Identity } from "@/lib/types";
 import { IdentityClient } from "./identity-client";
 
@@ -15,13 +16,13 @@ export default async function IdentidadePage({ params }: PageProps<"/perfil/[id]
   const latest = (identities?.[0] as Identity | undefined) ?? null;
 
   return (
-    <div>
+    <PageFade>
       <h1 className="font-display text-xl font-semibold">2. Identidade do perfil</h1>
       <p className="mt-1 text-sm text-ink-soft">
         Um briefing de marca pessoal gerado a partir do nicho escolhido. Edite à vontade antes
         de avançar.
       </p>
       <IdentityClient profileId={id} latest={latest} />
-    </div>
+    </PageFade>
   );
 }

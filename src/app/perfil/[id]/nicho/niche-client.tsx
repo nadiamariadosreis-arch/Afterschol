@@ -3,6 +3,7 @@
 import { useActionState } from "react";
 import { generateNicheSuggestions, chooseNiche } from "./actions";
 import { Button, Card, Textarea } from "@/components/ui";
+import { StaggerItem, StaggerList } from "@/components/motion";
 import type { Niche } from "@/lib/types";
 
 export function NicheClient({ profileId, latest }: { profileId: string; latest: Niche | null }) {
@@ -36,36 +37,37 @@ export function NicheClient({ profileId, latest }: { profileId: string; latest: 
               Nicho escolhido: <span className="font-medium text-ink">{latest.chosen_niche}</span>
             </p>
           )}
-          {latest.suggestions.map((suggestion, index) => {
-            const isChosen = alreadyChosen && suggestion.niche === latest.chosen_niche;
-            return (
-              <Card
-                key={suggestion.niche + index}
-                className={isChosen ? "border-orange" : undefined}
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <h3 className="font-medium">{suggestion.niche}</h3>
-                    <p className="mt-1 text-sm text-ink-soft">
-                      <span className="font-medium">Público:</span> {suggestion.audience}
-                    </p>
-                    <p className="mt-1 text-sm text-ink-soft">{suggestion.rationale}</p>
-                    <p className="mt-1 text-sm text-orange-dark">
-                      <span className="font-medium">Evite:</span> {suggestion.avoid}
-                    </p>
-                  </div>
-                  {!alreadyChosen && (
-                    <form action={chooseNiche.bind(null, profileId, latest.id, index)}>
-                      <Button type="submit" variant="secondary">
-                        Escolher
-                      </Button>
-                    </form>
-                  )}
-                  {isChosen && <span className="text-sm font-medium text-ink">✓ Escolhido</span>}
-                </div>
-              </Card>
-            );
-          })}
+          <StaggerList className="space-y-3">
+            {latest.suggestions.map((suggestion, index) => {
+              const isChosen = alreadyChosen && suggestion.niche === latest.chosen_niche;
+              return (
+                <StaggerItem key={suggestion.niche + index}>
+                  <Card hoverable={!alreadyChosen} className={isChosen ? "border-orange" : undefined}>
+                    <div className="flex items-start justify-between gap-4">
+                      <div>
+                        <h3 className="font-medium">{suggestion.niche}</h3>
+                        <p className="mt-1 text-sm text-ink-soft">
+                          <span className="font-medium">Público:</span> {suggestion.audience}
+                        </p>
+                        <p className="mt-1 text-sm text-ink-soft">{suggestion.rationale}</p>
+                        <p className="mt-1 text-sm text-orange-dark">
+                          <span className="font-medium">Evite:</span> {suggestion.avoid}
+                        </p>
+                      </div>
+                      {!alreadyChosen && (
+                        <form action={chooseNiche.bind(null, profileId, latest.id, index)}>
+                          <Button type="submit" variant="secondary">
+                            Escolher
+                          </Button>
+                        </form>
+                      )}
+                      {isChosen && <span className="text-sm font-medium text-ink">✓ Escolhido</span>}
+                    </div>
+                  </Card>
+                </StaggerItem>
+              );
+            })}
+          </StaggerList>
         </div>
       )}
     </div>

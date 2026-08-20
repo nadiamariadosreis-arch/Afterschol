@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { PageFade } from "@/components/motion";
 import type { ContentPiece, Identity } from "@/lib/types";
 import { GridClient } from "./grid-client";
 import { GrowthChecklist } from "@/components/growth-checklist";
@@ -26,7 +27,7 @@ export default async function GridPage({ params }: PageProps<"/perfil/[id]/grid"
   const identity = (identities?.[0] as Identity | undefined) ?? null;
 
   return (
-    <div>
+    <PageFade>
       <h1 className="font-display text-xl font-semibold">5. Simulador de grid</h1>
       <p className="mt-1 text-sm text-ink-soft">
         Prévia de como o perfil vai ficar no Instagram. Arraste os quadrados para reorganizar
@@ -38,6 +39,6 @@ export default async function GridPage({ params }: PageProps<"/perfil/[id]/grid"
         profileId={id}
       />
       <GrowthChecklist />
-    </div>
+    </PageFade>
   );
 }

@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { PageFade } from "@/components/motion";
 import type { Niche } from "@/lib/types";
 import { NicheClient } from "./niche-client";
 
@@ -15,13 +16,13 @@ export default async function NichoPage({ params }: PageProps<"/perfil/[id]/nich
   const latest = (niches?.[0] as Niche | undefined) ?? null;
 
   return (
-    <div>
+    <PageFade>
       <h1 className="font-display text-xl font-semibold">1. Pesquisa de nicho</h1>
       <p className="mt-1 text-sm text-ink-soft">
         Descreva um interesse ou competência. A IA sugere sub-nichos com potencial real de
         crescimento orgânico.
       </p>
       <NicheClient profileId={id} latest={latest} />
-    </div>
+    </PageFade>
   );
 }
