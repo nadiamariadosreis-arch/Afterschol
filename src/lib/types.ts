@@ -41,6 +41,7 @@ export interface Identity {
   user_id: string;
   username_suggestion: string | null;
   bio: string | null;
+  bio_options: string[];
   value_proposition: string | null;
   tone_of_voice: string | null;
   color_palette: string[];

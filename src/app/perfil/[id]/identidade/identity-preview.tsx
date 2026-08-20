@@ -28,7 +28,7 @@ export function IdentityPreview({
             {username || "@seu_perfil"}
           </span>
           <p
-            className="text-sm leading-snug font-medium"
+            className="whitespace-pre-line text-sm leading-snug font-medium"
             style={{ color: textColor }}
           >
             {bio || "Sua bio aparece aqui — é assim que a cor de fundo conversa com o texto."}

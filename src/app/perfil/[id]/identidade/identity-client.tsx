@@ -81,12 +81,37 @@ function IdentityForm({ profileId, identity }: { profileId: string; identity: Id
               <label className="text-sm font-medium">Bio</label>
               <Textarea
                 name="bio"
-                rows={2}
+                rows={4}
                 value={bio}
                 onChange={(e) => setBio(e.target.value)}
                 maxLength={150}
               />
+              <p className="text-xs text-ink-soft">
+                Estrutura: frase de impacto · autoridade · o que você vende (benefício) · link.
+              </p>
             </div>
+
+            {identity.bio_options.length > 0 && (
+              <div className="space-y-2 sm:col-span-2">
+                <p className="text-sm font-medium">Outras opções geradas</p>
+                <div className="grid gap-2 sm:grid-cols-3">
+                  {identity.bio_options.map((option, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => setBio(option)}
+                      className={`whitespace-pre-line rounded-lg border p-2 text-left text-xs transition-colors ${
+                        bio === option
+                          ? "border-orange bg-orange-light/40"
+                          : "border-line bg-card hover:bg-cream-dark"
+                      }`}
+                    >
+                      {option}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
             <div className="space-y-1 sm:col-span-2">
               <label className="text-sm font-medium">Proposta de valor</label>
               <Input name="value_proposition" defaultValue={identity.value_proposition ?? ""} />

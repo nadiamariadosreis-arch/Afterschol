@@ -9,7 +9,7 @@ import { awardXp, withLevelUpParam } from "@/lib/gamification";
 
 interface IdentityBrief {
   username_suggestion: string;
-  bio: string;
+  bio_options: string[];
   value_proposition: string;
   tone_of_voice: string;
   color_palette: string[];
@@ -52,7 +52,8 @@ export async function generateIdentity(
     profile_id: profileId,
     user_id: user.id,
     username_suggestion: brief.username_suggestion,
-    bio: brief.bio,
+    bio: brief.bio_options[0] ?? "",
+    bio_options: brief.bio_options,
     value_proposition: brief.value_proposition,
     tone_of_voice: brief.tone_of_voice,
     color_palette: brief.color_palette,
