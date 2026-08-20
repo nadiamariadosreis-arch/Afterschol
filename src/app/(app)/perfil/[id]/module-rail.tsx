@@ -19,6 +19,12 @@ const ICONS: Record<ProfileStatus, React.ReactNode> = {
       <path d="M5 20c1.2-4 4-6 7-6s5.8 2 7 6" strokeLinecap="round" />
     </svg>
   ),
+  metodo: (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-6 w-6">
+      <path d="m12 3.5 8 4.2-8 4.2-8-4.2 8-4.2Z" strokeLinejoin="round" />
+      <path d="m4 12 8 4.2 8-4.2M4 15.8l8 4.2 8-4.2" strokeLinejoin="round" />
+    </svg>
+  ),
   conteudo: (
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="h-6 w-6">
       <rect x="4" y="5" width="16" height="14" rx="2" />
@@ -44,6 +50,7 @@ const ICONS: Record<ProfileStatus, React.ReactNode> = {
 const DESCRIPTIONS: Record<ProfileStatus, string> = {
   nicho: "Escolha o foco do perfil",
   identidade: "Marca, bio e cores",
+  metodo: "Extraia o método do seu produto",
   conteudo: "Pautas geradas por IA",
   calendario: "Organize por data",
   ativo: "Veja o resultado",

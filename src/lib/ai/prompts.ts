@@ -41,17 +41,86 @@ Responda APENAS com um objeto JSON, sem texto antes ou depois, no formato:
 }`;
 }
 
+export interface MethodSourceSummary {
+  title: string;
+  summary: string;
+}
+
+export function methodStructurePrompt(
+  desiredResult: string,
+  notes: string,
+  sources: MethodSourceSummary[],
+) {
+  const sourcesBlock =
+    sources.length > 0
+      ? `\nResumos dos materiais pagos enviados pelo criador (cursos, apostilas etc.):\n${sources
+          .map((s) => `- "${s.title}": ${s.summary}`)
+          .join("\n")}\n`
+      : "";
+
+  return `Você é um estrategista de conteúdo especializado em transformar o conteúdo de um
+produto pago (curso, mentoria, apostila) em conteúdo GRATUITO estratégico para Instagram.
+O objetivo é ensinar de verdade um pedaço real do método — na mesma estrutura/estilo do
+material pago (ex: perguntas e respostas para conteúdo de memorização, passo a passo para
+conteúdo de processo, etc.) — para demonstrar competência e gerar desejo de compra do produto
+completo, sem entregar o método inteiro de graça.
+
+Resultado que o criador quer entregar através do conteúdo gratuito: "${desiredResult}"
+
+Notas do criador sobre o método/conteúdo do produto pago:
+"""
+${notes || "(nenhuma nota adicional)"}
+"""
+${sourcesBlock}
+Organize esse método em pilares (grandes blocos de conhecimento) e, dentro de cada pilar, os
+processos/passos concretos que o ensinam. Depois escreva um resumo corrido que sirva como
+documento de referência para gerar conteúdo no futuro.
+
+Responda APENAS com um objeto JSON, sem texto antes ou depois, no formato:
+{
+  "pillars": [
+    {
+      "name": "nome curto do pilar",
+      "description": "o que esse pilar ensina e por que importa, 1-2 frases",
+      "processes": ["processo ou passo 1", "processo ou passo 2", "processo ou passo 3"]
+    }
+  ],
+  "summary": "resumo corrido do método completo (resultado + pilares + processos, no estilo do material original), em 3-5 parágrafos"
+}`;
+}
+
 export function contentPiecesPrompt(
   niche: string,
   pillars: string[],
   count: number,
+  method?: {
+    desiredResult: string;
+    summary: string;
+    pillars: { name: string; description: string; processes: string[] }[];
+  } | null,
 ) {
+  const methodBlock = method
+    ? `
+Você também tem acesso ao "Método" do criador: a estrutura real do produto pago dele, extraída
+para orientar o conteúdo gratuito. Use isso para criar pautas que ENSINEM de verdade um pedaço
+real do método — no mesmo estilo do material pago (ex: perguntas e respostas, passo a passo) —
+mostrando competência e gerando desejo pelo produto completo, mas SEM entregar o método
+inteiro de graça. Sempre que fizer sentido, termine a pauta com uma chamada sutil para o
+produto pago.
+
+Resultado que o método entrega: "${method.desiredResult}"
+Resumo do método: """${method.summary}"""
+Pilares e processos do método:
+${method.pillars.map((p) => `- ${p.name}: ${p.description} (processos: ${p.processes.join(" > ")})`).join("\n")}
+`
+    : "";
+
   return `Você é um produtor de conteúdo para Instagram focado em crescimento orgânico.
 Nicho: "${niche}". Pilares de conteúdo: ${pillars.join(", ")}.
-
+${methodBlock}
 Gere ${count} pautas de conteúdo variadas entre os formatos reels, carrossel, foto_unica e
-stories, cobrindo os pilares acima. Responda APENAS com um array JSON, sem texto antes ou
-depois, no formato:
+stories, cobrindo os pilares acima${method ? " e o método quando fizer sentido" : ""}. Responda
+APENAS com um array JSON, sem texto antes ou depois, no formato:
 [
   {
     "format": "reels" | "carrossel" | "foto_unica" | "stories",

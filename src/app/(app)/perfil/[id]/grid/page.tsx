@@ -28,7 +28,7 @@ export default async function GridPage({ params }: PageProps<"/perfil/[id]/grid"
 
   return (
     <PageFade>
-      <h1 className="font-display text-xl font-semibold">5. Simulador de grid</h1>
+      <h1 className="font-display text-xl font-semibold">6. Simulador de grid</h1>
       <p className="mt-1 text-sm text-ink-soft">
         Prévia de como o perfil vai ficar no Instagram. Arraste os quadrados para reorganizar
         o grid antes de postar de verdade.

@@ -3,6 +3,7 @@ export type ContentFormat = "reels" | "carrossel" | "foto_unica" | "stories";
 export type ProfileStatus =
   | "nicho"
   | "identidade"
+  | "metodo"
   | "conteudo"
   | "calendario"
   | "ativo";
@@ -48,6 +49,35 @@ export interface Identity {
   content_pillars: string[];
   created_at: string;
   updated_at: string;
+}
+
+export interface MethodPillar {
+  name: string;
+  description: string;
+  processes: string[];
+}
+
+export interface Method {
+  id: string;
+  profile_id: string;
+  user_id: string;
+  desired_result: string | null;
+  notes: string | null;
+  pillars: MethodPillar[];
+  summary: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface MethodSource {
+  id: string;
+  method_id: string;
+  profile_id: string;
+  user_id: string;
+  title: string;
+  file_path: string;
+  summary: string | null;
+  created_at: string;
 }
 
 export interface ContentPiece {
