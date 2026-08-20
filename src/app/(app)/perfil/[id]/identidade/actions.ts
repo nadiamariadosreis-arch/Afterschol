@@ -117,9 +117,9 @@ export async function saveIdentityEdits(profileId: string, identityId: string, f
     .eq("id", identityId);
   if (error) throw new Error(error.message);
 
-  await supabase.from("profiles").update({ status: "conteudo" }).eq("id", profileId);
+  await supabase.from("profiles").update({ status: "metodo" }).eq("id", profileId);
 
   const progress = await awardXp(supabase, user.id, 50);
 
-  redirect(withLevelUpParam(`/perfil/${profileId}/conteudo`, progress));
+  redirect(withLevelUpParam(`/perfil/${profileId}/metodo`, progress));
 }

@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { generateJSON } from "@/lib/ai/client";
 import { contentPiecesPrompt } from "@/lib/ai/prompts";
 import { awardXp } from "@/lib/gamification";
-import type { ContentFormat } from "@/lib/types";
+import type { ContentFormat, MethodPillar } from "@/lib/types";
 
 interface GeneratedPiece {
   format: ContentFormat;
@@ -28,7 +28,7 @@ export async function generateContentPieces(
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [{ data: niche }, { data: identity }] = await Promise.all([
+  const [{ data: niche }, { data: identity }, { data: method }] = await Promise.all([
     supabase
       .from("niches")
       .select("chosen_niche")
@@ -44,16 +44,33 @@ export async function generateContentPieces(
       .order("created_at", { ascending: false })
       .limit(1)
       .single(),
+    supabase
+      .from("methods")
+      .select("desired_result, summary, pillars")
+      .eq("profile_id", profileId)
+      .not("summary", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ]);
 
   if (!niche?.chosen_niche) return { error: "Escolha um nicho antes de gerar conteúdo." };
   const pillars: string[] = identity?.content_pillars ?? [];
   if (pillars.length === 0) return { error: "Defina os pilares de conteúdo na etapa de identidade." };
 
+  const methodContext =
+    method?.desired_result && method?.summary
+      ? {
+          desiredResult: method.desired_result as string,
+          summary: method.summary as string,
+          pillars: (method.pillars as MethodPillar[]) ?? [],
+        }
+      : null;
+
   let pieces: GeneratedPiece[];
   try {
     pieces = await generateJSON<GeneratedPiece[]>(
-      contentPiecesPrompt(niche.chosen_niche, pillars, 8),
+      contentPiecesPrompt(niche.chosen_niche, pillars, 8, methodContext),
     );
   } catch {
     return { error: "Não foi possível gerar pautas agora. Tente novamente." };
