@@ -1,0 +1,16 @@
+{
+  "name": "Estúdio de Crescimento",
+  "short_name": "Crescimento",
+  "description": "Estruture nicho, identidade, conteúdo e calendário de um Instagram novo focado em crescimento orgânico.",
+  "start_url": "/dashboard",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#fdfbf6",
+  "theme_color": "#e0692b",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "maskable" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

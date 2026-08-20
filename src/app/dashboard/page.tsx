@@ -4,6 +4,7 @@ import { createProfile } from "@/app/perfil/actions";
 import { Header } from "@/components/header";
 import { Button, Card } from "@/components/ui";
 import { PageFade, StaggerItem, StaggerList } from "@/components/motion";
+import { InstallAppBanner } from "@/components/install-app-banner";
 import { STEP_LABELS, STEP_ROUTE } from "@/lib/steps";
 import type { Profile } from "@/lib/types";
 
@@ -21,6 +22,7 @@ export default async function DashboardPage() {
       <Header />
       <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-10">
         <PageFade>
+          <InstallAppBanner />
           <div className="flex items-center justify-between">
             <div>
               <h1 className="font-display text-xl font-semibold">Seus perfis</h1>
