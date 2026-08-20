@@ -20,7 +20,7 @@ export async function generateJSON<T>(prompt: string): Promise<T> {
 
   const message = await anthropic.messages.create({
     model: MODEL,
-    max_tokens: 2048,
+    max_tokens: 4096,
     output_config: { effort: "medium" },
     messages: [{ role: "user", content: prompt }],
   });
