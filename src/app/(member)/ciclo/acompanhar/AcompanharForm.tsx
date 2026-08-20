@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/Button";
 import { AutosaveIndicator } from "@/components/ui/AutosaveIndicator";
 import { useAutosave } from "@/lib/useAutosave";
 import { formatBRL } from "@/lib/format";
-import { gerarEnvelopes, contasVencendoEm7Dias, type Envelope } from "@/lib/apfa/calc";
+import { gerarEnvelopes, envelopesVencendoEm7Dias, type Envelope } from "@/lib/apfa/calc";
 import { PROCESSO_INFO, MEIO_PAGAMENTO_LABEL, MOTIVO_COMPRA_LABEL } from "@/lib/apfa/processos";
 import { RevisaoMensal } from "./RevisaoMensal";
 import {
@@ -88,6 +88,9 @@ export function AcompanharForm({
   function adicionarEntrada(e: Omit<EntradaRegistrada, "id">) {
     setEntradas((atual) => [...atual, { ...e, id: newId() }]);
   }
+  function atualizarEntrada(id: string, patch: Partial<EntradaRegistrada>) {
+    setEntradas((atual) => atual.map((e) => (e.id === id ? { ...e, ...patch } : e)));
+  }
   function removerEntrada(id: string) {
     setEntradas((atual) => atual.filter((e) => e.id !== id));
   }
@@ -100,9 +103,10 @@ export function AcompanharForm({
 
       <EntradasSection
         entradas={entradas}
-        planejar={planejar}
+        envelopes={envelopes}
         hoje={hoje}
         onAdd={adicionarEntrada}
+        onUpdate={atualizarEntrada}
         onRemove={removerEntrada}
       />
 
@@ -288,15 +292,17 @@ export function AcompanharForm({
 
 function EntradasSection({
   entradas,
-  planejar,
+  envelopes,
   hoje,
   onAdd,
+  onUpdate,
   onRemove,
 }: {
   entradas: EntradaRegistrada[];
-  planejar: PlanejarData | null;
+  envelopes: Envelope[];
   hoje: Date;
   onAdd: (e: Omit<EntradaRegistrada, "id">) => void;
+  onUpdate: (id: string, patch: Partial<EntradaRegistrada>) => void;
   onRemove: (id: string) => void;
 }) {
   const [data, setData] = useState("");
@@ -305,20 +311,20 @@ function EntradasSection({
 
   function registrar() {
     if (!valor) return;
-    onAdd({ data, valor: parseFloat(valor) || 0, origem });
+    onAdd({ data, valor: parseFloat(valor) || 0, origem, reserva_separada: false, valor_reservado: null });
     setValor("");
     setOrigem("");
   }
 
-  const contasVencendo = contasVencendoEm7Dias(planejar, hoje);
+  const contasVencendo = envelopesVencendoEm7Dias(envelopes, hoje);
 
   return (
     <div>
       <h3 className="font-display-italic font-semibold text-[20px] text-ink mb-1">Entradas do mês</h3>
       <p className="text-ink/60 text-[14px] mb-4">
-        Anote o dinheiro que vai entrando — salário, freela, algum extra. Assim que anotar, a
-        plataforma já mostra o que está vencendo nos próximos 7 dias, pra te ajudar a decidir o que
-        fazer com esse valor.
+        Anote o dinheiro que vai entrando — salário, freela, algum extra. Cada entrada vira um
+        mini-guia: separou a reserva desta vez? E pra onde esse dinheiro precisa ir antes do próximo
+        pagamento?
       </p>
 
       <Card className="flex flex-col gap-3 mb-4">
@@ -361,37 +367,68 @@ function EntradasSection({
       </Card>
 
       {entradas.length ? (
-        <Card className="flex flex-col gap-2 mb-4">
+        <div className="flex flex-col gap-3 mb-4">
           {entradas.map((e) => (
-            <div key={e.id} className="flex items-center justify-between text-[14px] border-b border-line pb-2 last:border-0 last:pb-0">
-              <span className="text-ink/70">
-                {e.data ? new Date(e.data + "T00:00:00").toLocaleDateString("pt-BR") : "Sem data"}
-                {e.origem ? ` · ${e.origem}` : ""}
-              </span>
-              <div className="flex items-center gap-3">
-                <span className="font-semibold text-mint">{formatBRL(e.valor)}</span>
-                <button
-                  type="button"
-                  onClick={() => onRemove(e.id)}
-                  aria-label="Remover entrada"
-                  className="text-ink/40 hover:text-orange-dark px-1"
-                >
-                  ×
-                </button>
+            <Card key={e.id} className="flex flex-col gap-3">
+              <div className="flex items-center justify-between text-[14px]">
+                <span className="text-ink/70">
+                  {e.data ? new Date(e.data + "T00:00:00").toLocaleDateString("pt-BR") : "Sem data"}
+                  {e.origem ? ` · ${e.origem}` : ""}
+                </span>
+                <div className="flex items-center gap-3">
+                  <span className="font-semibold text-mint">{formatBRL(e.valor)}</span>
+                  <button
+                    type="button"
+                    onClick={() => onRemove(e.id)}
+                    aria-label="Remover entrada"
+                    className="text-ink/40 hover:text-orange-dark px-1"
+                  >
+                    ×
+                  </button>
+                </div>
               </div>
-            </div>
+
+              <div className="pt-2.5 border-t border-line flex flex-wrap items-center gap-3">
+                <label className="flex items-center gap-2 text-[13px] text-ink/80">
+                  <input
+                    type="checkbox"
+                    checked={e.reserva_separada}
+                    onChange={(ev) =>
+                      onUpdate(e.id, {
+                        reserva_separada: ev.target.checked,
+                        valor_reservado: ev.target.checked ? e.valor_reservado : null,
+                      })
+                    }
+                  />
+                  Já separei a reserva desta entrada
+                </label>
+                {e.reserva_separada ? (
+                  <label className="flex items-center gap-1.5 text-[13px]">
+                    <span className="text-ink/60">Quanto?</span>
+                    <input
+                      type="number"
+                      min={0}
+                      step="0.01"
+                      value={e.valor_reservado ?? ""}
+                      onChange={(ev) => onUpdate(e.id, { valor_reservado: parseFloat(ev.target.value) || 0 })}
+                      className="border border-line bg-cream rounded-lg px-2.5 py-1.5 text-[13px] w-28 outline-none focus:border-orange"
+                    />
+                  </label>
+                ) : null}
+              </div>
+            </Card>
           ))}
-        </Card>
+        </div>
       ) : null}
 
       {entradas.length ? (
         <Card>
-          <h4 className="font-display-italic font-semibold text-[16px] text-ink mb-1">Contas vencendo nos próximos 7 dias</h4>
+          <h4 className="font-display-italic font-semibold text-[16px] text-ink mb-1">Pra onde esse dinheiro precisa ir</h4>
           <p className="text-ink/55 text-[13px] mb-3">
-            Puxado direto da Organização do mês, pra você ter noção do que já está por vir.
+            Envelopes que vencem nos próximos 7 dias — o quanto ainda falta separar em cada um.
           </p>
           {contasVencendo.length === 0 ? (
-            <p className="text-ink/60 text-[14px]">Nenhuma conta vencendo nos próximos 7 dias.</p>
+            <p className="text-ink/60 text-[14px]">Nenhum envelope vencendo nos próximos 7 dias.</p>
           ) : (
             <div className="flex flex-col gap-2">
               {contasVencendo.map((c) => (
@@ -399,9 +436,14 @@ function EntradasSection({
                   <span className="text-ink/75">
                     {c.nome} <span className="text-ink/45">· {PROCESSO_INFO[c.processo].titulo}</span>
                   </span>
-                  <span className="text-[13px] font-semibold text-orange-dark">
-                    {c.diasRestantes === 0 ? "vence hoje" : c.diasRestantes === 1 ? "vence amanhã" : `vence em ${c.diasRestantes} dias`}
-                  </span>
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className={`font-semibold ${c.disponivel < 0 ? "text-orange-dark" : "text-ink"}`}>
+                      {formatBRL(c.disponivel)}
+                    </span>
+                    <span className="text-[12px] font-semibold text-orange-dark w-20 text-right">
+                      {c.diasRestantes === 0 ? "hoje" : c.diasRestantes === 1 ? "amanhã" : `em ${c.diasRestantes} dias`}
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>

@@ -143,6 +143,8 @@ const entradaRegistrada = z.object({
   data: z.string(),
   valor: z.number().nonnegative(),
   origem: z.string(),
+  reserva_separada: z.boolean().default(false),
+  valor_reservado: z.number().nonnegative().nullable().default(null),
 });
 
 const diagnosticoProcesso = z.object({

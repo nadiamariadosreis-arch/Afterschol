@@ -460,28 +460,42 @@ export function rendaFuturaComprometida(avaliar: AvaliarData | null): RendaFutur
   return { parcelas, renda, percentual: renda > 0 ? (parcelas / renda) * 100 : 0 };
 }
 
-export type ContaVencendo = { id: string; nome: string; processo: ProcessoKey; diaPagamento: number; diasRestantes: number };
+export type ContaVencendo = {
+  id: string;
+  nome: string;
+  processo: ProcessoKey;
+  diaPagamento: number;
+  diasRestantes: number;
+  /** Quanto ainda falta separar pra essa conta (orçado - já gasto/separado nela). */
+  disponivel: number;
+};
 
 /**
- * Itens da Organização do mês que vencem nos próximos 7 dias a partir de
- * `hoje` — ajuda a família a ver, assim que uma entrada de dinheiro é
- * anotada, o que já está por vir. Vira o mês automaticamente quando o dia
- * de pagamento já passou neste mês.
+ * Envelopes que vencem nos próximos 7 dias a partir de `hoje` — ajuda a
+ * família a decidir, assim que uma entrada de dinheiro é anotada, pra onde
+ * mandar esse dinheiro antes do próximo pagamento. Vira o mês
+ * automaticamente quando o dia de pagamento já passou neste mês.
  */
-export function contasVencendoEm7Dias(planejar: PlanejarData | null, hoje: Date = new Date()): ContaVencendo[] {
-  if (!planejar) return [];
+export function envelopesVencendoEm7Dias(envelopes: Envelope[], hoje: Date = new Date()): ContaVencendo[] {
   const hojeSemHora = new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate());
 
-  return planejar.organizacao_mes
-    .filter((item) => !item.cortar && item.dia_pagamento != null && item.nome.trim())
-    .map((item) => {
-      const dia = item.dia_pagamento!;
+  return envelopes
+    .filter((env) => env.diaPagamento != null && env.nome.trim())
+    .map((env) => {
+      const dia = env.diaPagamento!;
       let ocorrencia = new Date(hojeSemHora.getFullYear(), hojeSemHora.getMonth(), dia);
       if (ocorrencia < hojeSemHora) {
         ocorrencia = new Date(hojeSemHora.getFullYear(), hojeSemHora.getMonth() + 1, dia);
       }
       const diasRestantes = Math.round((ocorrencia.getTime() - hojeSemHora.getTime()) / (1000 * 60 * 60 * 24));
-      return { id: item.id, nome: item.nome, processo: item.processo, diaPagamento: dia, diasRestantes };
+      return {
+        id: env.id,
+        nome: env.nome,
+        processo: env.processo,
+        diaPagamento: dia,
+        diasRestantes,
+        disponivel: env.disponivel,
+      };
     })
     .filter((c) => c.diasRestantes >= 0 && c.diasRestantes <= 7)
     .sort((a, b) => a.diasRestantes - b.diasRestantes);

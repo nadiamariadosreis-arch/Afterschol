@@ -100,6 +100,9 @@ export type EntradaRegistrada = {
   data: string;
   valor: number;
   origem: string;
+  /** Separou a reserva/construção do futuro a partir desta entrada específica? */
+  reserva_separada: boolean;
+  valor_reservado: number | null;
 };
 
 export type FaturaItem = {
