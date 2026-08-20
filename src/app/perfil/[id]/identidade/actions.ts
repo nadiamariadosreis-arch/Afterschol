@@ -63,6 +63,28 @@ export async function generateIdentity(
   return { error: null };
 }
 
+export async function startManualIdentity(profileId: string) {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const { error } = await supabase.from("identities").insert({
+    profile_id: profileId,
+    user_id: user.id,
+    username_suggestion: "",
+    bio: "",
+    value_proposition: "",
+    tone_of_voice: "",
+    color_palette: [],
+    content_pillars: [],
+  });
+  if (error) throw new Error(error.message);
+
+  revalidatePath(`/perfil/${profileId}/identidade`);
+}
+
 export async function saveIdentityEdits(profileId: string, identityId: string, formData: FormData) {
   const supabase = await createClient();
   const {
@@ -75,6 +97,10 @@ export async function saveIdentityEdits(profileId: string, identityId: string, f
     .map((p) => p.trim())
     .filter(Boolean);
 
+  const color_palette = [1, 2, 3, 4]
+    .map((i) => String(formData.get(`color_${i}`) ?? "").trim())
+    .filter(Boolean);
+
   const { error } = await supabase
     .from("identities")
     .update({
@@ -83,6 +109,7 @@ export async function saveIdentityEdits(profileId: string, identityId: string, f
       value_proposition: String(formData.get("value_proposition") ?? ""),
       tone_of_voice: String(formData.get("tone_of_voice") ?? ""),
       content_pillars,
+      color_palette,
       updated_at: new Date().toISOString(),
     })
     .eq("id", identityId);
