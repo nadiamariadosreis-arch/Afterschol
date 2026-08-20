@@ -11,6 +11,30 @@ export type Category =
 
 export type Energy = "baixa" | "media" | "alta";
 
+export type DayOfWeek = "dom" | "seg" | "ter" | "qua" | "qui" | "sex" | "sab";
+
+export type RoomType =
+  | "quarto"
+  | "banheiro"
+  | "cozinha"
+  | "sala"
+  | "area_servico"
+  | "outro";
+
+export interface Room {
+  id: string;
+  name: string;
+  type: RoomType;
+}
+
+/** Preferências da mãe: o que ela sente que acumula, e seu dia de faxina. */
+export interface RoutineProfile {
+  /** ids de AccumulationConcern marcados como "isso acumula na minha casa" */
+  concerns: string[];
+  cleaningDay: DayOfWeek | null;
+  cleaningDayMinutes: number;
+}
+
 export interface Task {
   id: string;
   name: string;
@@ -24,6 +48,8 @@ export interface Task {
   custom?: boolean;
   /** ISO date (yyyy-mm-dd) da última vez que foi concluída */
   lastDone?: string;
+  /** cômodo ao qual a tarefa pertence, se houver */
+  roomId?: string;
 }
 
 export interface ScoredTask extends Task {
@@ -31,6 +57,8 @@ export interface ScoredTask extends Task {
   urgencyRatio: number;
   score: number;
   reason: string;
+  /** true quando a urgência/prioridade foi reforçada por uma preocupação marcada pela mãe */
+  boosted: boolean;
 }
 
 export interface RoutineResult {

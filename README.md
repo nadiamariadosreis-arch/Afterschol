@@ -20,6 +20,21 @@ qualidade com as crianças.
 - A lista de tarefas é totalmente editável: dá para adicionar, remover e
   ajustar duração/frequência/prioridade de acordo com a rotina de cada casa.
 
+### Minhas prioridades
+
+- **O que acumula**: a mãe marca o que costuma virar bagunça na casa dela
+  (roupa suja, louça, brinquedos, papelada...). Cada item marcado eleva a
+  tarefa correspondente para prioridade máxima e frequência diária na hora de
+  pontuar — sem precisar editar a tarefa manualmente — e ela aparece com ⭐ na
+  rotina gerada.
+- **Dia de faxina**: dá para marcar um dia da semana e quanto tempo costuma
+  sobrar nele. Nesse dia o app sugere usar esse tempo maior para dar conta das
+  tarefas mais pesadas.
+- **Cômodos**: cadastrar um cômodo (quarto, banheiro, cozinha...) já sugere
+  automaticamente tarefas específicas dele. Tarefas extras (tipo "organizar
+  uma gaveta") podem ser cadastradas à mão com o tempo estimado e associadas
+  a um cômodo, e entram no mesmo cálculo de tempo disponível.
+
 ## Rodando localmente
 
 ```bash

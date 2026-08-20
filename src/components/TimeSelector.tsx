@@ -7,13 +7,33 @@ interface Props {
   energy: Energy;
   onEnergyChange: (energy: Energy) => void;
   onGenerate: () => void;
+  isCleaningDayToday: boolean;
+  cleaningDayMinutes: number;
 }
 
-export function TimeSelector({ freeTime, onFreeTimeChange, energy, onEnergyChange, onGenerate }: Props) {
+export function TimeSelector({
+  freeTime,
+  onFreeTimeChange,
+  energy,
+  onEnergyChange,
+  onGenerate,
+  isCleaningDayToday,
+  cleaningDayMinutes,
+}: Props) {
   return (
     <section className="rounded-3xl bg-white border border-terracotta-100 shadow-sm p-6 sm:p-8">
       <h2 className="text-xl font-extrabold text-ink">Quanto tempo livre você tem agora?</h2>
       <p className="text-ink-soft mt-1">A gente monta a rotina certinha para caber nesse tempo.</p>
+
+      {isCleaningDayToday && (
+        <button
+          type="button"
+          onClick={() => onFreeTimeChange(cleaningDayMinutes)}
+          className="mt-4 w-full text-left px-4 py-3 rounded-2xl bg-sage-50 border border-sage-200 text-sm text-sage-600 font-semibold hover:bg-sage-100 transition-colors"
+        >
+          🧽 Hoje é seu dia de faxina! Usar os {cleaningDayMinutes} min separados para hoje
+        </button>
+      )}
 
       <div className="mt-5 flex flex-wrap gap-2">
         {timePresets.map((minutes) => (

@@ -1,12 +1,15 @@
 import { useState } from "react";
-import type { Category, Energy, Frequency, Task } from "../types";
+import type { Category, Energy, Frequency, Room, Task } from "../types";
 import { categoryMeta, energyMeta, frequencyMeta } from "../data/categories";
 
 interface Props {
   tasks: Task[];
+  rooms: Room[];
   onAdd: (task: Omit<Task, "id" | "custom">) => void;
   onRemove: (id: string) => void;
 }
+
+const NO_ROOM = "";
 
 const emptyForm = {
   name: "",
@@ -15,17 +18,23 @@ const emptyForm = {
   frequency: "semanal" as Frequency,
   priority: 2 as 1 | 2 | 3,
   energy: "media" as Energy,
+  roomId: NO_ROOM,
 };
 
-export function TaskManager({ tasks, onAdd, onRemove }: Props) {
+export function TaskManager({ tasks, rooms, onAdd, onRemove }: Props) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState(emptyForm);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!form.name.trim()) return;
-    onAdd({ ...form, name: form.name.trim() });
+    const { roomId, ...rest } = form;
+    onAdd({ ...rest, name: form.name.trim(), roomId: roomId || undefined });
     setForm(emptyForm);
+  }
+
+  function roomName(id?: string) {
+    return id ? rooms.find((r) => r.id === id)?.name : undefined;
   }
 
   return (
@@ -41,10 +50,10 @@ export function TaskManager({ tasks, onAdd, onRemove }: Props) {
 
       {open && (
         <div className="mt-5">
-          <form onSubmit={handleSubmit} className="grid grid-cols-2 sm:grid-cols-6 gap-3 mb-6">
+          <form onSubmit={handleSubmit} className="grid grid-cols-2 sm:grid-cols-6 gap-3 mb-2">
             <input
               type="text"
-              placeholder="Nova tarefa..."
+              placeholder="Nova tarefa... (ex: organizar a gaveta)"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
               className="col-span-2 sm:col-span-2 px-3 py-2 rounded-xl border border-cream-soft bg-cream text-sm outline-none focus:border-terracotta-300"
@@ -78,7 +87,8 @@ export function TaskManager({ tasks, onAdd, onRemove }: Props) {
               value={form.durationMin}
               onChange={(e) => setForm({ ...form, durationMin: Number(e.target.value) || 5 })}
               className="px-3 py-2 rounded-xl border border-cream-soft bg-cream text-sm"
-              aria-label="Duração em minutos"
+              aria-label="Duração estimada em minutos"
+              title="Quanto tempo essa tarefa costuma levar"
             />
             <button
               type="submit"
@@ -88,6 +98,22 @@ export function TaskManager({ tasks, onAdd, onRemove }: Props) {
             </button>
           </form>
 
+          {rooms.length > 0 && (
+            <select
+              value={form.roomId}
+              onChange={(e) => setForm({ ...form, roomId: e.target.value })}
+              className="w-full sm:w-auto mb-6 px-3 py-2 rounded-xl border border-dashed border-terracotta-200 bg-cream text-sm text-ink-soft"
+            >
+              <option value={NO_ROOM}>Nenhum cômodo específico</option>
+              {rooms.map((r) => (
+                <option key={r.id} value={r.id}>
+                  Cômodo: {r.name}
+                </option>
+              ))}
+            </select>
+          )}
+          {rooms.length === 0 && <div className="mb-6" />}
+
           <ul className="flex flex-col gap-2 max-h-80 overflow-y-auto pr-1">
             {tasks.map((task) => (
               <li
@@ -95,7 +121,12 @@ export function TaskManager({ tasks, onAdd, onRemove }: Props) {
                 className="flex items-center gap-3 px-3 py-2 rounded-xl bg-cream text-sm"
               >
                 <span className="shrink-0">{categoryMeta[task.category].emoji}</span>
-                <span className="flex-1 min-w-0 truncate font-semibold text-ink">{task.name}</span>
+                <span className="flex-1 min-w-0 truncate font-semibold text-ink">
+                  {task.name}
+                  {roomName(task.roomId) && (
+                    <span className="ml-1 font-normal text-ink-soft">· {roomName(task.roomId)}</span>
+                  )}
+                </span>
                 <span className="text-ink-soft text-xs shrink-0">{frequencyMeta[task.frequency]}</span>
                 <span className="text-ink-soft text-xs shrink-0">{task.durationMin} min</span>
                 <span className="text-ink-soft text-xs shrink-0">{energyMeta[task.energy].emoji}</span>

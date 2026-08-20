@@ -1,4 +1,4 @@
-import type { Category, Energy, Frequency } from "../types";
+import type { Category, DayOfWeek, Energy, Frequency } from "../types";
 
 export const categoryMeta: Record<Category, { label: string; emoji: string; classes: string }> = {
   cozinha: { label: "Cozinha", emoji: "🍳", classes: "bg-amber-50 text-amber-700 border-amber-200" },
@@ -24,3 +24,15 @@ export const energyMeta: Record<Energy, { label: string; emoji: string }> = {
 };
 
 export const timePresets = [15, 30, 45, 60, 90, 120];
+
+export const dayOfWeekMeta: Record<DayOfWeek, string> = {
+  dom: "Dom",
+  seg: "Seg",
+  ter: "Ter",
+  qua: "Qua",
+  qui: "Qui",
+  sex: "Sex",
+  sab: "Sáb",
+};
+
+export const daysOfWeekOrder: DayOfWeek[] = ["dom", "seg", "ter", "qua", "qui", "sex", "sab"];

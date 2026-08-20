@@ -5,9 +5,10 @@ interface Props {
   task: ScoredTask;
   onComplete: (id: string) => void;
   completed: boolean;
+  roomName?: string;
 }
 
-export function TaskCard({ task, onComplete, completed }: Props) {
+export function TaskCard({ task, onComplete, completed, roomName }: Props) {
   const meta = categoryMeta[task.category];
   const isSpecial = task.category === "autocuidado";
 
@@ -37,6 +38,7 @@ export function TaskCard({ task, onComplete, completed }: Props) {
 
       <div className="min-w-0 flex-1">
         <p className={`font-bold text-ink ${completed ? "line-through decoration-sage-500/60" : ""}`}>
+          {task.boosted && <span title="Prioridade que você marcou">⭐ </span>}
           {task.name}
         </p>
         <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-soft">
@@ -44,6 +46,12 @@ export function TaskCard({ task, onComplete, completed }: Props) {
             {meta.emoji} {meta.label}
           </span>
           <span>{frequencyMeta[task.frequency]}</span>
+          {roomName && (
+            <>
+              <span>·</span>
+              <span>{roomName}</span>
+            </>
+          )}
           <span>·</span>
           <span className="italic">{completed ? "feita hoje 🎉" : task.reason}</span>
         </div>

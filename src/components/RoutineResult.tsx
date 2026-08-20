@@ -1,13 +1,14 @@
-import type { RoutineResult as RoutineResultType } from "../types";
+import type { Room, RoutineResult as RoutineResultType } from "../types";
 import { TaskCard } from "./TaskCard";
 
 interface Props {
   routine: RoutineResultType | null;
   completedToday: Set<string>;
   onComplete: (id: string) => void;
+  rooms: Room[];
 }
 
-export function RoutineResult({ routine, completedToday, onComplete }: Props) {
+export function RoutineResult({ routine, completedToday, onComplete, rooms }: Props) {
   if (!routine) return null;
 
   if (routine.selected.length === 0) {
@@ -38,6 +39,7 @@ export function RoutineResult({ routine, completedToday, onComplete }: Props) {
             task={task}
             completed={completedToday.has(task.id)}
             onComplete={onComplete}
+            roomName={rooms.find((r) => r.id === task.roomId)?.name}
           />
         ))}
       </ul>

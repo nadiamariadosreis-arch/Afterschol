@@ -1,5 +1,6 @@
 import type { Energy, RoutineResult, ScoredTask, Task } from "../types";
 import { daysBetween, todayISO } from "./dates";
+import type { ConcernBoostMap } from "./concerns";
 
 const FREQUENCY_DAYS: Record<Task["frequency"], number> = {
   diaria: 1,
@@ -17,8 +18,15 @@ const ENERGY_RANK: Record<Energy, number> = { baixa: 1, media: 2, alta: 3 };
 // das importantes, em vez de se perderem em meio a várias tarefas menores.
 const PRIORITY_WEIGHT: Record<Task["priority"], number> = { 1: 1, 2: 2, 3: 4 };
 
-function scoreTask(task: Task, today: string): ScoredTask {
-  const cycleDays = FREQUENCY_DAYS[task.frequency];
+const EMPTY_BOOSTS: ConcernBoostMap = new Map();
+
+function scoreTask(task: Task, today: string, boosts: ConcernBoostMap): ScoredTask {
+  const boost = boosts.get(task.id);
+  const boosted = boost !== undefined;
+  const frequency = boost?.frequency ?? task.frequency;
+  const priority = boost?.priority ?? task.priority;
+
+  const cycleDays = FREQUENCY_DAYS[frequency];
   const daysSinceDone = task.lastDone
     ? Math.max(0, daysBetween(task.lastDone, today))
     : cycleDays * NEVER_DONE_MULTIPLIER;
@@ -27,7 +35,7 @@ function scoreTask(task: Task, today: string): ScoredTask {
   // Urgência (capada para não deixar uma tarefa mensal esquecida dominar tudo)
   // combinada com a importância da tarefa.
   const urgency = Math.min(urgencyRatio, 4);
-  const score = urgency * PRIORITY_WEIGHT[task.priority];
+  const score = urgency * PRIORITY_WEIGHT[priority];
 
   let reason: string;
   if (!task.lastDone) {
@@ -39,14 +47,17 @@ function scoreTask(task: Task, today: string): ScoredTask {
   } else {
     reason = "em dia, ainda dá tempo";
   }
+  if (boosted) {
+    reason += " · prioridade que você marcou";
+  }
 
-  return { ...task, daysSinceDone, urgencyRatio, score, reason };
+  return { ...task, daysSinceDone, urgencyRatio, score, reason, boosted };
 }
 
 /** Calcula urgência/score de todas as tarefas, sem aplicar o limite de tempo. */
-export function scoreTasks(tasks: Task[]): ScoredTask[] {
+export function scoreTasks(tasks: Task[], boosts: ConcernBoostMap = EMPTY_BOOSTS): ScoredTask[] {
   const today = todayISO();
-  return tasks.map((t) => scoreTask(t, today));
+  return tasks.map((t) => scoreTask(t, today, boosts));
 }
 
 /**
@@ -59,13 +70,14 @@ export function generateRoutine(
   tasks: Task[],
   freeTimeMinutes: number,
   energyLevel: Energy,
+  boosts: ConcernBoostMap = EMPTY_BOOSTS,
 ): RoutineResult {
   const today = todayISO();
   const capacity = Math.max(0, Math.floor(freeTimeMinutes));
 
   const scored = tasks
     .filter((t) => t.durationMin > 0 && t.durationMin <= capacity)
-    .map((t) => scoreTask(t, today))
+    .map((t) => scoreTask(t, today, boosts))
     .map((t) => {
       const energyGap = ENERGY_RANK[t.energy] - ENERGY_RANK[energyLevel];
       const penalty = energyGap > 0 ? 1 - energyGap * 0.2 : 1;

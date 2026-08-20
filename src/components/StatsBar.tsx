@@ -1,20 +1,22 @@
 import { useMemo } from "react";
 import type { Task } from "../types";
 import { scoreTasks } from "../lib/scheduler";
+import type { ConcernBoostMap } from "../lib/concerns";
 
 interface Props {
   tasks: Task[];
+  boosts: ConcernBoostMap;
 }
 
-export function StatsBar({ tasks }: Props) {
+export function StatsBar({ tasks, boosts }: Props) {
   const stats = useMemo(() => {
-    const scored = scoreTasks(tasks);
+    const scored = scoreTasks(tasks, boosts);
     const overdue = scored.filter((t) => t.urgencyRatio >= 1).length;
     const pendingMinutes = scored
       .filter((t) => t.urgencyRatio >= 1)
       .reduce((sum, t) => sum + t.durationMin, 0);
     return { total: tasks.length, overdue, pendingMinutes };
-  }, [tasks]);
+  }, [tasks, boosts]);
 
   return (
     <div className="grid grid-cols-3 gap-3 text-center">
