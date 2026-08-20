@@ -11,13 +11,13 @@ const ITEMS = [
 export function GrowthChecklist() {
   return (
     <div className="mt-8">
-      <h2 className="text-sm font-semibold text-neutral-700">
+      <h2 className="text-sm font-semibold text-ink">
         6. Checklist de crescimento orgânico
       </h2>
       <ul className="mt-3 space-y-2">
         {ITEMS.map((item) => (
-          <li key={item} className="flex items-start gap-2 text-sm text-neutral-600">
-            <input type="checkbox" className="mt-1 h-4 w-4 shrink-0" />
+          <li key={item} className="flex items-start gap-2 text-sm text-ink-soft">
+            <input type="checkbox" className="mt-1 h-4 w-4 shrink-0 accent-orange" />
             <span>{item}</span>
           </li>
         ))}

@@ -11,8 +11,8 @@ export default function LoginPage() {
   return (
     <main className="flex flex-1 items-center justify-center px-4 py-16">
       <Card className="w-full max-w-sm">
-        <h1 className="text-lg font-semibold">Entrar</h1>
-        <p className="mt-1 text-sm text-neutral-500">
+        <h1 className="font-display text-lg font-semibold">Entrar</h1>
+        <p className="mt-1 text-sm text-ink-soft">
           Acesse sua conta para continuar estruturando seu Instagram.
         </p>
         <form action={formAction} className="mt-6 space-y-4">
@@ -39,9 +39,9 @@ export default function LoginPage() {
             {pending ? "Entrando..." : "Entrar"}
           </Button>
         </form>
-        <p className="mt-6 text-center text-sm text-neutral-500">
+        <p className="mt-6 text-center text-sm text-ink-soft">
           Ainda não tem conta?{" "}
-          <Link href="/cadastro" className="font-medium text-neutral-900 underline">
+          <Link href="/cadastro" className="font-medium text-ink underline">
             Criar conta
           </Link>
         </p>

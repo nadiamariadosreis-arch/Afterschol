@@ -13,8 +13,8 @@ export default async function CalendarioPage({ params }: PageProps<"/perfil/[id]
 
   return (
     <div>
-      <h1 className="text-xl font-semibold">4. Calendário editorial</h1>
-      <p className="mt-1 text-sm text-neutral-500">
+      <h1 className="font-display text-xl font-semibold">4. Calendário editorial</h1>
+      <p className="mt-1 text-sm text-ink-soft">
         Arraste as pautas para os dias da semana. Consistência é o principal fator de
         crescimento orgânico.
       </p>

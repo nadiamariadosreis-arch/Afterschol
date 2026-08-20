@@ -14,13 +14,13 @@ export default function CadastroPage() {
   return (
     <main className="flex flex-1 items-center justify-center px-4 py-16">
       <Card className="w-full max-w-sm">
-        <h1 className="text-lg font-semibold">Criar conta</h1>
-        <p className="mt-1 text-sm text-neutral-500">
+        <h1 className="font-display text-lg font-semibold">Criar conta</h1>
+        <p className="mt-1 text-sm text-ink-soft">
           Comece a estruturar um Instagram novo do zero.
         </p>
 
         {state.success ? (
-          <p className="mt-6 text-sm text-neutral-700">
+          <p className="mt-6 text-sm text-ink">
             Conta criada. Verifique seu e-mail para confirmar o acesso (se a confirmação
             estiver ativada no projeto) e depois{" "}
             <Link href="/login" className="font-medium underline">
@@ -56,9 +56,9 @@ export default function CadastroPage() {
           </form>
         )}
 
-        <p className="mt-6 text-center text-sm text-neutral-500">
+        <p className="mt-6 text-center text-sm text-ink-soft">
           Já tem conta?{" "}
-          <Link href="/login" className="font-medium text-neutral-900 underline">
+          <Link href="/login" className="font-medium text-ink underline">
             Entrar
           </Link>
         </p>

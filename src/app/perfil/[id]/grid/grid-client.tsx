@@ -39,11 +39,11 @@ export function GridClient({
   const initial = identity?.username_suggestion?.replace("@", "").slice(0, 2).toUpperCase() ?? "IG";
 
   return (
-    <div className="mt-6 mx-auto max-w-sm overflow-hidden rounded-2xl border border-neutral-300 bg-white">
+    <div className="mt-6 mx-auto max-w-sm overflow-hidden rounded-2xl border border-line bg-card">
       <div className="flex items-center gap-4 p-4">
         <div
           className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full text-lg font-semibold text-white"
-          style={{ backgroundColor: identity?.color_palette?.[0] ?? "#525252" }}
+          style={{ backgroundColor: identity?.color_palette?.[0] ?? "#e0692b" }}
         >
           {initial}
         </div>
@@ -51,7 +51,7 @@ export function GridClient({
           <p className="truncate font-semibold">
             {identity?.username_suggestion ?? "@seu_perfil"}
           </p>
-          <p className="mt-1 text-sm text-neutral-600">{identity?.bio ?? "Bio aparecerá aqui"}</p>
+          <p className="mt-1 text-sm text-ink-soft">{identity?.bio ?? "Bio aparecerá aqui"}</p>
         </div>
       </div>
 
@@ -59,10 +59,10 @@ export function GridClient({
         <div className="flex gap-3 overflow-x-auto px-4 pb-4">
           {identity.content_pillars.map((pillar) => (
             <div key={pillar} className="flex shrink-0 flex-col items-center gap-1">
-              <div className="flex h-12 w-12 items-center justify-center rounded-full border border-neutral-300 text-xs text-neutral-500">
+              <div className="flex h-12 w-12 items-center justify-center rounded-full border border-line text-xs text-ink-soft">
                 •
               </div>
-              <span className="max-w-14 truncate text-center text-[11px] text-neutral-500">
+              <span className="max-w-14 truncate text-center text-[11px] text-ink-soft">
                 {pillar}
               </span>
             </div>
@@ -70,9 +70,9 @@ export function GridClient({
         </div>
       )}
 
-      <div className="grid grid-cols-3 gap-px bg-neutral-200">
+      <div className="grid grid-cols-3 gap-px bg-line">
         {ordered.length === 0 && (
-          <p className="col-span-3 p-6 text-center text-sm text-neutral-400">
+          <p className="col-span-3 p-6 text-center text-sm text-ink-soft">
             Nenhuma pauta ainda. Volte ao módulo de conteúdo para gerar posts.
           </p>
         )}
@@ -83,11 +83,11 @@ export function GridClient({
             onDragStart={() => setDraggingIndex(index)}
             onDragOver={(e) => e.preventDefault()}
             onDrop={() => handleDrop(index)}
-            className="flex aspect-square cursor-grab flex-col items-center justify-center gap-1 bg-neutral-100 p-2 text-center active:cursor-grabbing"
+            className="flex aspect-square cursor-grab flex-col items-center justify-center gap-1 bg-cream-dark p-2 text-center active:cursor-grabbing"
             title={piece.theme}
           >
-            <span className="text-lg text-neutral-500">{FORMAT_ICON[piece.format]}</span>
-            <span className="line-clamp-2 text-[11px] text-neutral-600">{piece.theme}</span>
+            <span className="text-lg text-ink-soft">{FORMAT_ICON[piece.format]}</span>
+            <span className="line-clamp-2 text-[11px] text-ink-soft">{piece.theme}</span>
           </div>
         ))}
       </div>

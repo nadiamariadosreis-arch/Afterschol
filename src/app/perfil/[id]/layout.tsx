@@ -24,15 +24,15 @@ export default async function PerfilLayout({
   return (
     <div className="flex min-h-full flex-1 flex-col">
       <Header title={profile.title} />
-      <nav className="border-b border-neutral-200 bg-white">
+      <nav className="border-b border-line bg-card">
         <div className="mx-auto flex max-w-4xl gap-1 overflow-x-auto px-4">
           {STEP_ORDER.map((step, index) => {
             const unlocked = index <= currentIndex;
             const label = STEP_LABELS[step];
             const className = `whitespace-nowrap border-b-2 px-3 py-3 text-sm ${
               unlocked
-                ? "border-transparent text-neutral-700 hover:border-neutral-400"
-                : "border-transparent text-neutral-300 pointer-events-none"
+                ? "border-transparent text-ink hover:border-orange"
+                : "border-transparent text-ink-soft pointer-events-none"
             }`;
             return unlocked ? (
               <Link key={step} href={`/perfil/${id}/${STEP_ROUTE[step]}`} className={className}>

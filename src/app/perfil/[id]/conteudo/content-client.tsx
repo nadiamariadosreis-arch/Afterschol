@@ -46,24 +46,24 @@ export function ContentClient({
                     <div className="flex items-center gap-2">
                       <Badge>{FORMAT_LABELS[piece.format]}</Badge>
                       {piece.scheduled_date && (
-                        <span className="text-xs text-neutral-400">
+                        <span className="text-xs text-ink-soft">
                           Agendado: {piece.scheduled_date}
                         </span>
                       )}
                     </div>
                     <h3 className="mt-2 font-medium">{piece.theme}</h3>
                     {piece.hook && (
-                      <p className="mt-1 text-sm text-neutral-600">
+                      <p className="mt-1 text-sm text-ink-soft">
                         <span className="font-medium">Gancho:</span> {piece.hook}
                       </p>
                     )}
                     {piece.script && (
-                      <p className="mt-1 text-sm text-neutral-600">
+                      <p className="mt-1 text-sm text-ink-soft">
                         <span className="font-medium">Roteiro:</span> {piece.script}
                       </p>
                     )}
                     {piece.caption && (
-                      <p className="mt-1 text-sm text-neutral-500">
+                      <p className="mt-1 text-sm text-ink-soft">
                         <span className="font-medium">Legenda:</span> {piece.caption}
                       </p>
                     )}

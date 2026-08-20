@@ -64,10 +64,10 @@ export function IdentityClient({
               {latest.color_palette.map((color) => (
                 <div key={color} className="flex flex-col items-center gap-1">
                   <span
-                    className="h-8 w-8 rounded-full border border-neutral-200"
+                    className="h-8 w-8 rounded-full border border-line"
                     style={{ backgroundColor: color }}
                   />
-                  <span className="text-xs text-neutral-500">{color}</span>
+                  <span className="text-xs text-ink-soft">{color}</span>
                 </div>
               ))}
             </div>

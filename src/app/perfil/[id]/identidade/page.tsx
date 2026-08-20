@@ -16,8 +16,8 @@ export default async function IdentidadePage({ params }: PageProps<"/perfil/[id]
 
   return (
     <div>
-      <h1 className="text-xl font-semibold">2. Identidade do perfil</h1>
-      <p className="mt-1 text-sm text-neutral-500">
+      <h1 className="font-display text-xl font-semibold">2. Identidade do perfil</h1>
+      <p className="mt-1 text-sm text-ink-soft">
         Um briefing de marca pessoal gerado a partir do nicho escolhido. Edite à vontade antes
         de avançar.
       </p>

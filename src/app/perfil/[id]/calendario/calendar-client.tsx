@@ -53,7 +53,7 @@ export function CalendarClient({
 
   if (pieces.length === 0) {
     return (
-      <p className="mt-6 text-sm text-neutral-500">
+      <p className="mt-6 text-sm text-ink-soft">
         Ainda não há pautas geradas.{" "}
         <Link href={`/perfil/${profileId}/conteudo`} className="underline">
           Volte para o módulo de conteúdo
@@ -66,21 +66,21 @@ export function CalendarClient({
   return (
     <div className="mt-6 space-y-6">
       <div>
-        <p className="text-sm font-medium text-neutral-700">Pautas sem data</p>
+        <p className="text-sm font-medium text-ink">Pautas sem data</p>
         <div
           onDragOver={(e) => e.preventDefault()}
           onDrop={() => handleDrop(null)}
-          className="mt-2 flex min-h-16 flex-wrap gap-2 rounded-lg border border-dashed border-neutral-300 p-3"
+          className="mt-2 flex min-h-16 flex-wrap gap-2 rounded-lg border border-dashed border-line p-3"
         >
           {unscheduled.length === 0 && (
-            <span className="text-sm text-neutral-400">Todas as pautas foram agendadas.</span>
+            <span className="text-sm text-ink-soft">Todas as pautas foram agendadas.</span>
           )}
           {unscheduled.map((piece) => (
             <div
               key={piece.id}
               draggable
               onDragStart={() => setDraggingId(piece.id)}
-              className="cursor-grab rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm shadow-sm active:cursor-grabbing"
+              className="cursor-grab rounded-lg border border-line bg-card px-3 py-2 text-sm shadow-sm active:cursor-grabbing"
             >
               <Badge>{piece.format}</Badge> {piece.theme}
             </div>
@@ -97,9 +97,9 @@ export function CalendarClient({
               key={key}
               onDragOver={(e) => e.preventDefault()}
               onDrop={() => handleDrop(key)}
-              className="min-h-32 rounded-lg border border-neutral-200 bg-white p-2"
+              className="min-h-32 rounded-lg border border-line bg-card p-2"
             >
-              <p className="text-xs font-medium capitalize text-neutral-500">
+              <p className="text-xs font-medium capitalize text-ink-soft">
                 {WEEKDAY_FORMATTER.format(date)} · {DAY_FORMATTER.format(date)}
               </p>
               <div className="mt-2 space-y-1">
@@ -108,7 +108,7 @@ export function CalendarClient({
                     key={piece.id}
                     draggable
                     onDragStart={() => setDraggingId(piece.id)}
-                    className="cursor-grab rounded-md bg-neutral-100 px-2 py-1 text-xs active:cursor-grabbing"
+                    className="cursor-grab rounded-md bg-cream-dark px-2 py-1 text-xs active:cursor-grabbing"
                   >
                     {piece.theme}
                   </div>
@@ -120,7 +120,7 @@ export function CalendarClient({
       </div>
 
       <Card className="flex items-center justify-between">
-        <p className="text-sm text-neutral-500">
+        <p className="text-sm text-ink-soft">
           {byDate.size > 0
             ? "Quando terminar de organizar, veja como o grid do perfil vai ficar."
             : "Agende ao menos uma pauta para seguir para o simulador de grid."}

@@ -32,8 +32,8 @@ export function NicheClient({ profileId, latest }: { profileId: string; latest: 
       {latest && latest.suggestions.length > 0 && (
         <div className="space-y-3">
           {alreadyChosen && (
-            <p className="text-sm text-neutral-500">
-              Nicho escolhido: <span className="font-medium text-neutral-900">{latest.chosen_niche}</span>
+            <p className="text-sm text-ink-soft">
+              Nicho escolhido: <span className="font-medium text-ink">{latest.chosen_niche}</span>
             </p>
           )}
           {latest.suggestions.map((suggestion, index) => {
@@ -41,16 +41,16 @@ export function NicheClient({ profileId, latest }: { profileId: string; latest: 
             return (
               <Card
                 key={suggestion.niche + index}
-                className={isChosen ? "border-neutral-900" : undefined}
+                className={isChosen ? "border-orange" : undefined}
               >
                 <div className="flex items-start justify-between gap-4">
                   <div>
                     <h3 className="font-medium">{suggestion.niche}</h3>
-                    <p className="mt-1 text-sm text-neutral-600">
+                    <p className="mt-1 text-sm text-ink-soft">
                       <span className="font-medium">Público:</span> {suggestion.audience}
                     </p>
-                    <p className="mt-1 text-sm text-neutral-600">{suggestion.rationale}</p>
-                    <p className="mt-1 text-sm text-amber-700">
+                    <p className="mt-1 text-sm text-ink-soft">{suggestion.rationale}</p>
+                    <p className="mt-1 text-sm text-orange-dark">
                       <span className="font-medium">Evite:</span> {suggestion.avoid}
                     </p>
                   </div>
@@ -61,7 +61,7 @@ export function NicheClient({ profileId, latest }: { profileId: string; latest: 
                       </Button>
                     </form>
                   )}
-                  {isChosen && <span className="text-sm font-medium text-neutral-900">✓ Escolhido</span>}
+                  {isChosen && <span className="text-sm font-medium text-ink">✓ Escolhido</span>}
                 </div>
               </Card>
             );
