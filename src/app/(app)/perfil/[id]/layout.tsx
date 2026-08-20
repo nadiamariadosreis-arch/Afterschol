@@ -1,8 +1,7 @@
 import { notFound } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { Header } from "@/components/header";
 import { LevelUpFromQuery } from "@/components/level-up-from-query";
-import { StepNav } from "./step-nav";
+import { ModuleRail } from "./module-rail";
 import type { Profile } from "@/lib/types";
 
 export default async function PerfilLayout({
@@ -21,9 +20,13 @@ export default async function PerfilLayout({
 
   return (
     <div className="flex min-h-full flex-1 flex-col">
-      <Header title={profile.title} />
-      <StepNav id={id} currentStatus={profile.status} />
-      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-10">{children}</main>
+      <div className="border-b border-line bg-card px-4 pt-4 md:px-8">
+        <p className="text-sm text-ink-soft">{profile.title}</p>
+      </div>
+      <ModuleRail id={id} currentStatus={profile.status} />
+      <main className="mx-auto w-full max-w-4xl flex-1 px-4 py-8 md:px-8 md:py-10">
+        {children}
+      </main>
       <LevelUpFromQuery />
     </div>
   );
