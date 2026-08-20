@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/Card";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { ChangePasswordForm } from "./ChangePasswordForm";
 import { EditFamilyName } from "./EditFamilyName";
+import { EditProposito } from "@/components/member/EditProposito";
 
 export default async function AccountPage() {
   const profile = await requireMember();
@@ -16,6 +17,14 @@ export default async function AccountPage() {
       <Card>
         <h3 className="font-display-italic font-semibold text-[20px] text-ink mb-1">Nome da família</h3>
         <EditFamilyName familyId={profile.id} nomeInicial={profile.family_name ?? ""} />
+      </Card>
+
+      <Card>
+        <h3 className="font-display-italic font-semibold text-[20px] text-ink mb-1">Seu porquê</h3>
+        <p className="text-ink/60 text-[14px] mb-3">
+          O motivo que sustenta a disciplina no longo prazo — aparece como lembrete lá no Avaliar.
+        </p>
+        <EditProposito familyId={profile.id} propositoInicial={profile.proposito ?? ""} />
       </Card>
 
       <Card>

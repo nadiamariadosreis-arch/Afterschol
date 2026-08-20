@@ -12,6 +12,8 @@ export type Profile = {
   id: string;
   email: string;
   family_name: string | null;
+  /** "Seu porquê" — o motivo emocional por trás de organizar as finanças, definido uma vez. */
+  proposito: string | null;
   role: UserRole;
   paid: boolean;
   /** Até quando o acesso pago vale (compra dá 1 ano). `null` = nunca comprou. */

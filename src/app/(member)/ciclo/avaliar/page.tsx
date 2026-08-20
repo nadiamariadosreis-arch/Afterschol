@@ -2,13 +2,14 @@ import { requireCurrentCycle } from "@/lib/apfa/session";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Card } from "@/components/ui/Card";
 import { Callout } from "@/components/ui/Callout";
+import { EditProposito } from "@/components/member/EditProposito";
 import { PROCESSO_INFO } from "@/lib/apfa/processos";
 import { cycleLabel } from "@/lib/apfa/calc";
 import { PROCESSO_ORDER, emptyAvaliar } from "@/lib/apfa/types";
 import { AvaliarForm } from "./AvaliarForm";
 
 export default async function AvaliarPage() {
-  const { cycle } = await requireCurrentCycle();
+  const { profile, cycle } = await requireCurrentCycle();
 
   return (
     <div className="flex flex-col gap-10">
@@ -17,6 +18,15 @@ export default async function AvaliarPage() {
         title="Avaliar"
         subtitle="Sentar uma vez, olhar o cenário real, sem julgamento. Aqui você entende os 4 processos e compara o cenário ideal com o que está acontecendo de fato."
       />
+
+      <Card>
+        <h3 className="font-display-italic font-semibold text-[19px] text-ink mb-1">Qual é o seu porquê?</h3>
+        <p className="text-ink/60 text-[14px] mb-3">
+          Antes dos números: por que organizar as finanças da sua família importa? Guarde esse
+          motivo — ele sustenta a disciplina quando a planilha perfeita já não sustenta mais.
+        </p>
+        <EditProposito familyId={profile.id} propositoInicial={profile.proposito ?? ""} />
+      </Card>
 
       <div className="grid sm:grid-cols-2 gap-4">
         {PROCESSO_ORDER.map((key) => (
