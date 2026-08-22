@@ -20,6 +20,13 @@
   --color-sage-400: #8ba876;
   --color-sage-500: #7c9473;
   --color-sage-600: #5f7856;
+
+  --color-gold-50: #fbf3e3;
+  --color-gold-100: #f3e0b8;
+  --color-gold-200: #e6cb8c;
+  --color-gold-500: #c89b3c;
+  --color-gold-600: #a67f2e;
+  --color-gold-700: #7c5f20;
 }
 
 @layer base {

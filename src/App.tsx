@@ -5,6 +5,7 @@ import { RoutineResult } from "./components/RoutineResult";
 import { StatsBar } from "./components/StatsBar";
 import { TaskManager } from "./components/TaskManager";
 import { RoutineProfile } from "./components/RoutineProfile";
+import { DesafioView } from "./components/desafio/DesafioView";
 import { useTasks } from "./hooks/useTasks";
 import { useRooms } from "./hooks/useRooms";
 import { useProfile } from "./hooks/useProfile";
@@ -14,6 +15,8 @@ import { todayDayOfWeek, todayISO } from "./lib/dates";
 import { roomTaskTemplates } from "./data/roomTemplates";
 import type { Energy, RoomType, RoutineResult as RoutineResultType } from "./types";
 
+type Tab = "rotina" | "desafio";
+
 export default function App() {
   const { tasks, markDone, markUndone, addTask, removeTask } = useTasks();
   const { rooms, addRoom, removeRoom } = useRooms();
@@ -21,6 +24,7 @@ export default function App() {
   const [freeTime, setFreeTime] = useState(30);
   const [energy, setEnergy] = useState<Energy>("media");
   const [routine, setRoutine] = useState<RoutineResultType | null>(null);
+  const [tab, setTab] = useState<Tab>("rotina");
 
   const today = todayISO();
   const completedToday = useMemo(
@@ -61,40 +65,73 @@ export default function App() {
       <div className="max-w-2xl mx-auto px-4 pb-16">
         <Header />
 
-        <div className="mt-6">
-          <StatsBar tasks={tasks} boosts={boosts} />
+        <div className="mt-6 flex justify-center gap-2">
+          <button
+            type="button"
+            onClick={() => setTab("rotina")}
+            className={`px-5 py-2 rounded-full text-sm font-bold transition-colors ${
+              tab === "rotina"
+                ? "bg-terracotta-500 text-white"
+                : "bg-cream-soft text-ink-soft hover:text-ink"
+            }`}
+          >
+            🏡 Rotina do dia
+          </button>
+          <button
+            type="button"
+            onClick={() => setTab("desafio")}
+            className={`px-5 py-2 rounded-full text-sm font-bold transition-colors ${
+              tab === "desafio"
+                ? "bg-gold-600 text-white"
+                : "bg-cream-soft text-ink-soft hover:text-ink"
+            }`}
+          >
+            🔥 Desafio de 21 dias
+          </button>
         </div>
 
-        <div className="mt-6 flex flex-col gap-6">
-          <TimeSelector
-            freeTime={freeTime}
-            onFreeTimeChange={setFreeTime}
-            energy={energy}
-            onEnergyChange={setEnergy}
-            onGenerate={handleGenerate}
-            isCleaningDayToday={isCleaningDayToday}
-            cleaningDayMinutes={profile.cleaningDayMinutes}
-          />
+        {tab === "rotina" ? (
+          <>
+            <div className="mt-6">
+              <StatsBar tasks={tasks} boosts={boosts} />
+            </div>
 
-          <RoutineResult
-            routine={routine}
-            completedToday={completedToday}
-            onComplete={handleComplete}
-            rooms={rooms}
-          />
+            <div className="mt-6 flex flex-col gap-6">
+              <TimeSelector
+                freeTime={freeTime}
+                onFreeTimeChange={setFreeTime}
+                energy={energy}
+                onEnergyChange={setEnergy}
+                onGenerate={handleGenerate}
+                isCleaningDayToday={isCleaningDayToday}
+                cleaningDayMinutes={profile.cleaningDayMinutes}
+              />
 
-          <RoutineProfile
-            profile={profile}
-            onToggleConcern={toggleConcern}
-            onSetCleaningDay={setCleaningDay}
-            onSetCleaningDayMinutes={setCleaningDayMinutes}
-            rooms={rooms}
-            onAddRoom={handleAddRoom}
-            onRemoveRoom={handleRemoveRoom}
-          />
+              <RoutineResult
+                routine={routine}
+                completedToday={completedToday}
+                onComplete={handleComplete}
+                rooms={rooms}
+              />
 
-          <TaskManager tasks={tasks} rooms={rooms} onAdd={addTask} onRemove={removeTask} />
-        </div>
+              <RoutineProfile
+                profile={profile}
+                onToggleConcern={toggleConcern}
+                onSetCleaningDay={setCleaningDay}
+                onSetCleaningDayMinutes={setCleaningDayMinutes}
+                rooms={rooms}
+                onAddRoom={handleAddRoom}
+                onRemoveRoom={handleRemoveRoom}
+              />
+
+              <TaskManager tasks={tasks} rooms={rooms} onAdd={addTask} onRemove={removeTask} />
+            </div>
+          </>
+        ) : (
+          <div className="mt-6">
+            <DesafioView rooms={rooms} onGraduate={addTask} />
+          </div>
+        )}
 
         <footer className="mt-10 text-center text-xs text-ink-soft">
           Feito com carinho para quem cuida de tudo. 💛

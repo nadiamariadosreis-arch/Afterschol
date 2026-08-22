@@ -67,3 +67,36 @@ export interface RoutineResult {
   freeTimeMinutes: number;
   leftoverMinutes: number;
 }
+
+/** Tipo do item acumulado, usado só pra prever a frequência de manutenção depois que ele é feito. */
+export type ChallengeCategory =
+  | "movel_grande"
+  | "geladeira_despensa"
+  | "gaveta_papelada"
+  | "area_externa"
+  | "outro";
+
+/** Item da fila do Desafio de 21 dias — algo acumulado que a mãe cadastrou manualmente. */
+export interface ChallengeTask {
+  id: string;
+  name: string;
+  roomId?: string;
+  estimatedMinutes: number;
+  category: ChallengeCategory;
+  cycleId: string;
+  createdAt: string;
+  /** ISO date de quando foi concluída. Ausente = ainda pendente. */
+  doneAt?: string;
+}
+
+export interface ChallengeCycle {
+  id: string;
+  startDate: string;
+  /** ISO dates em que pelo menos uma tarefa (fixa ou do desafio) foi concluída. */
+  completedDays: string[];
+}
+
+export interface ChallengeBaseline {
+  minutes: number | null;
+  calibratedAt: string | null;
+}
