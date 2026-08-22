@@ -52,11 +52,13 @@ export function PlanejarForm({
   familyId,
   initial,
   avaliar,
+  cicloLabel,
 }: {
   cycleId: string;
   familyId: string;
   initial: PlanejarData;
   avaliar: AvaliarData | null;
+  cicloLabel: string;
 }) {
   const [state, formAction, pending] = useActionState(salvarPlanejarAction, initialState);
   const [tab, setTab] = useState<TabKey>("reuniao");
@@ -135,7 +137,7 @@ export function PlanejarForm({
       {tab === "mes" ? (
         <>
           <MesTab itens={mes} setItens={setMes} avaliar={avaliar} eventos={reuniao.eventos_especiais} />
-          <MesResumo itens={mes} avaliar={avaliar} />
+          <MesResumo itens={mes} avaliar={avaliar} cicloLabel={cicloLabel} />
         </>
       ) : null}
       {tab === "cartao" ? <CartaoTab familyId={familyId} cartao={cartao} setCartao={setCartao} /> : null}
@@ -1001,12 +1003,102 @@ function DividasResumo({ dividas }: { dividas: Divida[] }) {
   );
 }
 
-function MesResumo({ itens, avaliar }: { itens: ItemMes[]; avaliar: AvaliarData | null }) {
+function MesResumo({
+  itens,
+  avaliar,
+  cicloLabel,
+}: {
+  itens: ItemMes[];
+  avaliar: AvaliarData | null;
+  cicloLabel: string;
+}) {
+  const [gerandoPdf, setGerandoPdf] = useState(false);
+
   if (!itens.length) return null;
 
   const podeCortar = itens.filter((i) => i.cortar).length;
   const totalPrevisto = itens.reduce((sum, i) => sum + (i.valor_estimado ?? 0), 0);
   const porPessoa = resumoPorPessoaMes(itens, avaliar);
+
+  async function baixarPdf() {
+    setGerandoPdf(true);
+    try {
+      const { jsPDF } = await import("jspdf");
+      const doc = new jsPDF();
+      let y = 20;
+
+      const quebrarSeNecessario = (proximaAltura: number) => {
+        if (y + proximaAltura > 285) {
+          doc.addPage();
+          y = 20;
+        }
+      };
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text("Método A.P.F.A — Organização do mês", 14, y);
+      y += 7;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.text(cicloLabel, 14, y);
+      y += 12;
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.text("Itens do mês", 14, y);
+      y += 8;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      for (const item of itens) {
+        quebrarSeNecessario(6);
+        const detalhes = [
+          PROCESSO_INFO[item.processo].titulo,
+          item.dia_pagamento ? `dia ${item.dia_pagamento}` : null,
+          item.quem_paga || null,
+          item.cortar ? "CORTAR" : null,
+        ]
+          .filter(Boolean)
+          .join(" · ");
+        doc.text(`${item.nome || "Sem nome"} — ${detalhes}`, 14, y);
+        doc.text(item.valor_estimado ? formatBRL(item.valor_estimado) : "—", 196, y, { align: "right" });
+        y += 6;
+      }
+      y += 4;
+      quebrarSeNecessario(6);
+      doc.setFont("helvetica", "bold");
+      doc.text("Total previsto", 14, y);
+      doc.text(formatBRL(totalPrevisto), 196, y, { align: "right" });
+      y += 10;
+
+      if (porPessoa.length) {
+        quebrarSeNecessario(14);
+        doc.setFont("helvetica", "bold");
+        doc.setFontSize(13);
+        doc.text("Por pessoa", 14, y);
+        y += 8;
+        doc.setFont("helvetica", "normal");
+        doc.setFontSize(11);
+        for (const grupo of porPessoa) {
+          quebrarSeNecessario(6);
+          doc.setFont("helvetica", "bold");
+          doc.text(grupo.pessoa, 14, y);
+          doc.text(formatBRL(grupo.total), 196, y, { align: "right" });
+          y += 6;
+          doc.setFont("helvetica", "normal");
+          for (const item of grupo.itens) {
+            quebrarSeNecessario(6);
+            doc.text(`  ${item.nome}`, 14, y);
+            doc.text(formatBRL(valorOrcadoItemMes(item, avaliar)), 196, y, { align: "right" });
+            y += 6;
+          }
+        }
+      }
+
+      doc.save(`organizacao-do-mes-${cicloLabel.replace(/\s+/g, "-").toLowerCase()}.pdf`);
+    } finally {
+      setGerandoPdf(false);
+    }
+  }
 
   return (
     <Card>
@@ -1073,6 +1165,15 @@ function MesResumo({ itens, avaliar }: { itens: ItemMes[]; avaliar: AvaliarData 
           </div>
         </div>
       ) : null}
+
+      <button
+        type="button"
+        onClick={baixarPdf}
+        disabled={gerandoPdf}
+        className="mt-6 text-[14px] font-semibold text-orange-dark hover:underline underline-offset-4 disabled:opacity-60"
+      >
+        {gerandoPdf ? "Gerando PDF…" : "↓ Baixar resumo em PDF"}
+      </button>
     </Card>
   );
 }

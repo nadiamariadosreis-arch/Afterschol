@@ -3,6 +3,7 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { Callout } from "@/components/ui/Callout";
 import { Paywall } from "@/components/member/Paywall";
 import { temAcessoPago } from "@/lib/auth";
+import { cycleLabel } from "@/lib/apfa/calc";
 import { emptyPlanejar } from "@/lib/apfa/types";
 import { PlanejarForm } from "./PlanejarForm";
 
@@ -34,6 +35,7 @@ export default async function PlanejarPage() {
         familyId={profile.id}
         initial={cycle.planejar ?? emptyPlanejar()}
         avaliar={cycle.avaliar}
+        cicloLabel={cycleLabel(cycle.year, cycle.month)}
       />
     </div>
   );
