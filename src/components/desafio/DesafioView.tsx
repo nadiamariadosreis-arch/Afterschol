@@ -1,4 +1,4 @@
-import type { Room, Task } from "../../types";
+import type { Room, RoomType, Task } from "../../types";
 import { useChallenge } from "../../hooks/useChallenge";
 import { DesafioCalibration } from "./DesafioCalibration";
 import { DesafioFixedChecklist } from "./DesafioFixedChecklist";
@@ -10,9 +10,10 @@ import { DesafioCycleComplete } from "./DesafioCycleComplete";
 interface Props {
   rooms: Room[];
   onGraduate: (task: Omit<Task, "id" | "custom">) => void;
+  onAddRoom: (name: string, type: RoomType) => Room;
 }
 
-export function DesafioView({ rooms, onGraduate }: Props) {
+export function DesafioView({ rooms, onGraduate, onAddRoom }: Props) {
   const {
     today,
     cycle,
@@ -63,6 +64,7 @@ export function DesafioView({ rooms, onGraduate }: Props) {
         rooms={rooms}
         onAdd={addChallengeTask}
         onRemove={removeChallengeTask}
+        onAddRoom={onAddRoom}
       />
     </div>
   );

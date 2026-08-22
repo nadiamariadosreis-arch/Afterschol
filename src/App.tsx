@@ -51,6 +51,7 @@ export default function App() {
     for (const template of roomTaskTemplates[type]) {
       addTask({ ...template, roomId: room.id });
     }
+    return room;
   }
 
   function handleRemoveRoom(id: string) {
@@ -129,7 +130,7 @@ export default function App() {
           </>
         ) : (
           <div className="mt-6">
-            <DesafioView rooms={rooms} onGraduate={addTask} />
+            <DesafioView rooms={rooms} onGraduate={addTask} onAddRoom={handleAddRoom} />
           </div>
         )}
 

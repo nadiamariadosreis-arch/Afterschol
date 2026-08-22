@@ -22,6 +22,16 @@ export function DesafioDaily({ pendingTasks, baselineMinutes, rooms, onComplete 
     return id ? rooms.find((r) => r.id === id)?.name : undefined;
   }
 
+  // A sugestão já vem agrupada por cômodo (o motor termina um antes de
+  // pular pro outro) — só precisamos marcar onde cada grupo começa.
+  const distinctRoomKeys = new Set(suggestion.selected.map((t) => t.roomId ?? "__sem__"));
+  const showRoomHeadings = distinctRoomKeys.size > 1;
+  const rows = suggestion.selected.map((task, i) => {
+    const roomKey = task.roomId ?? "__sem__";
+    const prevRoomKey = i > 0 ? (suggestion.selected[i - 1].roomId ?? "__sem__") : null;
+    return { task, isNewGroup: showRoomHeadings && roomKey !== prevRoomKey };
+  });
+
   return (
     <section className="rounded-3xl bg-white border border-terracotta-100 shadow-sm p-6 sm:p-8">
       <h2 className="text-xl font-extrabold text-ink">Quanto tempo você tem hoje, no total?</h2>
@@ -79,32 +89,38 @@ export function DesafioDaily({ pendingTasks, baselineMinutes, rooms, onComplete 
             </p>
           ) : (
             <ul className="mt-3 flex flex-col gap-2">
-              {suggestion.selected.map((task) => (
-                <li
-                  key={task.id}
-                  className="flex items-center gap-3 rounded-2xl border border-cream-soft bg-cream p-3"
-                >
-                  <button
-                    type="button"
-                    onClick={() => onComplete(task.id)}
-                    aria-label={`Marcar ${task.name} como feita`}
-                    className="shrink-0 w-8 h-8 rounded-full border-2 border-terracotta-300 flex items-center justify-center text-transparent hover:border-terracotta-500 font-bold transition-colors"
-                  >
-                    ✓
-                  </button>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-ink">
-                      {challengeCategoryMeta[task.category].emoji} {task.name}
-                    </p>
-                    {roomName(task.roomId) && (
-                      <p className="text-xs text-ink-soft">{roomName(task.roomId)}</p>
+              {rows.map(({ task, isNewGroup }) => {
+                return (
+                  <li key={task.id}>
+                    {isNewGroup && (
+                      <p className="text-xs font-bold text-ink-soft uppercase tracking-wide mb-1.5">
+                        {roomName(task.roomId) ?? "Sem cômodo"}
+                      </p>
                     )}
-                  </div>
-                  <span className="shrink-0 text-sm font-extrabold text-terracotta-600 tabular-nums">
-                    {task.estimatedMinutes} min
-                  </span>
-                </li>
-              ))}
+                    <div className="flex items-center gap-3 rounded-2xl border border-cream-soft bg-cream p-3">
+                      <button
+                        type="button"
+                        onClick={() => onComplete(task.id)}
+                        aria-label={`Marcar ${task.name} como feita`}
+                        className="shrink-0 w-8 h-8 rounded-full border-2 border-terracotta-300 flex items-center justify-center text-transparent hover:border-terracotta-500 font-bold transition-colors"
+                      >
+                        ✓
+                      </button>
+                      <div className="min-w-0 flex-1">
+                        <p className="font-semibold text-ink">
+                          {challengeCategoryMeta[task.category].emoji} {task.name}
+                        </p>
+                        {!showRoomHeadings && roomName(task.roomId) && (
+                          <p className="text-xs text-ink-soft">{roomName(task.roomId)}</p>
+                        )}
+                      </div>
+                      <span className="shrink-0 text-sm font-extrabold text-terracotta-600 tabular-nums">
+                        {task.estimatedMinutes} min
+                      </span>
+                    </div>
+                  </li>
+                );
+              })}
             </ul>
           )}
           {suggestion.leftoverMinutes > 0 && suggestion.selected.length > 0 && (
