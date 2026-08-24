@@ -131,7 +131,7 @@ export function PlanejarForm({
       {tab === "dividas" ? (
         <>
           <DividasTab dividas={dividas} setDividas={setDividas} />
-          <DividasResumo dividas={dividas} />
+          <DividasResumo dividas={dividas} cicloLabel={cicloLabel} />
         </>
       ) : null}
       {tab === "mes" ? (
@@ -935,7 +935,9 @@ function ReuniaoResumo({ reuniao }: { reuniao: PlanejarData["reuniao"] }) {
   );
 }
 
-function DividasResumo({ dividas }: { dividas: Divida[] }) {
+function DividasResumo({ dividas, cicloLabel }: { dividas: Divida[]; cicloLabel: string }) {
+  const [gerandoPdf, setGerandoPdf] = useState(false);
+
   if (!dividas.length) return null;
 
   const abertas = dividas.filter((d) => !d.quitada);
@@ -943,6 +945,70 @@ function DividasResumo({ dividas }: { dividas: Divida[] }) {
   const totalAberto = abertas.reduce((sum, d) => sum + d.valor, 0);
   const ordenadas = [...abertas].sort((a, b) => b.valor - a.valor);
   const maior = Math.max(...ordenadas.map((d) => d.valor), 1);
+  const todasOrdenadas = [...ordenadas, ...quitadas];
+
+  async function baixarPdf() {
+    setGerandoPdf(true);
+    try {
+      const { jsPDF } = await import("jspdf");
+      const doc = new jsPDF();
+      let y = 20;
+
+      const quebrarSeNecessario = (proximaAltura: number) => {
+        if (y + proximaAltura > 285) {
+          doc.addPage();
+          y = 20;
+        }
+      };
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(16);
+      doc.text("Método A.P.F.A — Resumo das dívidas", 14, y);
+      y += 7;
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(11);
+      doc.text(cicloLabel, 14, y);
+      y += 8;
+      doc.text(
+        `${abertas.length} ${abertas.length === 1 ? "dívida em aberto" : "dívidas em aberto"}, somando ${formatBRL(totalAberto)}${quitadas.length ? ` · ${quitadas.length} quitada${quitadas.length === 1 ? "" : "s"} este mês` : ""}.`,
+        14,
+        y,
+      );
+      y += 12;
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(11);
+      doc.text("Dívida", 14, y);
+      doc.text("Valor", 100, y);
+      doc.text("Urgência", 130, y);
+      doc.text("Juros", 160, y);
+      doc.text("Situação", 180, y);
+      y += 3;
+      doc.line(14, y, 196, y);
+      y += 6;
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+      for (const d of todasOrdenadas) {
+        quebrarSeNecessario(6);
+        doc.text(d.nome || "Sem nome", 14, y);
+        doc.text(formatBRL(d.valor), 100, y);
+        doc.text(URGENCIA_LABEL[d.urgencia], 130, y);
+        doc.text(d.juros ? `${d.juros}% a.m.` : "—", 160, y);
+        doc.text(d.quitada ? "Quitada" : "Em aberto", 180, y);
+        y += 6;
+      }
+      y += 4;
+      quebrarSeNecessario(6);
+      doc.setFont("helvetica", "bold");
+      doc.text("Total em aberto", 14, y);
+      doc.text(formatBRL(totalAberto), 100, y);
+
+      doc.save(`resumo-dividas-${cicloLabel.replace(/\s+/g, "-").toLowerCase()}.pdf`);
+    } finally {
+      setGerandoPdf(false);
+    }
+  }
 
   return (
     <Card>
@@ -999,6 +1065,15 @@ function DividasResumo({ dividas }: { dividas: Divida[] }) {
           </tbody>
         </table>
       </div>
+
+      <button
+        type="button"
+        onClick={baixarPdf}
+        disabled={gerandoPdf}
+        className="mt-6 text-[14px] font-semibold text-orange-dark hover:underline underline-offset-4 disabled:opacity-60"
+      >
+        {gerandoPdf ? "Gerando PDF…" : "↓ Baixar resumo em PDF"}
+      </button>
     </Card>
   );
 }
