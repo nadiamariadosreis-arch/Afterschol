@@ -75,6 +75,7 @@ function loadFixedDone(): Record<string, string> {
 export function useChallenge(
   onGraduate: (task: Omit<Task, "id" | "custom">) => void,
   rooms: Room[],
+  today: string,
 ) {
   const [cycle, setCycle] = useState<ChallengeCycle>(loadCycle);
   const [challengeTasks, setChallengeTasks] = useState<ChallengeTask[]>(loadChallengeTasks);
@@ -90,7 +91,6 @@ export function useChallenge(
   useEffect(() => localStorage.setItem(BASELINE_KEY, JSON.stringify(baseline)), [baseline]);
   useEffect(() => localStorage.setItem(FIXED_DONE_KEY, JSON.stringify(fixedDone)), [fixedDone]);
 
-  const today = todayISO();
   // O dia do desafio conta dias em que ela de fato usou o método, não dias
   // do calendário — pular um dia (ou uma semana) nunca "atrasa" nada, só
   // espera ela retomar. Ninguém compensa o que ficou pra trás.

@@ -36,7 +36,7 @@ export const accumulationConcerns: AccumulationConcern[] = [
   {
     id: "louca",
     label: "Louça se acumula na pia",
-    emoji: "🍽️",
+    emoji: "🧽",
     taskId: "lavar-louca",
     boostedFrequency: "diaria",
     boostedPriority: 3,

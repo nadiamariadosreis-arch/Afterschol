@@ -2,8 +2,8 @@ import type { Category, Energy, Frequency, RoomType } from "../types";
 
 export const roomTypeMeta: Record<RoomType, { label: string; emoji: string }> = {
   quarto: { label: "Quarto", emoji: "🛏️" },
-  banheiro: { label: "Banheiro", emoji: "🚿" },
-  cozinha: { label: "Cozinha", emoji: "🍳" },
+  banheiro: { label: "Banheiro", emoji: "🛁" },
+  cozinha: { label: "Cozinha", emoji: "🍲" },
   sala: { label: "Sala", emoji: "🛋️" },
   area_servico: { label: "Área de serviço", emoji: "🧺" },
   outro: { label: "Outro cômodo", emoji: "🚪" },

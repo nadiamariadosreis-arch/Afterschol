@@ -1,5 +1,6 @@
 import type { Room, RoomType, Task } from "../../types";
 import { useChallenge } from "../../hooks/useChallenge";
+import { useDevClock } from "../../hooks/useDevClock";
 import { DesafioCalibration } from "./DesafioCalibration";
 import { DesafioFixedChecklist } from "./DesafioFixedChecklist";
 import { DesafioTracker } from "./DesafioTracker";
@@ -7,6 +8,7 @@ import { DesafioPhaseStatus } from "./DesafioPhaseStatus";
 import { DesafioDaily } from "./DesafioDaily";
 import { DesafioTaskManager } from "./DesafioTaskManager";
 import { DesafioCycleComplete } from "./DesafioCycleComplete";
+import { DesafioDevClock } from "./DesafioDevClock";
 
 interface Props {
   rooms: Room[];
@@ -15,6 +17,7 @@ interface Props {
 }
 
 export function DesafioView({ rooms, onGraduate, onAddRoom }: Props) {
+  const devClock = useDevClock();
   const {
     today,
     cycle,
@@ -33,10 +36,18 @@ export function DesafioView({ rooms, onGraduate, onAddRoom }: Props) {
     addChallengeTask,
     removeChallengeTask,
     completeChallengeTask,
-  } = useChallenge(onGraduate, rooms);
+  } = useChallenge(onGraduate, rooms, devClock.today);
 
   return (
     <div className="flex flex-col gap-6">
+      <DesafioDevClock
+        today={devClock.today}
+        offsetDays={devClock.offsetDays}
+        onAdvance={devClock.advanceDay}
+        onRewind={devClock.rewindDay}
+        onReset={devClock.resetToToday}
+      />
+
       <DesafioTracker completedCount={cycle.completedDays.length} day={day} />
 
       {challengeCompleted && <DesafioCycleComplete />}
