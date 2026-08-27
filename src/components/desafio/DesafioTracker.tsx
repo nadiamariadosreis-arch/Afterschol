@@ -1,17 +1,18 @@
-import { addDaysISO } from "../../lib/dates";
-
 interface Props {
-  startDate: string;
-  completedDays: string[];
+  completedCount: number;
   day: number;
 }
 
-export function DesafioTracker({ startDate, completedDays, day }: Props) {
-  const completedSet = new Set(completedDays);
+/**
+ * As 21 células representam dias de uso, não dias do calendário — a N-ésima
+ * célula acende quando ela completa o N-ésimo dia em que usou o desafio,
+ * não quando 24h se passam. Pular um dia não "atrasa" nada: o painel
+ * simplesmente espera ela voltar.
+ */
+export function DesafioTracker({ completedCount, day }: Props) {
   const cells = Array.from({ length: 21 }, (_, i) => {
     const n = i + 1;
-    const dateISO = addDaysISO(startDate, i);
-    return { n, done: completedSet.has(dateISO), isToday: n === day };
+    return { n, done: n <= completedCount, isCurrent: n === day && n > completedCount };
   });
 
   return (
@@ -29,7 +30,7 @@ export function DesafioTracker({ startDate, completedDays, day }: Props) {
             className={`aspect-square rounded-lg flex items-center justify-center text-xs font-bold border tabular-nums ${
               c.done
                 ? "bg-gold-500 border-gold-500 text-white"
-                : c.isToday
+                : c.isCurrent
                   ? "border-gold-500 text-gold-700"
                   : "border-cream-soft text-ink-soft"
             }`}

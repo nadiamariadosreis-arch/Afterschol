@@ -6,7 +6,7 @@ import type {
   ChallengeTask,
   Task,
 } from "../types";
-import { daysBetween, todayISO } from "../lib/dates";
+import { todayISO } from "../lib/dates";
 import { dailyFixedTasks } from "../data/dailyFixedTasks";
 import { challengeCategoryMeta, daysToFrequency } from "../data/challengeCategories";
 
@@ -79,8 +79,12 @@ export function useChallenge(onGraduate: (task: Omit<Task, "id" | "custom">) => 
   useEffect(() => localStorage.setItem(FIXED_DONE_KEY, JSON.stringify(fixedDone)), [fixedDone]);
 
   const today = todayISO();
-  const day = daysBetween(cycle.startDate, today) + 1;
-  const cycleFinished = day > 21;
+  // O dia do desafio conta dias em que ela de fato usou o método, não dias
+  // do calendário — pular um dia (ou uma semana) nunca "atrasa" o ciclo,
+  // só espera ela retomar. Ninguém compensa o que ficou pra trás.
+  const completedCount = cycle.completedDays.length;
+  const day = completedCount + (cycle.completedDays.includes(today) ? 0 : 1);
+  const cycleFinished = completedCount >= 21;
 
   const baselineMinutes = baseline.minutes ?? DEFAULT_BASELINE;
   const isCalibrated = baseline.minutes !== null;

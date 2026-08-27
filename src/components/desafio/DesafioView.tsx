@@ -35,7 +35,7 @@ export function DesafioView({ rooms, onGraduate, onAddRoom }: Props) {
 
   return (
     <div className="flex flex-col gap-6">
-      <DesafioTracker startDate={cycle.startDate} completedDays={cycle.completedDays} day={day} />
+      <DesafioTracker completedCount={cycle.completedDays.length} day={day} />
 
       {cycleFinished && (
         <DesafioCycleComplete pendingCount={pendingTasks.length} onStartNewCycle={startNewCycle} />

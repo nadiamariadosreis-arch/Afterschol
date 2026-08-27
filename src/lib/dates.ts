@@ -14,12 +14,6 @@ export function daysBetween(fromISO: string, toISO: string): number {
   return Math.round(ms / (1000 * 60 * 60 * 24));
 }
 
-export function addDaysISO(iso: string, days: number): string {
-  const d = new Date(iso + "T00:00:00");
-  d.setDate(d.getDate() + days);
-  return d.toISOString().slice(0, 10);
-}
-
 const DAYS_OF_WEEK: DayOfWeek[] = ["dom", "seg", "ter", "qua", "qui", "sex", "sab"];
 
 export function todayDayOfWeek(): DayOfWeek {
