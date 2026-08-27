@@ -11,7 +11,7 @@ import { todayISO } from "../lib/dates";
 import { dailyFixedTasks } from "../data/dailyFixedTasks";
 import { challengeCategoryMeta, daysToFrequency } from "../data/challengeCategories";
 import { zoneTaskBanks } from "../data/zoneTaskBanks";
-import { zoneRoomTypeForWeek, zoneWeekNumber } from "../lib/zoneRotation";
+import { zoneRoomForWeek, zoneWeekNumber } from "../lib/zoneRotation";
 
 const CYCLE_KEY = "rotina-mamae:desafio:cycle:v1";
 const TASKS_KEY = "rotina-mamae:desafio:tasks:v1";
@@ -99,44 +99,40 @@ export function useChallenge(
   const challengeCompleted = completedCount >= 21;
 
   const currentZoneWeek = zoneWeekNumber(day);
-  const currentZoneType = currentZoneWeek > 0 ? zoneRoomTypeForWeek(currentZoneWeek) : null;
+  const currentZoneRoom = currentZoneWeek > 0 ? zoneRoomForWeek(currentZoneWeek, rooms) : null;
 
   const baselineMinutes = baseline.minutes ?? DEFAULT_BASELINE;
   const isCalibrated = baseline.minutes !== null;
 
   const pendingTasks = challengeTasks.filter((t) => t.cycleId === cycle.id && !t.doneAt);
 
-  // Assim que uma nova semana de zona começa, injeta o banco de tarefas
-  // daquele cômodo na fila — uma cópia por cômodo cadastrado daquele tipo
-  // (ou uma cópia "sem cômodo" se ela ainda não cadastrou nenhum).
+  // Assim que uma nova semana de zona começa, injeta o banco de tarefas do
+  // cômodo daquela semana na fila — a zona é um dos cômodos que ela mesma
+  // cadastrou, na ordem em que cadastrou, girando entre eles. Sem nenhum
+  // cômodo cadastrado ainda, não injeta nada — espera ela cadastrar um.
   //
   // Usa updates funcionais e checa se as tarefas já existem antes de somar —
   // não pode confiar só nas dependências do efeito pra evitar duplicar,
   // porque o StrictMode do React roda efeitos duas vezes em desenvolvimento.
   useEffect(() => {
-    if (currentZoneWeek === 0) return;
+    if (currentZoneWeek === 0 || !currentZoneRoom) return;
     const zoneId = `zone-${currentZoneWeek}-`;
+    const room = currentZoneRoom;
 
     setChallengeTasks((prev) => {
       if (prev.some((t) => t.id.startsWith(zoneId))) return prev;
 
-      const roomType = zoneRoomTypeForWeek(currentZoneWeek);
-      const bank = zoneTaskBanks[roomType];
-      const matchingRooms = rooms.filter((r) => r.type === roomType);
-      const targets: (Room | null)[] = matchingRooms.length > 0 ? matchingRooms : [null];
-
-      const newTasks: ChallengeTask[] = targets.flatMap((room) =>
-        bank.map((zt) => ({
-          id: `${zoneId}${zt.id}-${room?.id ?? "sem"}`,
-          name: zt.name,
-          roomId: room?.id,
-          estimatedMinutes: zt.minutes,
-          source: "zone" as const,
-          zoneType: roomType,
-          cycleId: cycle.id,
-          createdAt: today,
-        })),
-      );
+      const bank = zoneTaskBanks[room.type];
+      const newTasks: ChallengeTask[] = bank.map((zt) => ({
+        id: `${zoneId}${zt.id}-${room.id}`,
+        name: zt.name,
+        roomId: room.id,
+        estimatedMinutes: zt.minutes,
+        source: "zone" as const,
+        zoneType: room.type,
+        cycleId: cycle.id,
+        createdAt: today,
+      }));
 
       return [...prev, ...newTasks];
     });
@@ -147,7 +143,7 @@ export function useChallenge(
         : prev,
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentZoneWeek, cycle.id, rooms]);
+  }, [currentZoneWeek, currentZoneRoom, cycle.id]);
 
   function markDayCompleted() {
     setCycle((prev) =>
@@ -241,7 +237,7 @@ export function useChallenge(
     day,
     challengeCompleted,
     currentZoneWeek,
-    currentZoneType,
+    currentZoneRoom,
     baseline,
     baselineMinutes,
     isCalibrated,

@@ -1,20 +1,19 @@
 import { useState } from "react";
-import type { ChallengeTask, Room, RoomType } from "../../types";
+import type { ChallengeTask, Room } from "../../types";
 import { suggestDailyChallengeTasks } from "../../lib/challengeScheduler";
 import { challengeTaskEmoji } from "../../lib/taskDisplay";
-import { zoneLabels } from "../../data/zoneTaskBanks";
 
 interface Props {
   pendingTasks: ChallengeTask[];
   baselineMinutes: number;
   rooms: Room[];
-  zoneType: RoomType | null;
+  zoneRoom: Room | null;
   onComplete: (id: string) => void;
 }
 
 const TIME_PRESETS = [15, 30, 60];
 
-export function DesafioDaily({ pendingTasks, baselineMinutes, rooms, zoneType, onComplete }: Props) {
+export function DesafioDaily({ pendingTasks, baselineMinutes, rooms, zoneRoom, onComplete }: Props) {
   const [totalTime, setTotalTime] = useState(30);
 
   const remaining = Math.max(0, totalTime - baselineMinutes);
@@ -39,7 +38,7 @@ export function DesafioDaily({ pendingTasks, baselineMinutes, rooms, zoneType, o
       <h2 className="text-xl font-extrabold text-ink">Quanto tempo você tem hoje, no total?</h2>
       <p className="text-ink-soft mt-1">
         Já descontamos os {baselineMinutes} min do mínimo viável — o resto vai pra{" "}
-        {zoneType ? `zona: ${zoneLabels[zoneType]}` : "zona da semana"}.
+        {zoneRoom ? `zona: ${zoneRoom.name}` : "zona da semana"}.
       </p>
 
       <div className="mt-5 flex flex-wrap gap-2">

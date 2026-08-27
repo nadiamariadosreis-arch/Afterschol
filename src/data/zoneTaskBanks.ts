@@ -6,12 +6,6 @@ export interface ZoneTask {
   minutes: number;
 }
 
-/**
- * Ordem fixa da rotação semanal — um cômodo por semana, sempre nessa
- * sequência, repetindo a cada 5 semanas. Segue o método Casa em Ordem.
- */
-export const ZONE_ROTATION: RoomType[] = ["cozinha", "quarto", "banheiro", "sala", "area_servico"];
-
 export const zoneLabels: Record<RoomType, string> = {
   cozinha: "Cozinha a fundo",
   quarto: "Quartos",

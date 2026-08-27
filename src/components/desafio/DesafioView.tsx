@@ -24,7 +24,7 @@ export function DesafioView({ rooms, onGraduate, onAddRoom }: Props) {
     day,
     challengeCompleted,
     currentZoneWeek,
-    currentZoneType,
+    currentZoneRoom,
     baselineMinutes,
     isCalibrated,
     stopwatch,
@@ -52,7 +52,7 @@ export function DesafioView({ rooms, onGraduate, onAddRoom }: Props) {
 
       {challengeCompleted && <DesafioCycleComplete />}
 
-      <DesafioPhaseStatus day={day} zoneType={currentZoneType} />
+      <DesafioPhaseStatus day={day} zoneRoom={currentZoneRoom} />
 
       {!isCalibrated ? (
         <DesafioCalibration
@@ -72,12 +72,19 @@ export function DesafioView({ rooms, onGraduate, onAddRoom }: Props) {
             zona ou tempo disponível. A zona da semana entra sozinha a partir do dia 8.
           </p>
         </section>
+      ) : !currentZoneRoom ? (
+        <section className="rounded-3xl bg-white border border-cream-soft p-6 sm:p-8 text-center">
+          <p className="text-ink-soft">
+            A zona da semana gira pelos cômodos que você cadastrar — cadastre pelo menos um em
+            "Minhas prioridades" (na aba Rotina do dia) pra ela entrar em cena.
+          </p>
+        </section>
       ) : (
         <DesafioDaily
           pendingTasks={pendingTasks}
           baselineMinutes={baselineMinutes}
           rooms={rooms}
-          zoneType={currentZoneType}
+          zoneRoom={currentZoneRoom}
           onComplete={completeChallengeTask}
         />
       )}

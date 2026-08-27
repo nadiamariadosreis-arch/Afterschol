@@ -1,14 +1,14 @@
-import type { RoomType } from "../../types";
+import type { Room } from "../../types";
 import { challengePhase, phaseLabels } from "../../lib/zoneRotation";
 import { zoneLabels } from "../../data/zoneTaskBanks";
 import { roomTypeMeta } from "../../data/roomTemplates";
 
 interface Props {
   day: number;
-  zoneType: RoomType | null;
+  zoneRoom: Room | null;
 }
 
-export function DesafioPhaseStatus({ day, zoneType }: Props) {
+export function DesafioPhaseStatus({ day, zoneRoom }: Props) {
   const phase = challengePhase(day);
   const meta = phaseLabels[phase];
 
@@ -18,9 +18,9 @@ export function DesafioPhaseStatus({ day, zoneType }: Props) {
         <span className="px-3 py-1 rounded-full bg-terracotta-500 text-white text-xs font-bold uppercase tracking-wide">
           {meta.title}
         </span>
-        {zoneType && (
+        {zoneRoom && (
           <span className="px-3 py-1 rounded-full bg-white border border-terracotta-200 text-xs font-bold text-terracotta-600 uppercase tracking-wide">
-            {roomTypeMeta[zoneType].emoji} Zona: {zoneLabels[zoneType]}
+            {roomTypeMeta[zoneRoom.type].emoji} Zona: {zoneRoom.name} · {zoneLabels[zoneRoom.type]}
           </span>
         )}
       </div>

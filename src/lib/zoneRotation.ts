@@ -1,18 +1,26 @@
-import { ZONE_ROTATION } from "../data/zoneTaskBanks";
-import type { RoomType } from "../types";
+import { zoneTaskBanks } from "../data/zoneTaskBanks";
+import type { Room } from "../types";
 
 /**
  * Semana 1 do desafio (dias 1-7) é só o mínimo viável — nenhuma zona ainda.
  * A partir do dia 8, uma zona nova entra a cada 7 dias de uso, girando pela
- * rotação de 5 cômodos indefinidamente (o sistema continua depois do dia 21).
+ * rotação indefinidamente (o sistema continua depois do dia 21).
  */
 export function zoneWeekNumber(day: number): number {
   if (day < 8) return 0;
   return Math.floor((day - 8) / 7) + 1;
 }
 
-export function zoneRoomTypeForWeek(weekNumber: number): RoomType {
-  return ZONE_ROTATION[(weekNumber - 1) % ZONE_ROTATION.length];
+/**
+ * A zona da semana é um dos cômodos que ela mesma cadastrou, na ordem em
+ * que cadastrou — não uma lista fixa de tipos de cômodo. A rotina se
+ * adapta à casa dela, e não o contrário. Cômodos do tipo "outro" ficam de
+ * fora porque não têm banco de tarefas definido.
+ */
+export function zoneRoomForWeek(weekNumber: number, rooms: Room[]): Room | null {
+  const eligible = rooms.filter((r) => zoneTaskBanks[r.type].length > 0);
+  if (eligible.length === 0) return null;
+  return eligible[(weekNumber - 1) % eligible.length];
 }
 
 export type ChallengePhase = "fundacao" | "ritmo" | "consolidacao" | "continuo";
