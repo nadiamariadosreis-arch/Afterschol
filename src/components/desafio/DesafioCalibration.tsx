@@ -30,9 +30,9 @@ export function DesafioCalibration({ running, startedAt, onStart, onFinish }: Pr
         Quanto tempo essas tarefas levam pra você?
       </h2>
       <p className="mt-1 text-ink-soft">
-        Toque em começar e vá fazer as 5 tarefas fixas, no seu ritmo normal. Quando terminar todas,
-        volte aqui e toque em terminei — isso vira o seu tempo-base, descontado todo dia antes de
-        sugerir tarefas do desafio.
+        Toque em começar e vá fazer as 5 tarefas do mínimo viável, no seu ritmo normal. Quando
+        terminar todas, volte aqui e toque em terminei — isso vira o seu tempo-base, descontado
+        todo dia antes de sugerir tarefas da zona da semana.
       </p>
 
       <ul className="mt-4 flex flex-col gap-1.5">

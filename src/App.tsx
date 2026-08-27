@@ -6,6 +6,7 @@ import { StatsBar } from "./components/StatsBar";
 import { TaskManager } from "./components/TaskManager";
 import { RoutineProfile } from "./components/RoutineProfile";
 import { DesafioView } from "./components/desafio/DesafioView";
+import { DesafioReset } from "./components/desafio/DesafioReset";
 import { useTasks } from "./hooks/useTasks";
 import { useRooms } from "./hooks/useRooms";
 import { useProfile } from "./hooks/useProfile";
@@ -15,7 +16,7 @@ import { todayDayOfWeek, todayISO } from "./lib/dates";
 import { roomTaskTemplates } from "./data/roomTemplates";
 import type { Energy, RoomType, RoutineResult as RoutineResultType } from "./types";
 
-type Tab = "rotina" | "desafio";
+type Tab = "rotina" | "desafio" | "reset";
 
 export default function App() {
   const { tasks, markDone, markUndone, addTask, removeTask } = useTasks();
@@ -89,9 +90,20 @@ export default function App() {
           >
             🔥 Desafio de 21 dias
           </button>
+          <button
+            type="button"
+            onClick={() => setTab("reset")}
+            className={`px-5 py-2 rounded-full text-sm font-bold transition-colors ${
+              tab === "reset"
+                ? "bg-terracotta-600 text-white"
+                : "bg-cream-soft text-ink-soft hover:text-ink"
+            }`}
+          >
+            🧯 Reset
+          </button>
         </div>
 
-        {tab === "rotina" ? (
+        {tab === "rotina" && (
           <>
             <div className="mt-6">
               <StatsBar tasks={tasks} boosts={boosts} />
@@ -128,9 +140,17 @@ export default function App() {
               <TaskManager tasks={tasks} rooms={rooms} onAdd={addTask} onRemove={removeTask} />
             </div>
           </>
-        ) : (
+        )}
+
+        {tab === "desafio" && (
           <div className="mt-6">
             <DesafioView rooms={rooms} onGraduate={addTask} onAddRoom={handleAddRoom} />
+          </div>
+        )}
+
+        {tab === "reset" && (
+          <div className="mt-6">
+            <DesafioReset />
           </div>
         )}
 

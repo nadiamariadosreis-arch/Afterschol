@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { ChallengeCategory, ChallengeTask, Room, RoomType } from "../../types";
 import { challengeCategoryMeta } from "../../data/challengeCategories";
 import { roomTypeMeta } from "../../data/roomTemplates";
+import { challengeTaskEmoji } from "../../lib/taskDisplay";
 
 interface Props {
   tasks: ChallengeTask[];
@@ -78,11 +79,10 @@ export function DesafioTaskManager({ tasks, rooms, onAdd, onRemove, onAddRoom }:
 
   return (
     <section className="rounded-3xl bg-white border border-cream-soft p-6 sm:p-8">
-      <h2 className="text-xl font-extrabold text-ink">
-        O que está te incomodando na casa? ({tasks.length})
-      </h2>
+      <h2 className="text-xl font-extrabold text-ink">A fila da semana ({tasks.length})</h2>
       <p className="text-ink-soft text-sm mt-1">
-        Cadastre cada coisa acumulada — o desafio vai encaixando aos poucos, no seu tempo.
+        O banco da zona da semana entra aqui sozinho. Se tem algo mais específico te incomodando,
+        cadastre embaixo — o desafio vai encaixando aos poucos, no seu tempo.
       </p>
 
       <form onSubmit={handleSubmit} className="mt-5 grid grid-cols-2 sm:grid-cols-6 gap-3">
@@ -193,13 +193,18 @@ export function DesafioTaskManager({ tasks, rooms, onAdd, onRemove, onAddRoom }:
                   key={task.id}
                   className="flex items-center gap-3 px-3 py-2 rounded-xl bg-cream text-sm"
                 >
-                  <span className="shrink-0">{challengeCategoryMeta[task.category].emoji}</span>
+                  <span className="shrink-0">{challengeTaskEmoji(task)}</span>
                   <span className="flex-1 min-w-0 truncate font-semibold text-ink">
                     {task.name}
                     {!showHeadings && roomName(task.roomId) && (
                       <span className="ml-1 font-normal text-ink-soft">· {roomName(task.roomId)}</span>
                     )}
                   </span>
+                  {task.source === "zone" && (
+                    <span className="shrink-0 text-[10px] font-bold uppercase tracking-wide text-gold-700 bg-gold-50 px-1.5 py-0.5 rounded-full">
+                      da zona
+                    </span>
+                  )}
                   <span className="text-ink-soft text-xs shrink-0">{task.estimatedMinutes} min</span>
                   <button
                     type="button"

@@ -4,11 +4,14 @@ import type {
   ChallengeCategory,
   ChallengeCycle,
   ChallengeTask,
+  Room,
   Task,
 } from "../types";
 import { todayISO } from "../lib/dates";
 import { dailyFixedTasks } from "../data/dailyFixedTasks";
 import { challengeCategoryMeta, daysToFrequency } from "../data/challengeCategories";
+import { zoneTaskBanks } from "../data/zoneTaskBanks";
+import { zoneRoomTypeForWeek, zoneWeekNumber } from "../lib/zoneRotation";
 
 const CYCLE_KEY = "rotina-mamae:desafio:cycle:v1";
 const TASKS_KEY = "rotina-mamae:desafio:tasks:v1";
@@ -18,13 +21,15 @@ const FIXED_DONE_KEY = "rotina-mamae:desafio:fixeddone:v1";
 const DEFAULT_BASELINE = dailyFixedTasks.reduce((sum, t) => sum + t.defaultMinutes, 0);
 
 function newCycle(): ChallengeCycle {
-  return { id: `cycle-${Date.now()}`, startDate: todayISO(), completedDays: [] };
+  return { id: `cycle-${Date.now()}`, startDate: todayISO(), completedDays: [], zoneWeeksInjected: 0 };
 }
 
 function loadCycle(): ChallengeCycle {
   try {
     const raw = localStorage.getItem(CYCLE_KEY);
-    return raw ? (JSON.parse(raw) as ChallengeCycle) : newCycle();
+    if (!raw) return newCycle();
+    const parsed = JSON.parse(raw) as ChallengeCycle;
+    return { ...parsed, zoneWeeksInjected: parsed.zoneWeeksInjected ?? 0 };
   } catch {
     return newCycle();
   }
@@ -58,12 +63,19 @@ function loadFixedDone(): Record<string, string> {
 }
 
 /**
- * Estado do Desafio de 21 dias. `onGraduate` é chamado quando uma tarefa do
- * desafio é concluída pela primeira vez — quem chama o hook decide o que
- * fazer com isso (aqui: criar uma tarefa recorrente de manutenção via
- * useTasks, mantendo os dois sistemas desacoplados).
+ * Estado do Desafio de 21 dias, seguindo o método Casa em Ordem: semana 1 só
+ * o mínimo viável, a partir da semana 2 uma zona (cômodo) nova entra a cada
+ * 7 dias de uso, girando por 5 cômodos indefinidamente — o sistema continua
+ * depois do dia 21, não é um ciclo que se repete do zero.
+ *
+ * `onGraduate` é chamado só quando uma tarefa cadastrada à mão (não vinda do
+ * banco da zona, que já tem sua própria recorrência pela rotação) é
+ * concluída pela primeira vez — cria uma manutenção recorrente via useTasks.
  */
-export function useChallenge(onGraduate: (task: Omit<Task, "id" | "custom">) => void) {
+export function useChallenge(
+  onGraduate: (task: Omit<Task, "id" | "custom">) => void,
+  rooms: Room[],
+) {
   const [cycle, setCycle] = useState<ChallengeCycle>(loadCycle);
   const [challengeTasks, setChallengeTasks] = useState<ChallengeTask[]>(loadChallengeTasks);
   const [baseline, setBaseline] = useState<ChallengeBaseline>(loadBaseline);
@@ -80,17 +92,62 @@ export function useChallenge(onGraduate: (task: Omit<Task, "id" | "custom">) => 
 
   const today = todayISO();
   // O dia do desafio conta dias em que ela de fato usou o método, não dias
-  // do calendário — pular um dia (ou uma semana) nunca "atrasa" o ciclo,
-  // só espera ela retomar. Ninguém compensa o que ficou pra trás.
+  // do calendário — pular um dia (ou uma semana) nunca "atrasa" nada, só
+  // espera ela retomar. Ninguém compensa o que ficou pra trás.
   const completedCount = cycle.completedDays.length;
   const day = completedCount + (cycle.completedDays.includes(today) ? 0 : 1);
-  const cycleFinished = completedCount >= 21;
+  const challengeCompleted = completedCount >= 21;
+
+  const currentZoneWeek = zoneWeekNumber(day);
+  const currentZoneType = currentZoneWeek > 0 ? zoneRoomTypeForWeek(currentZoneWeek) : null;
 
   const baselineMinutes = baseline.minutes ?? DEFAULT_BASELINE;
   const isCalibrated = baseline.minutes !== null;
 
   const pendingTasks = challengeTasks.filter((t) => t.cycleId === cycle.id && !t.doneAt);
-  const doneTasksThisCycle = challengeTasks.filter((t) => t.cycleId === cycle.id && t.doneAt);
+
+  // Assim que uma nova semana de zona começa, injeta o banco de tarefas
+  // daquele cômodo na fila — uma cópia por cômodo cadastrado daquele tipo
+  // (ou uma cópia "sem cômodo" se ela ainda não cadastrou nenhum).
+  //
+  // Usa updates funcionais e checa se as tarefas já existem antes de somar —
+  // não pode confiar só nas dependências do efeito pra evitar duplicar,
+  // porque o StrictMode do React roda efeitos duas vezes em desenvolvimento.
+  useEffect(() => {
+    if (currentZoneWeek === 0) return;
+    const zoneId = `zone-${currentZoneWeek}-`;
+
+    setChallengeTasks((prev) => {
+      if (prev.some((t) => t.id.startsWith(zoneId))) return prev;
+
+      const roomType = zoneRoomTypeForWeek(currentZoneWeek);
+      const bank = zoneTaskBanks[roomType];
+      const matchingRooms = rooms.filter((r) => r.type === roomType);
+      const targets: (Room | null)[] = matchingRooms.length > 0 ? matchingRooms : [null];
+
+      const newTasks: ChallengeTask[] = targets.flatMap((room) =>
+        bank.map((zt) => ({
+          id: `${zoneId}${zt.id}-${room?.id ?? "sem"}`,
+          name: zt.name,
+          roomId: room?.id,
+          estimatedMinutes: zt.minutes,
+          source: "zone" as const,
+          zoneType: roomType,
+          cycleId: cycle.id,
+          createdAt: today,
+        })),
+      );
+
+      return [...prev, ...newTasks];
+    });
+
+    setCycle((prev) =>
+      currentZoneWeek > (prev.zoneWeeksInjected ?? 0)
+        ? { ...prev, zoneWeeksInjected: currentZoneWeek }
+        : prev,
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentZoneWeek, cycle.id, rooms]);
 
   function markDayCompleted() {
     setCycle((prev) =>
@@ -140,6 +197,7 @@ export function useChallenge(onGraduate: (task: Omit<Task, "id" | "custom">) => 
       id: `desafio-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
       cycleId: cycle.id,
       createdAt: today,
+      source: "manual",
       ...input,
     };
     setChallengeTasks((prev) => [...prev, task]);
@@ -150,9 +208,9 @@ export function useChallenge(onGraduate: (task: Omit<Task, "id" | "custom">) => 
   }
 
   /**
-   * Marca como feita e, na primeira vez, "gradua" a tarefa: cria uma
-   * recorrência de manutenção na rotina normal, com frequência prevista
-   * pelo tipo do item (ex.: geladeira volta em 7 dias, guarda-roupa em 60).
+   * Marca como feita. Tarefas manuais graduam pra manutenção recorrente na
+   * rotina normal (frequência prevista pelo tipo do item); tarefas da zona
+   * não precisam — a própria rotação de 5 semanas já é a manutenção.
    */
   function completeChallengeTask(id: string) {
     const task = challengeTasks.find((t) => t.id === id);
@@ -163,33 +221,27 @@ export function useChallenge(onGraduate: (task: Omit<Task, "id" | "custom">) => 
     );
     markDayCompleted();
 
-    const meta = challengeCategoryMeta[task.category];
-    onGraduate({
-      name: task.name,
-      category: task.category === "geladeira_despensa" ? "cozinha" : "organizacao",
-      durationMin: task.estimatedMinutes,
-      frequency: daysToFrequency(meta.maintenanceDays),
-      priority: 2,
-      energy: "media",
-      roomId: task.roomId,
-    });
-  }
-
-  /** Tarefas que ficaram pendentes seguem pro novo ciclo — nada se perde. */
-  function startNewCycle() {
-    const fresh = newCycle();
-    setChallengeTasks((prev) =>
-      prev.map((t) => (t.cycleId === cycle.id && !t.doneAt ? { ...t, cycleId: fresh.id } : t)),
-    );
-    setCycle(fresh);
-    setFixedDone({});
+    if (task.source === "manual" && task.category) {
+      const meta = challengeCategoryMeta[task.category];
+      onGraduate({
+        name: task.name,
+        category: task.category === "geladeira_despensa" ? "cozinha" : "organizacao",
+        durationMin: task.estimatedMinutes,
+        frequency: daysToFrequency(meta.maintenanceDays),
+        priority: 2,
+        energy: "media",
+        roomId: task.roomId,
+      });
+    }
   }
 
   return {
     today,
     cycle,
     day,
-    cycleFinished,
+    challengeCompleted,
+    currentZoneWeek,
+    currentZoneType,
     baseline,
     baselineMinutes,
     isCalibrated,
@@ -199,10 +251,8 @@ export function useChallenge(onGraduate: (task: Omit<Task, "id" | "custom">) => 
     fixedDone,
     toggleFixedTask,
     pendingTasks,
-    doneTasksThisCycle,
     addChallengeTask,
     removeChallengeTask,
     completeChallengeTask,
-    startNewCycle,
   };
 }

@@ -3,6 +3,7 @@ import { useChallenge } from "../../hooks/useChallenge";
 import { DesafioCalibration } from "./DesafioCalibration";
 import { DesafioFixedChecklist } from "./DesafioFixedChecklist";
 import { DesafioTracker } from "./DesafioTracker";
+import { DesafioPhaseStatus } from "./DesafioPhaseStatus";
 import { DesafioDaily } from "./DesafioDaily";
 import { DesafioTaskManager } from "./DesafioTaskManager";
 import { DesafioCycleComplete } from "./DesafioCycleComplete";
@@ -18,7 +19,9 @@ export function DesafioView({ rooms, onGraduate, onAddRoom }: Props) {
     today,
     cycle,
     day,
-    cycleFinished,
+    challengeCompleted,
+    currentZoneWeek,
+    currentZoneType,
     baselineMinutes,
     isCalibrated,
     stopwatch,
@@ -30,16 +33,15 @@ export function DesafioView({ rooms, onGraduate, onAddRoom }: Props) {
     addChallengeTask,
     removeChallengeTask,
     completeChallengeTask,
-    startNewCycle,
-  } = useChallenge(onGraduate);
+  } = useChallenge(onGraduate, rooms);
 
   return (
     <div className="flex flex-col gap-6">
       <DesafioTracker completedCount={cycle.completedDays.length} day={day} />
 
-      {cycleFinished && (
-        <DesafioCycleComplete pendingCount={pendingTasks.length} onStartNewCycle={startNewCycle} />
-      )}
+      {challengeCompleted && <DesafioCycleComplete />}
+
+      <DesafioPhaseStatus day={day} zoneType={currentZoneType} />
 
       {!isCalibrated ? (
         <DesafioCalibration
@@ -52,12 +54,22 @@ export function DesafioView({ rooms, onGraduate, onAddRoom }: Props) {
         <DesafioFixedChecklist fixedDone={fixedDone} today={today} onToggle={toggleFixedTask} />
       )}
 
-      <DesafioDaily
-        pendingTasks={pendingTasks}
-        baselineMinutes={baselineMinutes}
-        rooms={rooms}
-        onComplete={completeChallengeTask}
-      />
+      {currentZoneWeek === 0 ? (
+        <section className="rounded-3xl bg-white border border-cream-soft p-6 sm:p-8 text-center">
+          <p className="text-ink-soft">
+            Essa primeira semana é só o mínimo viável, todos os dias — sem se preocupar ainda com
+            zona ou tempo disponível. A zona da semana entra sozinha a partir do dia 8.
+          </p>
+        </section>
+      ) : (
+        <DesafioDaily
+          pendingTasks={pendingTasks}
+          baselineMinutes={baselineMinutes}
+          rooms={rooms}
+          zoneType={currentZoneType}
+          onComplete={completeChallengeTask}
+        />
+      )}
 
       <DesafioTaskManager
         tasks={pendingTasks}

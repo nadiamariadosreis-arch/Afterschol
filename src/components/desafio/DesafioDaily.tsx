@@ -1,19 +1,21 @@
 import { useState } from "react";
-import type { ChallengeTask, Room } from "../../types";
+import type { ChallengeTask, Room, RoomType } from "../../types";
 import { suggestDailyChallengeTasks } from "../../lib/challengeScheduler";
-import { challengeCategoryMeta } from "../../data/challengeCategories";
+import { challengeTaskEmoji } from "../../lib/taskDisplay";
+import { zoneLabels } from "../../data/zoneTaskBanks";
 
 interface Props {
   pendingTasks: ChallengeTask[];
   baselineMinutes: number;
   rooms: Room[];
+  zoneType: RoomType | null;
   onComplete: (id: string) => void;
 }
 
-const TIME_PRESETS = [30, 45, 60, 90, 120];
+const TIME_PRESETS = [15, 30, 60];
 
-export function DesafioDaily({ pendingTasks, baselineMinutes, rooms, onComplete }: Props) {
-  const [totalTime, setTotalTime] = useState(60);
+export function DesafioDaily({ pendingTasks, baselineMinutes, rooms, zoneType, onComplete }: Props) {
+  const [totalTime, setTotalTime] = useState(30);
 
   const remaining = Math.max(0, totalTime - baselineMinutes);
   const suggestion = suggestDailyChallengeTasks(pendingTasks, remaining);
@@ -36,7 +38,8 @@ export function DesafioDaily({ pendingTasks, baselineMinutes, rooms, onComplete 
     <section className="rounded-3xl bg-white border border-terracotta-100 shadow-sm p-6 sm:p-8">
       <h2 className="text-xl font-extrabold text-ink">Quanto tempo você tem hoje, no total?</h2>
       <p className="text-ink-soft mt-1">
-        Já descontamos os {baselineMinutes} min das tarefas fixas — o resto vai pro desafio.
+        Já descontamos os {baselineMinutes} min do mínimo viável — o resto vai pra{" "}
+        {zoneType ? `zona: ${zoneLabels[zoneType]}` : "zona da semana"}.
       </p>
 
       <div className="mt-5 flex flex-wrap gap-2">
@@ -70,12 +73,12 @@ export function DesafioDaily({ pendingTasks, baselineMinutes, rooms, onComplete 
 
       {pendingTasks.length === 0 ? (
         <p className="mt-6 text-ink-soft text-sm italic">
-          Sua fila do desafio está vazia — cadastre abaixo o que está te incomodando na casa.
+          Fila vazia por enquanto — o banco da próxima zona entra sozinho quando a semana virar.
         </p>
       ) : remaining <= 0 ? (
         <p className="mt-6 text-sm text-ink-soft bg-cream rounded-2xl p-4">
-          Hoje só dá pra manter o básico — e tudo bem. As tarefas fixas já contam como um dia
-          cumprido do desafio.
+          Hoje só dá pra manter o mínimo viável — e tudo bem. Isso já conta como um dia cumprido
+          do desafio.
         </p>
       ) : (
         <div className="mt-6">
@@ -84,8 +87,8 @@ export function DesafioDaily({ pendingTasks, baselineMinutes, rooms, onComplete 
           </p>
           {suggestion.selected.length === 0 ? (
             <p className="mt-3 text-sm text-ink-soft italic">
-              Nenhuma tarefa da fila cabe em {remaining} min ainda — aumente o tempo ou cadastre
-              algo menor.
+              Nenhuma tarefa da fila cabe em {remaining} min ainda — aumente o tempo ou volte
+              amanhã.
             </p>
           ) : (
             <ul className="mt-3 flex flex-col gap-2">
@@ -108,7 +111,7 @@ export function DesafioDaily({ pendingTasks, baselineMinutes, rooms, onComplete 
                       </button>
                       <div className="min-w-0 flex-1">
                         <p className="font-semibold text-ink">
-                          {challengeCategoryMeta[task.category].emoji} {task.name}
+                          {challengeTaskEmoji(task)} {task.name}
                         </p>
                         {!showRoomHeadings && roomName(task.roomId) && (
                           <p className="text-xs text-ink-soft">{roomName(task.roomId)}</p>

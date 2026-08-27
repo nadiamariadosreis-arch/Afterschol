@@ -76,13 +76,17 @@ export type ChallengeCategory =
   | "area_externa"
   | "outro";
 
-/** Item da fila do Desafio de 21 dias — algo acumulado que a mãe cadastrou manualmente. */
+/** Item da fila do Desafio de 21 dias — vindo do banco da zona da semana, ou cadastrado à mão. */
 export interface ChallengeTask {
   id: string;
   name: string;
   roomId?: string;
   estimatedMinutes: number;
-  category: ChallengeCategory;
+  source: "zone" | "manual";
+  /** Tipo de cômodo da zona, quando source === "zone" (independe de existir um Room cadastrado). */
+  zoneType?: RoomType;
+  /** Usado só em tarefas manuais, pra prever a frequência de manutenção. */
+  category?: ChallengeCategory;
   cycleId: string;
   createdAt: string;
   /** ISO date de quando foi concluída. Ausente = ainda pendente. */
@@ -92,8 +96,10 @@ export interface ChallengeTask {
 export interface ChallengeCycle {
   id: string;
   startDate: string;
-  /** ISO dates em que pelo menos uma tarefa (fixa ou do desafio) foi concluída. */
+  /** ISO dates em que pelo menos uma tarefa (mínimo viável ou do desafio) foi concluída. */
   completedDays: string[];
+  /** Até qual semana de zona (1, 2, 3...) o banco de tarefas já foi injetado na fila. */
+  zoneWeeksInjected: number;
 }
 
 export interface ChallengeBaseline {

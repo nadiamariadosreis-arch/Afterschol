@@ -9,9 +9,10 @@ interface Props {
 export function DesafioFixedChecklist({ fixedDone, today, onToggle }: Props) {
   return (
     <section className="rounded-3xl bg-white border border-cream-soft p-6 sm:p-8">
-      <h2 className="text-lg font-extrabold text-ink">Tarefas fixas de hoje</h2>
+      <h2 className="text-lg font-extrabold text-ink">Mínimo viável de hoje</h2>
       <p className="text-ink-soft text-sm mt-1">
-        Não-negociáveis — acontecem todo dia, façam parte do desafio ou não.
+        As cinco tarefas não-negociáveis — mesmo no pior dia, isso garante que amanhã não comece
+        pior do que hoje terminou.
       </p>
       <ul className="mt-4 flex flex-col gap-2">
         {dailyFixedTasks.map((t) => {
