@@ -1,5 +1,25 @@
 import type { jsPDF } from 'jspdf'
 import type { TaskCategory } from '../types'
+import { EMOJI_PNG_BASE64 } from './emojiAssets.generated'
+
+// Desenha o ícone real da tarefa (o mesmo emoji já usado na interface) como imagem,
+// dentro de um selo colorido arredondado — usa os PNGs do Twemoji (ver
+// emojiAssets.generated.ts). Essa é a via principal de ilustração no PDF; as formas
+// vetoriais abaixo (drawTaskIcon/pickTaskIconKey) só entram como reserva, para um
+// emoji que a mãe tenha digitado manualmente e que não esteja no conjunto extraído.
+export function drawEmojiIcon(doc: jsPDF, emoji: string, cx: number, cy: number, size: number, badgeColor: string): boolean {
+  const base64 = EMOJI_PNG_BASE64[emoji]
+  if (!base64) return false
+  doc.setFillColor(badgeColor)
+  doc.circle(cx, cy, size / 2, 'F')
+  const imgSize = size * 0.62
+  try {
+    doc.addImage(`data:image/png;base64,${base64}`, 'PNG', cx - imgSize / 2, cy - imgSize / 2, imgSize, imgSize, undefined, 'FAST')
+  } catch {
+    return false
+  }
+  return true
+}
 
 export type IconKey =
   | 'toothbrush'

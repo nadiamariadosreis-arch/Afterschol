@@ -41,6 +41,11 @@ export default function HowToCardEditor() {
     : card.customTaskId
       ? (customTasks[card.customTaskId]?.category ?? 'outro')
       : 'outro'
+  const taskIcon = card.taskId
+    ? getTaskById(card.taskId)?.icon
+    : card.customTaskId
+      ? customTasks[card.customTaskId]?.icon
+      : undefined
 
   function handleDragEnd(e: DragEndEvent) {
     const { active, over } = e
@@ -59,7 +64,7 @@ export default function HowToCardEditor() {
   }
 
   function handleGeneratePdf() {
-    const doc = generateHowToPdf({ card: card!, taskName, childName: child!.name, category: taskCategory })
+    const doc = generateHowToPdf({ card: card!, taskName, childName: child!.name, category: taskCategory, icon: taskIcon })
     const dataUrl = doc.output('datauristring')
     const filename = `Como-Fazer-${slugify(taskName)}-${slugify(child!.name)}.pdf`
     const a = document.createElement('a')

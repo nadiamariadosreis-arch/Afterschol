@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf'
-import { drawCloud, drawMoonStars, drawSparkle, drawSun, drawTaskIcon, pickTaskIconKey } from './pdfIcons'
+import { drawCloud, drawEmojiIcon, drawMoonStars, drawSparkle, drawSun, drawTaskIcon, pickTaskIconKey } from './pdfIcons'
 import { resolveChildTask } from './resolveTask'
 import type { Child, ChildTask, CustomTask, HowToCard, PeriodOfDay, Routine, TaskCategory, Weekday, WeeklyTaskItem } from '../types'
 import { PERIODS, PERIOD_LABELS, WEEKDAYS, WEEKDAY_LABELS } from '../types'
@@ -36,6 +36,14 @@ function roundedPanel(doc: jsPDF, x: number, y: number, w: number, h: number, co
   doc.roundedRect(x, y, w, h, 3, 3, 'F')
 }
 
+// Ícone de uma tarefa: usa o emoji real já escolhido para ela (mesmo que aparece no
+// app) como imagem; se esse emoji específico não tiver PNG extraído, cai para o
+// desenho vetorial por categoria/palavra-chave.
+function drawResolvedIcon(doc: jsPDF, emoji: string, name: string, category: TaskCategory, cx: number, cy: number, size: number, badgeColor: string) {
+  const drew = drawEmojiIcon(doc, emoji, cx, cy, size, badgeColor)
+  if (!drew) drawTaskIcon(doc, pickTaskIconKey(name, category), cx, cy, size, badgeColor)
+}
+
 export function generateRoutinePdf({
   child,
   day,
@@ -53,8 +61,14 @@ export function generateRoutinePdf({
 }): jsPDF {
   const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' })
   const pageW = 210
+  const pageH = 297
   const marginX = 12
   const contentW = pageW - marginX * 2
+
+  // Moldura da página
+  doc.setDrawColor('#6C5CE7')
+  doc.setLineWidth(1.6)
+  doc.roundedRect(5, 5, pageW - 10, pageH - 10, 6, 6, 'S')
 
   // Cabeçalho
   roundedPanel(doc, marginX, 12, contentW, 32, '#EDE9FF')
@@ -112,12 +126,12 @@ export function generateRoutinePdf({
       const resolved = childTask ? resolveChildTask(childTask, customTasks) : null
       if (!resolved) continue
 
-      drawTaskIcon(doc, pickTaskIconKey(resolved.name, resolved.category), x + iconSize / 2 + 1, y + rowH / 2 - 2, iconSize, palette.bg)
+      drawResolvedIcon(doc, resolved.icon, resolved.name, resolved.category, x + iconSize / 2 + 1, y + rowH / 2 - 2, iconSize, palette.bg)
 
       doc.setTextColor('#2b2440')
       doc.setFont('helvetica', 'bold')
       doc.setFontSize(8.8)
-      const nameLines = doc.splitTextToSize(resolved.name, colW - iconSize - 6)
+      const nameLines = doc.splitTextToSize(resolved.name, colW - iconSize - 14)
       doc.text(nameLines.slice(0, 2), x + iconSize + 4, y + rowH / 2 - 3.5)
 
       if (item.time) {
@@ -127,7 +141,12 @@ export function generateRoutinePdf({
         doc.text(item.time, x + iconSize + 4, y + rowH / 2 + 3.5)
       }
 
+      doc.setDrawColor(palette.text)
+      doc.setLineWidth(0.5)
+      doc.circle(x + colW - 4.5, y + rowH / 2, 2.6, 'S')
+
       doc.setDrawColor('#f0e6ff')
+      doc.setLineWidth(0.2)
       doc.line(x + 1, y + rowH - 1, x + colW - 1, y + rowH - 1)
 
       y += rowH
@@ -162,7 +181,7 @@ export function generateRoutinePdf({
       const childTask = childTasks[w.childTaskId]
       const resolved = childTask ? resolveChildTask(childTask, customTasks) : null
       if (!resolved) continue
-      drawTaskIcon(doc, pickTaskIconKey(resolved.name, resolved.category), x + 4, ty, 4.6, '#38D9A9')
+      drawResolvedIcon(doc, resolved.icon, resolved.name, resolved.category, x + 4, ty, 5.2, '#38D9A9')
       doc.setFont('helvetica', 'normal')
       doc.setFontSize(6)
       doc.setTextColor('#5c5470')
@@ -176,6 +195,11 @@ export function generateRoutinePdf({
       doc.setTextColor('#c9c2db')
       doc.text('—', x + dayColW / 2, ty, { align: 'center' })
     }
+
+    doc.setDrawColor('#38D9A9')
+    doc.setLineWidth(0.4)
+    doc.circle(x + dayColW / 2 - 3.5, dayColTop + 37, 2.2, 'S')
+    drawSparkle(doc, x + dayColW / 2 + 3.5, dayColTop + 37, 2, '#FFD43B')
   })
 
   doc.setFont('helvetica', 'normal')
@@ -191,20 +215,26 @@ export function generateHowToPdf({
   taskName,
   childName,
   category = 'outro',
+  icon,
 }: {
   card: HowToCard
   taskName: string
   childName: string
   category?: TaskCategory
+  icon?: string
 }): jsPDF {
   const doc = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' })
   const pageW = 210
+  const pageH = 297
   const marginX = 16
   const contentW = pageW - marginX * 2
 
-  const iconKey = pickTaskIconKey(taskName, category)
+  doc.setDrawColor('#6C5CE7')
+  doc.setLineWidth(1.6)
+  doc.roundedRect(5, 5, pageW - 10, pageH - 10, 6, 6, 'S')
+
   roundedPanel(doc, marginX, 14, contentW, 26, '#EDE7FF')
-  drawTaskIcon(doc, iconKey, marginX + contentW - 16, 27, 15, '#6C5CE7')
+  drawResolvedIcon(doc, icon ?? '', taskName, category, marginX + contentW - 16, 27, 15, '#6C5CE7')
   drawSparkle(doc, marginX + contentW - 30, 20, 2.4, '#FFD43B')
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(9)
@@ -230,7 +260,7 @@ export function generateHowToPdf({
     doc.setFont('helvetica', 'bold')
     doc.setFontSize(12)
     doc.text(String(i + 1), marginX + 12, y + boxH / 2 + 1.3, { align: 'center' })
-    drawTaskIcon(doc, iconKey, marginX + contentW - 13, y + boxH / 2, 13, i % 2 === 0 ? '#9C92F5' : '#38D9A9')
+    drawResolvedIcon(doc, icon ?? '', taskName, category, marginX + contentW - 13, y + boxH / 2, 13, i % 2 === 0 ? '#9C92F5' : '#38D9A9')
 
     doc.setTextColor('#2b2440')
     doc.setFont('helvetica', 'normal')
