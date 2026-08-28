@@ -42,14 +42,17 @@ O app tem uma tela de código de acesso antes de entrar (útil pra vender o aces
 VITE_ACCESS_CODE=seu-codigo-aqui
 ```
 
-No deploy (Vercel/Netlify), configure a mesma variável em "Environment Variables" no painel do serviço. Sem essa variável, o app usa `casaemordem` como código padrão.
+No deploy (Netlify/Vercel), configure a mesma variável em "Environment Variables" no painel do serviço. Sem essa variável, o app usa `casaemordem` como código padrão.
 
 **Importante:** como o app é 100% estático (sem backend), esse código não é segurança de verdade — é um filtro simples pra distribuir junto com o e-mail de compra. Alguém tecnicamente capaz consegue inspecionar o código e contornar. Pra travar o acesso por comprador de forma robusta (um login por pessoa), é preciso adicionar autenticação com backend (ex: Supabase).
 
 ## Deploy sugerido
 
+Use a **Netlify**, não a Vercel: o plano gratuito da Vercel (Hobby) proíbe uso comercial nos termos de serviço — qualquer forma de cobrar do visitante já conta como "comercial" e exigiria o plano Pro pago (US$20/mês). Já o plano gratuito da Netlify permite uso comercial sem custo, e como este app é 100% estático (sem backend), ele cabe folgado nos limites do plano grátis.
+
 1. Suba este repositório no GitHub (já feito).
-2. Crie uma conta na [Vercel](https://vercel.com) (tem plano grátis) e importe o repositório.
-3. Configure a variável `VITE_ACCESS_CODE` nas configurações do projeto.
-4. Deploy — a Vercel detecta automaticamente que é um projeto Vite.
-5. Venda o PDF + acesso ao app via uma plataforma como Hotmart ou Kiwify, entregando o link do app e o código de acesso no e-mail de confirmação da compra.
+2. Crie uma conta na [Netlify](https://netlify.com) (grátis, dá pra logar com o GitHub) e importe o repositório.
+3. Configure a variável `VITE_ACCESS_CODE` em "Site configuration → Environment variables".
+4. Build command: `npm run build` — Publish directory: `dist` (a Netlify já detecta isso automaticamente por ser um projeto Vite).
+5. Deploy.
+6. Venda o PDF + acesso ao app via uma plataforma como Hotmart ou Kiwify, entregando o link do app e o código de acesso no e-mail de confirmação da compra.
