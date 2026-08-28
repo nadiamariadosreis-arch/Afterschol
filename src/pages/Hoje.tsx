@@ -1,13 +1,17 @@
-import { Link } from "react-router-dom";
-import { Flame, ArrowRight } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Flame, ArrowRight, Sparkles, RotateCcw, LayoutGrid } from "lucide-react";
 import { minimoViavel, zonas, plano21 } from "../data/method";
-import { useBucketChecklist, usePlanoInicio, useStreak } from "../lib/storage";
+import { useBucketChecklist, useCustomizableList, usePlanoInicio, usePontoPartida, useStreak, type PontoPartida } from "../lib/storage";
 import { hojeISO, formatarDataLonga, semanaDoCiclo, diaDoPlano, semanaDoPlano, chaveSemana } from "../lib/date";
 import { Card, PageTitle, Pill, ProgressBar, TaskRow } from "../components/ui";
 
 export default function Hoje() {
   const iso = hojeISO();
-  const ids = minimoViavel.map((t) => t.id);
+  const navigate = useNavigate();
+  const [pontoPartida, setPontoPartida] = usePontoPartida();
+
+  const { items: minimoItems } = useCustomizableList("minimo-viavel-lista", "geral", minimoViavel);
+  const ids = minimoItems.map((t) => t.id);
   const { isChecked, toggle, checked } = useBucketChecklist("minimo-viavel", iso);
   const streak = useStreak("minimo-viavel", ids, iso);
 
@@ -17,7 +21,15 @@ export default function Hoje() {
   const semanaAtual = plano21.find((s) => s.semana === semanaPlano);
 
   const zonaAtual = zonas[semanaDoCiclo(iso) - 1];
+  const zonaCustom = useCustomizableList(`zona-${zonaAtual.semana}-lista`, String(zonaAtual.semana), zonaAtual.banco);
   const zonaChecklist = useBucketChecklist(`zona-${zonaAtual.semana}`, chaveSemana(iso));
+
+  function escolherPartida(p: PontoPartida) {
+    setPontoPartida(p);
+    if (p === "reset") navigate("/reset");
+    if (p === "plano21" && !inicio) setInicio(iso);
+    if (p === "manutencao") navigate("/semanal");
+  }
 
   return (
     <div className="mx-auto max-w-3xl">
@@ -27,19 +39,41 @@ export default function Hoje() {
         subtitle="Você não precisa de mais tempo. Precisa saber exatamente o que fazer com o tempo que tem."
       />
 
-      {!inicio && (
+      {!pontoPartida ? (
         <Card className="mb-6 border-terracotta/30 bg-terracotta-light/40">
-          <p className="font-medium text-ink">Ainda não começou o plano de 21 dias?</p>
+          <p className="font-medium text-ink">Como sua casa está hoje?</p>
           <p className="mt-1 text-sm text-ink-soft">
-            Comece hoje pela Semana 1: só o mínimo viável, todos os dias, sem adicionar mais nada.
+            Cada casa tem uma realidade — o método se adapta a ela, não o contrário. Escolha por onde faz mais
+            sentido começar.
           </p>
-          <button
-            onClick={() => setInicio(iso)}
-            className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-terracotta px-4 py-2 text-sm font-semibold text-white hover:bg-terracotta-dark"
-          >
-            Começar o plano hoje <ArrowRight className="h-4 w-4" />
-          </button>
+          <div className="mt-4 flex flex-col gap-2">
+            <PartidaOpcao
+              icon={RotateCcw}
+              titulo="Está fora de controle"
+              descricao='Não consigo identificar por onde começar, tudo parece urgente ao mesmo tempo → comece pelo reset.'
+              onClick={() => escolherPartida("reset")}
+            />
+            <PartidaOpcao
+              icon={Sparkles}
+              titulo="Bagunçada, mas dá pra ver o que fazer"
+              descricao="Consigo ver o que precisa hoje → comece pelo plano de 21 dias, Semana 1: só o mínimo viável."
+              onClick={() => escolherPartida("plano21")}
+            />
+            <PartidaOpcao
+              icon={LayoutGrid}
+              titulo="Já é organizada, quero manter o ritmo"
+              descricao="Pule direto pro sistema semanal e pra rotina diária, sem passar pelo plano do zero."
+              onClick={() => escolherPartida("manutencao")}
+            />
+          </div>
         </Card>
+      ) : (
+        <button
+          onClick={() => setPontoPartida(null)}
+          className="mb-6 text-xs font-medium text-ink-soft hover:text-terracotta-dark hover:underline"
+        >
+          Mudar ponto de partida
+        </button>
       )}
 
       {inicio && dia && semanaAtual && (
@@ -68,10 +102,15 @@ export default function Hoje() {
             </span>
           )}
         </div>
-        <p className="mt-1 text-sm text-ink-soft">As 5 tarefas não negociáveis. Todo dia, não importa o quão corrido.</p>
+        <p className="mt-1 text-sm text-ink-soft">
+          As tarefas não negociáveis. Todo dia, não importa o quão corrido.{" "}
+          <Link to="/minimo" className="font-medium text-terracotta-dark hover:underline">
+            Ajustar lista
+          </Link>
+        </p>
 
         <div className="mt-4 flex flex-col gap-2">
-          {minimoViavel.map((t) => (
+          {minimoItems.map((t) => (
             <TaskRow
               key={t.id}
               label={t.label}
@@ -83,7 +122,7 @@ export default function Hoje() {
         </div>
 
         <div className="mt-4">
-          <ProgressBar value={checked.size} total={minimoViavel.length} />
+          <ProgressBar value={checked.size} total={minimoItems.length} />
         </div>
 
         <Link
@@ -105,9 +144,36 @@ export default function Hoje() {
         </div>
         <p className="mt-1 text-sm text-ink-soft">{zonaAtual.descricao}</p>
         <div className="mt-3">
-          <ProgressBar value={zonaChecklist.checked.size} total={zonaAtual.banco.length} />
+          <ProgressBar value={zonaChecklist.checked.size} total={zonaCustom.items.length} />
         </div>
       </Card>
     </div>
+  );
+}
+
+function PartidaOpcao({
+  icon: Icon,
+  titulo,
+  descricao,
+  onClick,
+}: {
+  icon: typeof Sparkles;
+  titulo: string;
+  descricao: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className="flex items-start gap-3 rounded-xl border border-ink/10 bg-white px-4 py-3 text-left transition-colors hover:border-terracotta/50"
+    >
+      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-terracotta-light text-terracotta-dark">
+        <Icon className="h-4 w-4" />
+      </span>
+      <span>
+        <span className="block font-medium text-ink">{titulo}</span>
+        <span className="mt-0.5 block text-sm text-ink-soft">{descricao}</span>
+      </span>
+    </button>
   );
 }

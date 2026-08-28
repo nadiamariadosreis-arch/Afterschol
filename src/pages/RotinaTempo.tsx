@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { minimoViavel, zonas, tarefasRepresadas, rotinaTempoInfo } from "../data/method";
-import { useBucketChecklist } from "../lib/storage";
+import { useBucketChecklist, useCustomizableList } from "../lib/storage";
 import { hojeISO, semanaDoCiclo, chaveSemana } from "../lib/date";
-import { Card, PageTitle, Pill, TaskRow } from "../components/ui";
+import { AddTaskForm, Card, PageTitle, Pill, TaskRow } from "../components/ui";
 
 const OPCOES = [15, 30, 60] as const;
 type Opcao = (typeof OPCOES)[number];
@@ -11,9 +11,14 @@ export default function RotinaTempo() {
   const iso = hojeISO();
   const [selecionado, setSelecionado] = useState<Opcao>(15);
 
+  const minimoLista = useCustomizableList("minimo-viavel-lista", "geral", minimoViavel);
   const minimo = useBucketChecklist("minimo-viavel", iso);
+
   const zonaAtual = zonas[semanaDoCiclo(iso) - 1];
+  const zonaLista = useCustomizableList(`zona-${zonaAtual.semana}-lista`, String(zonaAtual.semana), zonaAtual.banco);
   const zona = useBucketChecklist(`zona-${zonaAtual.semana}`, chaveSemana(iso));
+
+  const representadasLista = useCustomizableList("tarefas-represadas-lista", "geral", tarefasRepresadas);
   const representadas = useBucketChecklist("tarefas-represadas", "global");
 
   const info = rotinaTempoInfo[selecionado];
@@ -51,19 +56,26 @@ export default function RotinaTempo() {
             <div className="mb-2 flex items-center justify-between">
               <p className="text-xs font-semibold uppercase tracking-wide text-ink-soft">Mínimo viável</p>
               <span className="text-xs text-ink-soft">
-                {minimo.checked.size}/{minimoViavel.length}
+                {minimo.checked.size}/{minimoLista.items.length}
               </span>
             </div>
             <div className="flex flex-col gap-2">
-              {minimoViavel.map((t) => (
+              {minimoLista.items.map((t) => (
                 <TaskRow
                   key={t.id}
                   label={t.label}
                   meta={t.time}
                   checked={minimo.isChecked(t.id)}
                   onToggle={() => minimo.toggle(t.id)}
+                  onRemove={() => minimoLista.removeItem(t.id)}
                 />
               ))}
+            </div>
+            <div className="mt-2">
+              <AddTaskForm
+                onAdd={({ label }) => minimoLista.addCustom({ label, detail: "", time: "" })}
+                placeholder="Adicionar ao mínimo viável..."
+              />
             </div>
           </section>
 
@@ -77,15 +89,23 @@ export default function RotinaTempo() {
               </div>
               <p className="mb-2 text-xs text-ink-soft">Escolha uma só. Termine ela antes de pensar em outra.</p>
               <div className="flex flex-col gap-2">
-                {zonaAtual.banco.map((t) => (
+                {zonaLista.items.map((t) => (
                   <TaskRow
                     key={t.id}
                     label={t.label}
-                    meta={`${t.minutes} min`}
+                    meta={t.minutes ? `${t.minutes} min` : undefined}
                     checked={zona.isChecked(t.id)}
                     onToggle={() => zona.toggle(t.id)}
+                    onRemove={() => zonaLista.removeItem(t.id)}
                   />
                 ))}
+              </div>
+              <div className="mt-2">
+                <AddTaskForm
+                  onAdd={({ label, minutes }) => zonaLista.addCustom({ label, minutes })}
+                  placeholder={`Adicionar em "${zonaAtual.nome}"...`}
+                  withMinutes
+                />
               </div>
             </section>
           )}
@@ -99,14 +119,21 @@ export default function RotinaTempo() {
                 30 minutos focados. Quando o tempo acabar, pare — mesmo sem terminar.
               </p>
               <div className="flex flex-col gap-2">
-                {tarefasRepresadas.map((t) => (
+                {representadasLista.items.map((t) => (
                   <TaskRow
                     key={t.id}
                     label={t.label}
                     checked={representadas.isChecked(t.id)}
                     onToggle={() => representadas.toggle(t.id)}
+                    onRemove={() => representadasLista.removeItem(t.id)}
                   />
                 ))}
+              </div>
+              <div className="mt-2">
+                <AddTaskForm
+                  onAdd={({ label }) => representadasLista.addCustom({ label })}
+                  placeholder="Adicionar tarefa represada..."
+                />
               </div>
             </section>
           )}

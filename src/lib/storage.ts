@@ -92,3 +92,60 @@ export function useStreak(storageKey: string, allIds: string[], todayISO: string
 export function usePlanoInicio() {
   return useLocalStorage<string | null>("plano-inicio", null);
 }
+
+export type PontoPartida = "reset" | "plano21" | "manutencao";
+
+export function usePontoPartida() {
+  return useLocalStorage<PontoPartida | null>("ponto-partida", null);
+}
+
+/**
+ * Lista de tarefas "customizável": parte de uma lista padrão (do método) e permite
+ * ao usuário ocultar itens que não fazem sentido pra casa dele, e adicionar os
+ * próprios. `groupId` separa listas independentes sob a mesma `key` (ex: uma por
+ * zona da casa).
+ */
+export function useCustomizableList<T extends { id: string; label: string }>(
+  key: string,
+  groupId: string,
+  defaults: T[],
+) {
+  const [hiddenStore, setHiddenStore] = useLocalStorage<Record<string, string[]>>(`${key}-ocultas`, {});
+  const [customStore, setCustomStore] = useLocalStorage<Record<string, T[]>>(`${key}-customizadas`, {});
+
+  const hiddenIds = useMemo(() => new Set(hiddenStore[groupId] ?? []), [hiddenStore, groupId]);
+  const customItems = customStore[groupId] ?? [];
+
+  const items = useMemo(
+    () => [...defaults.filter((d) => !hiddenIds.has(d.id)), ...customItems],
+    [defaults, hiddenIds, customItems],
+  );
+
+  const addCustom = useCallback(
+    (item: Omit<T, "id">) => {
+      const id = `custom-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+      setCustomStore((prev) => ({ ...prev, [groupId]: [...(prev[groupId] ?? []), { ...item, id } as T] }));
+    },
+    [groupId, setCustomStore],
+  );
+
+  const removeItem = useCallback(
+    (id: string) => {
+      if (defaults.some((d) => d.id === id)) {
+        setHiddenStore((prev) => ({ ...prev, [groupId]: [...(prev[groupId] ?? []), id] }));
+      } else {
+        setCustomStore((prev) => ({
+          ...prev,
+          [groupId]: (prev[groupId] ?? []).filter((c) => c.id !== id),
+        }));
+      }
+    },
+    [defaults, groupId, setHiddenStore, setCustomStore],
+  );
+
+  const restaurarPadrao = useCallback(() => {
+    setHiddenStore((prev) => ({ ...prev, [groupId]: [] }));
+  }, [groupId, setHiddenStore]);
+
+  return { items, addCustom, removeItem, restaurarPadrao, temOcultos: hiddenIds.size > 0 };
+}

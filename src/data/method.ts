@@ -46,7 +46,7 @@ export const minimoViavel: MinimoViavelTask[] = [
 export interface ZonaTask {
   id: string;
   label: string;
-  minutes: number;
+  minutes?: number;
 }
 
 export interface Zona {

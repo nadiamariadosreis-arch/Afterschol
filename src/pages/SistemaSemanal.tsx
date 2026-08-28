@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { zonas } from "../data/method";
-import { useBucketChecklist } from "../lib/storage";
+import { useBucketChecklist, useCustomizableList } from "../lib/storage";
 import { hojeISO, semanaDoCiclo, chaveSemana } from "../lib/date";
-import { Card, PageTitle, Pill, ProgressBar, TaskRow } from "../components/ui";
+import { AddTaskForm, Card, PageTitle, Pill, ProgressBar, TaskRow } from "../components/ui";
 
 export default function SistemaSemanal() {
   const iso = hojeISO();
@@ -11,6 +11,7 @@ export default function SistemaSemanal() {
 
   const zona = zonas[visualizando - 1];
   const ehSemanaAtual = visualizando === semanaAtual;
+  const lista = useCustomizableList(`zona-${zona.semana}-lista`, String(zona.semana), zona.banco);
   const checklist = useBucketChecklist(`zona-${zona.semana}`, chaveSemana(iso));
 
   return (
@@ -48,38 +49,68 @@ export default function SistemaSemanal() {
 
         {ehSemanaAtual && (
           <div className="mt-4">
-            <ProgressBar value={checklist.checked.size} total={zona.banco.length} />
+            <ProgressBar value={checklist.checked.size} total={lista.items.length} />
           </div>
         )}
 
         <div className="mt-4 flex flex-col gap-2">
-          {zona.banco.map((t) =>
+          {lista.items.map((t) =>
             ehSemanaAtual ? (
               <TaskRow
                 key={t.id}
                 label={t.label}
-                meta={`${t.minutes} min`}
+                meta={t.minutes ? `${t.minutes} min` : undefined}
                 checked={checklist.isChecked(t.id)}
                 onToggle={() => checklist.toggle(t.id)}
+                onRemove={() => lista.removeItem(t.id)}
               />
             ) : (
               <div
                 key={t.id}
-                className="flex items-center justify-between rounded-xl border border-ink/10 bg-white px-4 py-3 text-sm text-ink-soft"
+                className="flex items-center justify-between gap-2 rounded-xl border border-ink/10 bg-white px-4 py-3 text-sm text-ink-soft"
               >
                 <span>{t.label}</span>
-                <span className="shrink-0 rounded-full bg-cream-dark px-2.5 py-1 text-xs font-medium">
-                  {t.minutes} min
+                <span className="flex shrink-0 items-center gap-2">
+                  {t.minutes && (
+                    <span className="rounded-full bg-cream-dark px-2.5 py-1 text-xs font-medium">
+                      {t.minutes} min
+                    </span>
+                  )}
+                  <button
+                    onClick={() => lista.removeItem(t.id)}
+                    aria-label={`Remover "${t.label}"`}
+                    className="rounded-full p-1 text-ink-soft/60 hover:bg-terracotta-light hover:text-terracotta-dark"
+                  >
+                    ×
+                  </button>
                 </span>
               </div>
             ),
           )}
         </div>
+
+        <div className="mt-4">
+          <AddTaskForm
+            onAdd={({ label, minutes }) => lista.addCustom({ label, minutes })}
+            placeholder={`Adicionar tarefa em "${zona.nome}"...`}
+            withMinutes
+          />
+        </div>
+
+        {lista.temOcultos && (
+          <button
+            onClick={lista.restaurarPadrao}
+            className="mt-3 text-xs font-medium text-ink-soft hover:text-terracotta-dark hover:underline"
+          >
+            Restaurar tarefas originais dessa zona
+          </button>
+        )}
       </Card>
 
       <p className="mt-6 text-sm text-ink-soft">
-        Se sobrarem tarefas do banco no fim da semana, tudo bem — elas esperam até a próxima vez que esse cômodo
-        entrar no ciclo, daqui a 5 semanas. Não tente compensar pegando um combo maior no dia seguinte.
+        Essa lista é só o ponto de partida sugerido pelo método — ajuste pra sua casa: remova o que não se
+        aplica e adicione o que falta. Se sobrarem tarefas no fim da semana, tudo bem — elas esperam até a
+        próxima vez que esse cômodo entrar no ciclo, daqui a 5 semanas.
       </p>
     </div>
   );

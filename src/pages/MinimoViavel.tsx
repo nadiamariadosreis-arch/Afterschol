@@ -1,12 +1,17 @@
 import { Flame } from "lucide-react";
 import { minimoViavel } from "../data/method";
-import { useBucketChecklist, useStreak } from "../lib/storage";
+import { useBucketChecklist, useCustomizableList, useStreak } from "../lib/storage";
 import { hojeISO, formatarDataLonga } from "../lib/date";
-import { Card, PageTitle, ProgressBar, TaskRow } from "../components/ui";
+import { AddTaskForm, Card, PageTitle, ProgressBar, TaskRow } from "../components/ui";
 
 export default function MinimoViavel() {
   const iso = hojeISO();
-  const ids = minimoViavel.map((t) => t.id);
+  const { items, addCustom, removeItem, temOcultos, restaurarPadrao } = useCustomizableList(
+    "minimo-viavel-lista",
+    "geral",
+    minimoViavel,
+  );
+  const ids = items.map((t) => t.id);
   const { isChecked, toggle, checked } = useBucketChecklist("minimo-viavel", iso);
   const streak = useStreak("minimo-viavel", ids, iso);
 
@@ -36,7 +41,7 @@ export default function MinimoViavel() {
         </div>
 
         <div className="mt-4 flex flex-col gap-2">
-          {minimoViavel.map((t) => (
+          {items.map((t) => (
             <TaskRow
               key={t.id}
               label={t.label}
@@ -44,19 +49,33 @@ export default function MinimoViavel() {
               meta={t.time}
               checked={isChecked(t.id)}
               onToggle={() => toggle(t.id)}
+              onRemove={() => removeItem(t.id)}
             />
           ))}
         </div>
 
         <div className="mt-4">
-          <ProgressBar value={checked.size} total={minimoViavel.length} />
+          <AddTaskForm onAdd={({ label }) => addCustom({ label, detail: "", time: "" })} placeholder="Ex: tirar o cachorro pra passear" />
         </div>
+
+        <div className="mt-4">
+          <ProgressBar value={checked.size} total={items.length} />
+        </div>
+
+        {temOcultos && (
+          <button
+            onClick={restaurarPadrao}
+            className="mt-3 text-xs font-medium text-ink-soft hover:text-terracotta-dark hover:underline"
+          >
+            Restaurar as 5 tarefas originais do método
+          </button>
+        )}
       </Card>
 
       <p className="mt-6 text-sm text-ink-soft">
-        Essas cinco são o ponto de partida sugerido pelo método — não uma regra rígida. Se sua casa pede ajustes
-        (apartamento pequeno, filhos pequenos, com ou sem ajuda), trate o princípio como inegociável, não a lista
-        exata.
+        Essas cinco são o ponto de partida sugerido pelo método — não uma regra rígida. "Anote as suas cinco",
+        diz o próprio material: pode ser exatamente essa lista, ou uma versão ajustada pra realidade da sua casa.
+        Remova o que não faz sentido pra você e adicione o que faz.
       </p>
     </div>
   );
