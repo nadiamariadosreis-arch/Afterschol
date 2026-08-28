@@ -1,4 +1,5 @@
 import { Route, Routes } from "react-router-dom";
+import AccessGate from "./components/AccessGate";
 import Layout from "./components/Layout";
 import Hoje from "./pages/Hoje";
 import MinimoViavel from "./pages/MinimoViavel";
@@ -13,19 +14,21 @@ import Metodo from "./pages/Metodo";
 
 export default function App() {
   return (
-    <Routes>
-      <Route element={<Layout />}>
-        <Route path="/" element={<Hoje />} />
-        <Route path="/minimo" element={<MinimoViavel />} />
-        <Route path="/tempo" element={<RotinaTempo />} />
-        <Route path="/semanal" element={<SistemaSemanal />} />
-        <Route path="/reset" element={<Reset />} />
-        <Route path="/pontos" element={<PontosAcumulo />} />
-        <Route path="/criancas" element={<Criancas />} />
-        <Route path="/rotina-diaria" element={<RotinaDiaria />} />
-        <Route path="/plano-21" element={<Plano21 />} />
-        <Route path="/metodo" element={<Metodo />} />
-      </Route>
-    </Routes>
+    <AccessGate>
+      <Routes>
+        <Route element={<Layout />}>
+          <Route path="/" element={<Hoje />} />
+          <Route path="/minimo" element={<MinimoViavel />} />
+          <Route path="/tempo" element={<RotinaTempo />} />
+          <Route path="/semanal" element={<SistemaSemanal />} />
+          <Route path="/reset" element={<Reset />} />
+          <Route path="/pontos" element={<PontosAcumulo />} />
+          <Route path="/criancas" element={<Criancas />} />
+          <Route path="/rotina-diaria" element={<RotinaDiaria />} />
+          <Route path="/plano-21" element={<Plano21 />} />
+          <Route path="/metodo" element={<Metodo />} />
+        </Route>
+      </Routes>
+    </AccessGate>
   );
 }
