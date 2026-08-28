@@ -22,11 +22,6 @@ export function indiceSemana(iso: string = hojeISO()): number {
   return Math.floor(diasDesdeEpoch(iso) / 7);
 }
 
-/** Retorna a semana do ciclo de 5 semanas (1 a 5) pra uma data. */
-export function semanaDoCiclo(iso: string = hojeISO()): number {
-  return (indiceSemana(iso) % 5) + 1;
-}
-
 /** Chave estável por semana corrida, usada pra guardar progresso da zona daquela semana. */
 export function chaveSemana(iso: string = hojeISO()): string {
   return `sem-${indiceSemana(iso)}`;

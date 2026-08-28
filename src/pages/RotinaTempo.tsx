@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { minimoViavel, zonas, tarefasRepresadas, rotinaTempoInfo } from "../data/method";
 import { useBucketChecklist, useCustomizableList } from "../lib/storage";
-import { hojeISO, semanaDoCiclo, chaveSemana } from "../lib/date";
+import { useCicloZonas } from "../lib/zonaCiclo";
+import { hojeISO, chaveSemana } from "../lib/date";
 import { AddTaskForm, Card, PageTitle, Pill, TaskRow } from "../components/ui";
 
 const OPCOES = [15, 30, 60] as const;
@@ -14,7 +15,8 @@ export default function RotinaTempo() {
   const minimoLista = useCustomizableList("minimo-viavel-lista", "geral", minimoViavel);
   const minimo = useBucketChecklist("minimo-viavel", iso);
 
-  const zonaAtual = zonas[semanaDoCiclo(iso) - 1];
+  const { zonaAtualId } = useCicloZonas();
+  const zonaAtual = zonas.find((z) => z.semana === zonaAtualId)!;
   const zonaLista = useCustomizableList(`zona-${zonaAtual.semana}-lista`, String(zonaAtual.semana), zonaAtual.banco);
   const zona = useBucketChecklist(`zona-${zonaAtual.semana}`, chaveSemana(iso));
 

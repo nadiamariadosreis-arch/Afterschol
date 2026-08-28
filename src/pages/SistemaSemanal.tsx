@@ -1,16 +1,18 @@
 import { useState } from "react";
+import { ChevronDown, ChevronUp, MapPin } from "lucide-react";
 import { zonas } from "../data/method";
 import { useBucketChecklist, useCustomizableList } from "../lib/storage";
-import { hojeISO, semanaDoCiclo, chaveSemana } from "../lib/date";
+import { useCicloZonas } from "../lib/zonaCiclo";
+import { hojeISO, chaveSemana } from "../lib/date";
 import { AddTaskForm, Card, PageTitle, Pill, ProgressBar, TaskRow } from "../components/ui";
 
 export default function SistemaSemanal() {
   const iso = hojeISO();
-  const semanaAtual = semanaDoCiclo(iso);
-  const [visualizando, setVisualizando] = useState(semanaAtual);
+  const { ordem, zonaAtualId, posicaoDe, definirAtual, mover } = useCicloZonas();
+  const [visualizando, setVisualizando] = useState(zonaAtualId);
 
-  const zona = zonas[visualizando - 1];
-  const ehSemanaAtual = visualizando === semanaAtual;
+  const zona = zonas.find((z) => z.semana === visualizando)!;
+  const ehSemanaAtual = visualizando === zonaAtualId;
   const lista = useCustomizableList(`zona-${zona.semana}-lista`, String(zona.semana), zona.banco);
   const checklist = useBucketChecklist(`zona-${zona.semana}`, chaveSemana(iso));
 
@@ -19,30 +21,76 @@ export default function SistemaSemanal() {
       <PageTitle
         eyebrow="Parte 5 do método"
         title="O sistema semanal"
-        subtitle="Um cômodo por semana, em ciclo. Você não escolhe mais qual cômodo — já sabe. Escolhe só qual tarefa cabe no tempo que sobrou hoje."
+        subtitle="Um cômodo por semana, em ciclo. A ordem é sua — cada casa tem uma prioridade diferente — e você decide em qual semana do ciclo está."
       />
 
-      <div className="mb-6 grid grid-cols-5 gap-1.5 sm:gap-2">
-        {zonas.map((z) => (
-          <button
-            key={z.semana}
-            onClick={() => setVisualizando(z.semana)}
-            className={`rounded-xl border px-1.5 py-2.5 text-center text-xs font-medium transition-colors sm:text-sm ${
-              visualizando === z.semana
-                ? "border-terracotta bg-terracotta text-white"
-                : z.semana === semanaAtual
-                  ? "border-terracotta/40 bg-terracotta-light text-terracotta-dark"
-                  : "border-ink/15 bg-white text-ink-soft hover:border-terracotta/40"
-            }`}
-          >
-            Sem. {z.semana}
-          </button>
-        ))}
-      </div>
+      <Card className="mb-6">
+        <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-ink-soft">
+          Ordem do ciclo — arraste a prioridade com as setas
+        </p>
+        <div className="flex flex-col gap-2">
+          {ordem.map((zonaId, index) => {
+            const z = zonas.find((zz) => zz.semana === zonaId)!;
+            const atual = zonaId === zonaAtualId;
+            const selecionada = zonaId === visualizando;
+            return (
+              <div
+                key={zonaId}
+                className={`flex items-center gap-2 rounded-xl border px-3 py-2.5 transition-colors ${
+                  selecionada
+                    ? "border-terracotta bg-terracotta-light/40"
+                    : atual
+                      ? "border-terracotta/30 bg-white"
+                      : "border-ink/10 bg-white"
+                }`}
+              >
+                <div className="flex shrink-0 flex-col">
+                  <button
+                    onClick={() => mover(zonaId, -1)}
+                    disabled={index === 0}
+                    aria-label={`Mover ${z.nome} pra cima`}
+                    className="text-ink-soft/60 hover:text-terracotta-dark disabled:opacity-20"
+                  >
+                    <ChevronUp className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={() => mover(zonaId, 1)}
+                    disabled={index === ordem.length - 1}
+                    aria-label={`Mover ${z.nome} pra baixo`}
+                    className="text-ink-soft/60 hover:text-terracotta-dark disabled:opacity-20"
+                  >
+                    <ChevronDown className="h-4 w-4" />
+                  </button>
+                </div>
+
+                <button onClick={() => setVisualizando(zonaId)} className="flex flex-1 items-baseline gap-2 text-left">
+                  <span className="font-serif text-sm text-ink-soft">Semana {index + 1}</span>
+                  <span className={`font-medium ${selecionada ? "text-terracotta-dark" : "text-ink"}`}>
+                    {z.nome}
+                  </span>
+                </button>
+
+                {atual ? (
+                  <Pill>Atual</Pill>
+                ) : (
+                  <button
+                    onClick={() => definirAtual(zonaId)}
+                    className="flex shrink-0 items-center gap-1 rounded-full border border-ink/15 px-2.5 py-1 text-xs font-medium text-ink-soft hover:border-terracotta/50 hover:text-terracotta-dark"
+                  >
+                    <MapPin className="h-3 w-3" /> Estou aqui
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </Card>
 
       <Card>
         <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 className="font-serif text-xl text-ink">{zona.nome}</h2>
+          <h2 className="font-serif text-xl text-ink">
+            Semana {posicaoDe(zona.semana)} · {zona.nome}
+          </h2>
           {ehSemanaAtual ? <Pill>Semana atual</Pill> : <Pill tone="sage">Prévia</Pill>}
         </div>
         <p className="mt-1 text-sm text-ink-soft">{zona.descricao}</p>
@@ -110,7 +158,7 @@ export default function SistemaSemanal() {
       <p className="mt-6 text-sm text-ink-soft">
         Essa lista é só o ponto de partida sugerido pelo método — ajuste pra sua casa: remova o que não se
         aplica e adicione o que falta. Se sobrarem tarefas no fim da semana, tudo bem — elas esperam até a
-        próxima vez que esse cômodo entrar no ciclo, daqui a 5 semanas.
+        próxima vez que esse cômodo entrar no ciclo.
       </p>
     </div>
   );

@@ -2,7 +2,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { Flame, ArrowRight, Sparkles, RotateCcw, LayoutGrid } from "lucide-react";
 import { minimoViavel, zonas, plano21 } from "../data/method";
 import { useBucketChecklist, useCustomizableList, usePlanoInicio, usePontoPartida, useStreak, type PontoPartida } from "../lib/storage";
-import { hojeISO, formatarDataLonga, semanaDoCiclo, diaDoPlano, semanaDoPlano, chaveSemana } from "../lib/date";
+import { hojeISO, formatarDataLonga, diaDoPlano, semanaDoPlano, chaveSemana } from "../lib/date";
+import { useCicloZonas } from "../lib/zonaCiclo";
 import { Card, PageTitle, Pill, ProgressBar, TaskRow } from "../components/ui";
 
 export default function Hoje() {
@@ -20,7 +21,8 @@ export default function Hoje() {
   const semanaPlano = dia ? semanaDoPlano(dia) : null;
   const semanaAtual = plano21.find((s) => s.semana === semanaPlano);
 
-  const zonaAtual = zonas[semanaDoCiclo(iso) - 1];
+  const { zonaAtualId, posicaoDe } = useCicloZonas();
+  const zonaAtual = zonas.find((z) => z.semana === zonaAtualId)!;
   const zonaCustom = useCustomizableList(`zona-${zonaAtual.semana}-lista`, String(zonaAtual.semana), zonaAtual.banco);
   const zonaChecklist = useBucketChecklist(`zona-${zonaAtual.semana}`, chaveSemana(iso));
 
@@ -136,7 +138,7 @@ export default function Hoje() {
       <Card>
         <div className="flex items-center justify-between">
           <h2 className="font-serif text-xl text-ink">
-            Zona da semana: <span className="text-terracotta-dark">{zonaAtual.nome}</span>
+            Semana {posicaoDe(zonaAtual.semana)}: <span className="text-terracotta-dark">{zonaAtual.nome}</span>
           </h2>
           <Link to="/semanal" className="text-sm font-medium text-terracotta-dark hover:underline">
             Ver tudo →
