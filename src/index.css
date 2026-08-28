@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Inter", system-ui, "Segoe UI", Roboto, sans-serif;
+  --font-serif: "Fraunces", Georgia, serif;
+
+  --color-cream: #f6f1ea;
+  --color-cream-dark: #efe6d8;
+  --color-ink: #2f2a23;
+  --color-ink-soft: #5c5347;
+  --color-terracotta: #c1652f;
+  --color-terracotta-dark: #a4531f;
+  --color-terracotta-light: #f1ded0;
+  --color-sage: #6f7a5e;
+  --color-sage-dark: #566047;
+  --color-sage-light: #e2e7d8;
+  --color-butter: #e8b545;
+  --color-butter-light: #faecc4;
+  --color-clay: #b6543a;
+}
+
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  margin: 0;
+  background: var(--color-cream);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100svh;
+}
+
+::selection {
+  background: var(--color-butter-light);
+  color: var(--color-ink);
+}
+
+input[type="checkbox"] {
+  accent-color: var(--color-terracotta);
+}
