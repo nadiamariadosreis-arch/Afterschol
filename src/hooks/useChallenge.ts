@@ -11,7 +11,7 @@ import { todayISO } from "../lib/dates";
 import { dailyFixedTasks } from "../data/dailyFixedTasks";
 import { challengeCategoryMeta, daysToFrequency } from "../data/challengeCategories";
 import { zoneTaskBanks } from "../data/zoneTaskBanks";
-import { zoneRoomForWeek, zoneWeekNumber } from "../lib/zoneRotation";
+import { challengeWeekNumber, zoneRoomForWeek, zoneWeekNumber } from "../lib/zoneRotation";
 
 const CYCLE_KEY = "rotina-mamae:desafio:cycle:v1";
 const TASKS_KEY = "rotina-mamae:desafio:tasks:v1";
@@ -98,6 +98,7 @@ export function useChallenge(
   const day = completedCount + (cycle.completedDays.includes(today) ? 0 : 1);
   const challengeCompleted = completedCount >= 21;
 
+  const currentChallengeWeek = challengeWeekNumber(day);
   const currentZoneWeek = zoneWeekNumber(day);
   const currentZoneRoom = currentZoneWeek > 0 ? zoneRoomForWeek(currentZoneWeek, rooms) : null;
 
@@ -236,6 +237,7 @@ export function useChallenge(
     cycle,
     day,
     challengeCompleted,
+    currentChallengeWeek,
     currentZoneWeek,
     currentZoneRoom,
     baseline,
@@ -246,6 +248,7 @@ export function useChallenge(
     finishCalibration,
     fixedDone,
     toggleFixedTask,
+    challengeTasks,
     pendingTasks,
     addChallengeTask,
     removeChallengeTask,

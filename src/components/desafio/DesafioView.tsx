@@ -1,10 +1,11 @@
+import { useState } from "react";
 import type { Room, RoomType, Task } from "../../types";
 import { useChallenge } from "../../hooks/useChallenge";
 import { useDevClock } from "../../hooks/useDevClock";
 import { DesafioCalibration } from "./DesafioCalibration";
 import { DesafioFixedChecklist } from "./DesafioFixedChecklist";
 import { DesafioTracker } from "./DesafioTracker";
-import { DesafioPhaseStatus } from "./DesafioPhaseStatus";
+import { DesafioWeekBrowser } from "./DesafioWeekBrowser";
 import { DesafioDaily } from "./DesafioDaily";
 import { DesafioTaskManager } from "./DesafioTaskManager";
 import { DesafioCycleComplete } from "./DesafioCycleComplete";
@@ -23,6 +24,7 @@ export function DesafioView({ rooms, onGraduate, onAddRoom }: Props) {
     cycle,
     day,
     challengeCompleted,
+    currentChallengeWeek,
     currentZoneWeek,
     currentZoneRoom,
     baselineMinutes,
@@ -32,11 +34,14 @@ export function DesafioView({ rooms, onGraduate, onAddRoom }: Props) {
     finishCalibration,
     fixedDone,
     toggleFixedTask,
+    challengeTasks,
     pendingTasks,
     addChallengeTask,
     removeChallengeTask,
     completeChallengeTask,
   } = useChallenge(onGraduate, rooms, devClock.today);
+
+  const [viewedWeek, setViewedWeek] = useState(currentChallengeWeek);
 
   return (
     <div className="flex flex-col gap-6">
@@ -52,7 +57,18 @@ export function DesafioView({ rooms, onGraduate, onAddRoom }: Props) {
 
       {challengeCompleted && <DesafioCycleComplete />}
 
-      <DesafioPhaseStatus day={day} zoneRoom={currentZoneRoom} />
+      <DesafioWeekBrowser
+        currentWeek={currentChallengeWeek}
+        completedCount={cycle.completedDays.length}
+        rooms={rooms}
+        challengeTasks={challengeTasks}
+        viewedWeek={viewedWeek}
+        onSelectWeek={setViewedWeek}
+      />
+
+      <p className="text-xs font-bold uppercase tracking-wide text-ink-soft text-center -mb-2">
+        Hoje, dia {day}
+      </p>
 
       {!isCalibrated ? (
         <DesafioCalibration

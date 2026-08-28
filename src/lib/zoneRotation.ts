@@ -1,14 +1,24 @@
 import { zoneTaskBanks } from "../data/zoneTaskBanks";
 import type { Room } from "../types";
 
+/** Semana 1 = dias 1-7, semana 2 = dias 8-14, e assim por diante, sem limite. */
+export function challengeWeekNumber(day: number): number {
+  return Math.floor((day - 1) / 7) + 1;
+}
+
 /**
- * Semana 1 do desafio (dias 1-7) é só o mínimo viável — nenhuma zona ainda.
- * A partir do dia 8, uma zona nova entra a cada 7 dias de uso, girando pela
- * rotação indefinidamente (o sistema continua depois do dia 21).
+ * Semana 1 do desafio é só o mínimo viável — nenhuma zona ainda. A partir
+ * da semana 2, uma zona nova entra a cada semana, girando pela rotação
+ * indefinidamente (o sistema continua depois do dia 21).
  */
 export function zoneWeekNumber(day: number): number {
-  if (day < 8) return 0;
-  return Math.floor((day - 8) / 7) + 1;
+  const week = challengeWeekNumber(day);
+  return week >= 2 ? week - 1 : 0;
+}
+
+/** Quantos dos 7 dias daquela semana do desafio já foram cumpridos. */
+export function daysDoneInWeek(weekNumber: number, completedCount: number): number {
+  return Math.min(Math.max(completedCount - 7 * (weekNumber - 1), 0), 7);
 }
 
 /**
@@ -26,9 +36,13 @@ export function zoneRoomForWeek(weekNumber: number, rooms: Room[]): Room | null 
 export type ChallengePhase = "fundacao" | "ritmo" | "consolidacao" | "continuo";
 
 export function challengePhase(day: number): ChallengePhase {
-  if (day <= 7) return "fundacao";
-  if (day <= 14) return "ritmo";
-  if (day <= 21) return "consolidacao";
+  return challengePhaseForWeek(challengeWeekNumber(day));
+}
+
+export function challengePhaseForWeek(weekNumber: number): ChallengePhase {
+  if (weekNumber === 1) return "fundacao";
+  if (weekNumber === 2) return "ritmo";
+  if (weekNumber === 3) return "consolidacao";
   return "continuo";
 }
 
