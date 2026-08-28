@@ -112,39 +112,59 @@ export function useChallenge(
   // cadastrou, na ordem em que cadastrou, girando entre eles. Sem nenhum
   // cômodo cadastrado ainda, não injeta nada — espera ela cadastrar um.
   //
+  // Injeta em lote todas as semanas entre a última já injetada e a atual —
+  // se ela ficar dias sem abrir o app e pular semanas inteiras, nenhuma
+  // zona fica sem o banco dela, mesmo que já tenha passado.
+  //
   // Usa updates funcionais e checa se as tarefas já existem antes de somar —
   // não pode confiar só nas dependências do efeito pra evitar duplicar,
   // porque o StrictMode do React roda efeitos duas vezes em desenvolvimento.
   useEffect(() => {
-    if (currentZoneWeek === 0 || !currentZoneRoom) return;
-    const zoneId = `zone-${currentZoneWeek}-`;
-    const room = currentZoneRoom;
+    const startWeek = (cycle.zoneWeeksInjected ?? 0) + 1;
+    if (currentZoneWeek === 0 || startWeek > currentZoneWeek) return;
+
+    // Descobre até onde dá pra injetar nessa passada — para no primeiro
+    // ponto sem cômodo disponível, pra tentar de novo quando ela cadastrar
+    // um (em vez de marcar como injetada uma semana que ficou sem nada).
+    let lastReachable = cycle.zoneWeeksInjected ?? 0;
+    const plan: { week: number; room: Room }[] = [];
+    for (let week = startWeek; week <= currentZoneWeek; week++) {
+      const room = zoneRoomForWeek(week, rooms);
+      if (!room) break;
+      plan.push({ week, room });
+      lastReachable = week;
+    }
+    if (plan.length === 0) return;
 
     setChallengeTasks((prev) => {
-      if (prev.some((t) => t.id.startsWith(zoneId))) return prev;
+      let next = prev;
+      for (const { week, room } of plan) {
+        const zoneId = `zone-${week}-`;
+        if (next.some((t) => t.id.startsWith(zoneId))) continue;
 
-      const bank = zoneTaskBanks[room.type];
-      const newTasks: ChallengeTask[] = bank.map((zt) => ({
-        id: `${zoneId}${zt.id}-${room.id}`,
-        name: zt.name,
-        roomId: room.id,
-        estimatedMinutes: zt.minutes,
-        source: "zone" as const,
-        zoneType: room.type,
-        cycleId: cycle.id,
-        createdAt: today,
-      }));
-
-      return [...prev, ...newTasks];
+        const bank = zoneTaskBanks[room.type];
+        const newTasks: ChallengeTask[] = bank.map((zt) => ({
+          id: `${zoneId}${zt.id}-${room.id}`,
+          name: zt.name,
+          roomId: room.id,
+          estimatedMinutes: zt.minutes,
+          source: "zone" as const,
+          zoneType: room.type,
+          cycleId: cycle.id,
+          createdAt: today,
+        }));
+        next = [...next, ...newTasks];
+      }
+      return next;
     });
 
     setCycle((prev) =>
-      currentZoneWeek > (prev.zoneWeeksInjected ?? 0)
-        ? { ...prev, zoneWeeksInjected: currentZoneWeek }
+      lastReachable > (prev.zoneWeeksInjected ?? 0)
+        ? { ...prev, zoneWeeksInjected: lastReachable }
         : prev,
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentZoneWeek, currentZoneRoom, cycle.id]);
+  }, [currentZoneWeek, cycle.zoneWeeksInjected, cycle.id, rooms]);
 
   function markDayCompleted() {
     setCycle((prev) =>
