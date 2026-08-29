@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Minha Rotina</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-title">
+    <span class="logo">🌻</span>
+    <div>
+      <h1>Minha Rotina</h1>
+      <p id="dataAtual" class="subtitle"></p>
+    </div>
+  </div>
+  <button id="btnConfig" class="icon-btn" title="Configurações e backup">⚙️</button>
+</header>
+
+<nav class="tabs" id="tabs">
+  <button class="tab-btn active" data-tab="hoje">🏠 Hoje</button>
+  <button class="tab-btn" data-tab="semana">📅 Semana</button>
+  <button class="tab-btn" data-tab="tarefas">✅ Tarefas</button>
+  <button class="tab-btn" data-tab="limpeza">🧹 Limpeza</button>
+  <button class="tab-btn" data-tab="familia">👨‍👩‍👧‍👦 Família</button>
+</nav>
+
+<main id="app">
+
+  <!-- HOJE -->
+  <section id="tab-hoje" class="tab-panel active">
+    <div class="card resumo-dia">
+      <h2 id="tituloHoje">Hoje</h2>
+      <div id="blocosHoje" class="blocos-lista"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>Pendentes de hoje</h2>
+      </div>
+      <div id="tarefasHoje" class="tarefas-lista"></div>
+    </div>
+
+    <div class="card">
+      <h2>Adicionar rápido</h2>
+      <form id="formRapido" class="form-rapido">
+        <input type="text" id="rapidoTitulo" placeholder="Ex: Comprar material da catequese" required>
+        <select id="rapidoCategoria">
+          <option value="casa">🏡 Casa</option>
+          <option value="trabalho">💼 Trabalho</option>
+          <option value="filhos">🧒 Filhos</option>
+          <option value="catequese">✝️ Catequese</option>
+          <option value="instagram">📸 Instagram</option>
+          <option value="pessoal">🌷 Pessoal</option>
+        </select>
+        <button type="submit" class="btn-primary">Adicionar</button>
+      </form>
+    </div>
+  </section>
+
+  <!-- SEMANA -->
+  <section id="tab-semana" class="tab-panel">
+    <div class="card">
+      <div class="card-header">
+        <h2>Rotina semanal</h2>
+        <button id="btnNovoBloco" class="btn-secondary">+ Bloco</button>
+      </div>
+      <p class="hint">Monte aqui a semana da família: afterschool das crianças, catequese, trabalho, Instagram etc.</p>
+      <div id="grade-semana" class="grade-semana"></div>
+    </div>
+  </section>
+
+  <!-- TAREFAS -->
+  <section id="tab-tarefas" class="tab-panel">
+    <div class="card">
+      <div class="card-header">
+        <h2>Todas as tarefas</h2>
+        <button id="btnNovaTarefa" class="btn-secondary">+ Tarefa</button>
+      </div>
+      <div class="filtros" id="filtrosCategoria">
+        <button class="filtro-btn active" data-filtro="todas">Todas</button>
+        <button class="filtro-btn" data-filtro="casa">🏡 Casa</button>
+        <button class="filtro-btn" data-filtro="trabalho">💼 Trabalho</button>
+        <button class="filtro-btn" data-filtro="filhos">🧒 Filhos</button>
+        <button class="filtro-btn" data-filtro="catequese">✝️ Catequese</button>
+        <button class="filtro-btn" data-filtro="instagram">📸 Instagram</button>
+        <button class="filtro-btn" data-filtro="pessoal">🌷 Pessoal</button>
+      </div>
+      <div id="listaTarefas" class="tarefas-lista"></div>
+    </div>
+  </section>
+
+  <!-- LIMPEZA -->
+  <section id="tab-limpeza" class="tab-panel">
+    <div class="card">
+      <div class="card-header">
+        <h2 id="tituloMes">Limpeza do mês</h2>
+        <button id="btnNovoItemLimpeza" class="btn-secondary">+ Item</button>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-bar"><div id="progressoLimpeza" class="progress-fill"></div></div>
+        <span id="progressoTexto" class="progress-texto"></span>
+      </div>
+      <p class="hint">Esses itens voltam a ficar pendentes automaticamente todo mês.</p>
+      <div id="listaLimpeza" class="tarefas-lista"></div>
+    </div>
+  </section>
+
+  <!-- FAMILIA -->
+  <section id="tab-familia" class="tab-panel">
+    <div class="card">
+      <div class="card-header">
+        <h2>Filhos</h2>
+        <button id="btnNovoFilho" class="btn-secondary">+ Filho(a)</button>
+      </div>
+      <div id="listaFilhos" class="filhos-lista"></div>
+    </div>
+    <div class="card">
+      <h2>Sobre você</h2>
+      <label class="campo-label">Como podemos te chamar?</label>
+      <input type="text" id="nomeMae" placeholder="Seu nome" class="input-full">
+    </div>
+  </section>
+
+</main>
+
+<!-- MODAL genérico -->
+<div id="modalOverlay" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitulo">Título</h3>
+      <button id="modalFechar" class="icon-btn">✕</button>
+    </div>
+    <div id="modalCorpo" class="modal-corpo"></div>
+  </div>
+</div>
+
+<!-- MODAL configurações -->
+<div id="configOverlay" class="modal-overlay hidden">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Configurações</h3>
+      <button id="configFechar" class="icon-btn">✕</button>
+    </div>
+    <div class="modal-corpo">
+      <p class="hint">Seus dados ficam salvos neste navegador. Use os botões abaixo para fazer backup ou restaurar.</p>
+      <button id="btnExportar" class="btn-secondary full">⬇️ Exportar backup (.json)</button>
+      <label class="btn-secondary full file-label">
+        ⬆️ Importar backup
+        <input type="file" id="inputImportar" accept="application/json" hidden>
+      </label>
+      <button id="btnResetar" class="btn-danger full">🗑️ Apagar tudo e recomeçar</button>
+    </div>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
