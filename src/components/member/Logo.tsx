@@ -20,11 +20,11 @@ export function Logo({ compact = false }: { compact?: boolean }) {
       </svg>
       <div>
         <div className="font-display font-bold text-ink text-[19px] leading-none">
-          Cérebro em Jogo
+          Arsenal Zero Telas
         </div>
         {!compact ? (
           <div className="text-[10px] tracking-[0.14em] uppercase text-teal-dark font-bold mt-1.5 hidden sm:block">
-            Jogos que ensinam brincando
+            Atividades para fugir das telas
           </div>
         ) : null}
       </div>

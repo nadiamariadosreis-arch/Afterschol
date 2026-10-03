@@ -7,16 +7,16 @@ export default function LandingPage() {
     <>
       <header className="px-6 md:px-[8vw] pt-16 pb-10 border-b border-line">
         <div className="font-body text-[13px] tracking-[0.24em] uppercase text-teal-dark font-bold mb-4">
-          Jogos pedagógicos para a sua família
+          Banco de atividades para fugir das telas
         </div>
         <h1 className="font-display font-bold text-[40px] md:text-[56px] text-ink max-w-3xl">
-          Cérebro em Jogo
+          Arsenal Zero Telas
         </h1>
         <p className="text-[19px] text-ink/70 max-w-xl mt-4">
-          Jogos que trabalham alfabetização e virtudes brincando — busque
-          pelo desafio que sua família está enfrentando hoje e encontre o
-          jogo certo, com videoaula, PDF para baixar e a explicação de como
-          ele ajuda seu filho.
+          Jogos e atividades que trabalham alfabetização e virtudes brincando
+          — busque pelo desafio que sua família está enfrentando hoje e
+          encontre a atividade certa, com videoaula, PDF para imprimir e a
+          explicação de como ela ajuda seu filho a ficar longe da tela.
         </p>
         <div className="mt-8 flex flex-wrap gap-4">
           <LinkButton href="/login" variant="primary">
@@ -45,21 +45,21 @@ export default function LandingPage() {
             </Card>
             <Card>
               <h3 className="font-display font-bold text-[18px] text-ink mb-2">
-                2. Veja o jogo certo
+                2. Veja a atividade certa
               </h3>
               <p className="text-ink/70">
-                Cada jogo tem uma videoaula mostrando como jogar e um texto
-                explicando por que ele ajuda a criança a vencer aquele
+                Cada atividade tem uma videoaula mostrando como usar e um
+                texto explicando por que ela ajuda a criança a vencer aquele
                 desafio específico — base em neuroplasticidade.
               </p>
             </Card>
             <Card>
               <h3 className="font-display font-bold text-[18px] text-ink mb-2">
-                3. Baixe e jogue
+                3. Imprima e brinque
               </h3>
               <p className="text-ink/70">
-                O material do jogo fica disponível em PDF para baixar e
-                imprimir, ou usar direto na tela com a família.
+                O material fica disponível em PDF para baixar e imprimir —
+                pensado para a criança brincar longe da tela, não na tela.
               </p>
             </Card>
           </div>

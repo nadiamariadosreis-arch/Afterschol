@@ -1,4 +1,4 @@
--- Cérebro em Jogo — schema inicial
+-- Arsenal Zero Telas — schema inicial
 -- Rode este arquivo no SQL Editor do Supabase (ou via `supabase db push`).
 -- Projeto Supabase independente do usado pela Trilha das Virtudes.
 

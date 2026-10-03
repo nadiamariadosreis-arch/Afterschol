@@ -15,9 +15,9 @@ const nunito = Nunito({
 });
 
 export const metadata: Metadata = {
-  title: "Cérebro em Jogo",
+  title: "Arsenal Zero Telas",
   description:
-    "Jogos pedagógicos para alfabetização e formação de virtudes — organizados por desafio, com PDF para baixar e videoaula explicando como jogar.",
+    "Banco de atividades e jogos pedagógicos para manter as crianças longe das telas — organizados por desafio, com PDF para baixar e videoaula explicando como usar.",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

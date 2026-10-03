@@ -1,9 +1,10 @@
-# Cérebro em Jogo — Plataforma de Jogos Pedagógicos
+# Arsenal Zero Telas — Banco de Atividades sem Tela
 
-Plataforma de área de membros com jogos pedagógicos voltados à
+Plataforma de área de membros com um banco de atividades e jogos
+pedagógicos para manter as crianças longe das telas, voltados à
 alfabetização e à formação de virtudes, com base em neuroplasticidade.
-Cada jogo é organizado por **queixa da mãe** (ex: "meu filho chora muito
-para fazer as coisas") e/ou **virtude buscada** (ex: paciência,
+Cada atividade é organizada por **queixa da mãe** (ex: "meu filho chora
+muito para fazer as coisas") e/ou **virtude buscada** (ex: paciência,
 autocontrole), para facilitar a busca pelo desafio que a família está
 enfrentando.
 
