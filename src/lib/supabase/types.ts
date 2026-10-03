@@ -1,5 +1,7 @@
 export type UserRole = "member" | "admin";
-export type TagType = "queixa" | "virtude";
+// Known shortcut types get autocomplete; tags.type is free text in the
+// database so new categories don't require a migration — see tagStyle.ts.
+export type TagType = "queixa" | "virtude" | "idade" | "tempo" | "tipo" | "modo" | (string & {});
 
 export type Profile = {
   id: string;
@@ -38,6 +40,12 @@ export type JogoTag = {
   tag_id: string;
 };
 
+export type Favorito = {
+  member_id: string;
+  jogo_id: string;
+  created_at: string;
+};
+
 type Relationships = { Relationships: [] };
 
 export type Database = {
@@ -62,6 +70,11 @@ export type Database = {
         Row: JogoTag;
         Insert: Partial<JogoTag>;
         Update: Partial<JogoTag>;
+      } & Relationships;
+      favoritos: {
+        Row: Favorito;
+        Insert: Partial<Favorito>;
+        Update: Partial<Favorito>;
       } & Relationships;
     };
     Views: Record<string, never>;

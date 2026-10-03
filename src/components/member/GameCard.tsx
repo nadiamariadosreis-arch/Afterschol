@@ -2,14 +2,18 @@ import Link from "next/link";
 import Image from "next/image";
 import { Badge } from "@/components/ui/Badge";
 import { coverImageUrl } from "@/lib/supabase/storage";
+import { tagTone } from "@/lib/tagStyle";
+import { FavoriteButton } from "./FavoriteButton";
 import type { Tag } from "@/lib/supabase/types";
 
 export type GameCardData = {
+  id: string;
   slug: string;
   titulo: string;
   resumo: string | null;
   capa_path: string | null;
   tags: Tag[];
+  favorited: boolean;
 };
 
 export function GameCard({ jogo }: { jogo: GameCardData }) {
@@ -28,6 +32,7 @@ export function GameCard({ jogo }: { jogo: GameCardData }) {
             Sem capa
           </div>
         )}
+        <FavoriteButton jogoId={jogo.id} initialFavorited={jogo.favorited} />
       </div>
       <div className="flex flex-col gap-2 p-5">
         <h3 className="font-display font-bold text-[18px] text-ink leading-tight">{jogo.titulo}</h3>
@@ -35,7 +40,7 @@ export function GameCard({ jogo }: { jogo: GameCardData }) {
         {jogo.tags.length > 0 ? (
           <div className="flex flex-wrap gap-1.5 mt-1">
             {jogo.tags.map((tag) => (
-              <Badge key={tag.id} tone={tag.type === "queixa" ? "coral" : "teal"}>
+              <Badge key={tag.id} tone={tagTone(tag.type)}>
                 {tag.name}
               </Badge>
             ))}

@@ -4,6 +4,8 @@ import { Card } from "@/components/ui/Card";
 import { Badge } from "@/components/ui/Badge";
 import { LinkButton } from "@/components/ui/Button";
 import { PdfViewer } from "@/components/member/PdfViewer";
+import { FavoriteButton } from "@/components/member/FavoriteButton";
+import { tagTone } from "@/lib/tagStyle";
 import { toEmbedUrl } from "@/lib/video";
 import type { Jogo, Tag } from "@/lib/supabase/types";
 
@@ -12,6 +14,10 @@ type JogoWithTags = Jogo & { jogo_tags: { tags: Tag | null }[] };
 export default async function GamePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
   const { data: jogo } = await supabase
     .from("jogos")
@@ -22,17 +28,29 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
 
   if (!jogo) notFound();
 
+  const { data: isFavorited } = user
+    ? await supabase
+        .from("favoritos")
+        .select("jogo_id")
+        .eq("member_id", user.id)
+        .eq("jogo_id", jogo.id)
+        .maybeSingle()
+    : { data: null };
+
   const tags = jogo.jogo_tags.map((jt) => jt.tags).filter((t): t is Tag => t !== null);
 
   return (
     <div className="max-w-3xl mx-auto flex flex-col gap-8">
       <div className="flex flex-col gap-3">
-        <div className="flex flex-wrap gap-2">
-          {tags.map((tag) => (
-            <Badge key={tag.id} tone={tag.type === "queixa" ? "coral" : "teal"}>
-              {tag.name}
-            </Badge>
-          ))}
+        <div className="flex items-center justify-between gap-4 flex-wrap">
+          <div className="flex flex-wrap gap-2">
+            {tags.map((tag) => (
+              <Badge key={tag.id} tone={tagTone(tag.type)}>
+                {tag.name}
+              </Badge>
+            ))}
+          </div>
+          <FavoriteButton jogoId={jogo.id} initialFavorited={Boolean(isFavorited)} variant="inline" />
         </div>
         <h1 className="font-display font-bold text-[32px] text-ink">{jogo.titulo}</h1>
         {jogo.resumo ? <p className="text-ink/70 text-[16px]">{jogo.resumo}</p> : null}

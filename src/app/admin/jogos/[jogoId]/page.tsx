@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Badge } from "@/components/ui/Badge";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import type { Tag } from "@/lib/supabase/types";
+import { tagTone } from "@/lib/tagStyle";
 import { deleteJogoAction, toggleJogoTagAction, updateJogoAction } from "../actions";
 import { DeleteJogoButton } from "../DeleteJogoButton";
 import { PdfUploadForm } from "../PdfUploadForm";
@@ -98,7 +99,7 @@ export default async function EditJogoPage({ params }: { params: Promise<{ jogoI
                 <input type="hidden" name="tagId" value={tag.id} />
                 <input type="hidden" name="checked" value={checked ? "true" : "false"} />
                 <button type="submit" className="inline-block">
-                  <Badge tone={checked ? (tag.type === "queixa" ? "coral" : "teal") : "muted"}>
+                  <Badge tone={checked ? tagTone(tag.type) : "muted"}>
                     {tag.name} {checked ? "✓" : ""}
                   </Badge>
                 </button>
