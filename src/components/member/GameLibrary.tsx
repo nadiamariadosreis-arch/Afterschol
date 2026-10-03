@@ -39,7 +39,7 @@ export function GameLibrary({ jogos, tags }: { jogos: GameCardData[]; tags: Tag[
           type="search"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Buscar jogo por nome…"
+          placeholder="Buscar atividade por nome…"
           className="border border-line bg-card rounded-xl px-5 py-3 font-body text-ink outline-none focus:border-coral max-w-md"
         />
 
@@ -52,7 +52,7 @@ export function GameLibrary({ jogos, tags }: { jogos: GameCardData[]; tags: Tag[
       </div>
 
       {filtered.length === 0 ? (
-        <p className="text-ink/60">Nenhum jogo encontrado com esse filtro.</p>
+        <p className="text-ink/60">Nenhuma atividade encontrada com esse filtro.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
           {filtered.map((jogo) => (

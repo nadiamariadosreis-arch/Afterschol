@@ -53,7 +53,7 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
       {jogo.pdf_path ? (
         <Card>
           <div className="flex items-center justify-between gap-4 flex-wrap">
-            <h3 className="font-display font-bold text-[20px] text-ink">Material do jogo (PDF)</h3>
+            <h3 className="font-display font-bold text-[20px] text-ink">Material da atividade (PDF)</h3>
             <LinkButton href={`/api/pdf/${jogo.id}?mode=download`} variant="primary">
               Baixar PDF
             </LinkButton>
@@ -71,7 +71,7 @@ export default async function GamePage({ params }: { params: Promise<{ slug: str
       {jogo.como_ajuda ? (
         <Card className="bg-teal/5 border-teal/30">
           <h3 className="font-display font-bold text-[20px] text-ink mb-3">
-            Como esse jogo ajuda
+            Como essa atividade ajuda
           </h3>
           <div className="text-ink/80 whitespace-pre-line leading-relaxed">{jogo.como_ajuda}</div>
         </Card>

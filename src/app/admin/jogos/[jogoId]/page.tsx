@@ -26,7 +26,7 @@ export default async function EditJogoPage({ params }: { params: Promise<{ jogoI
 
   return (
     <div className="flex flex-col gap-8">
-      <SectionHeading eyebrow="Editar jogo" title={jogo.titulo} />
+      <SectionHeading eyebrow="Editar atividade" title={jogo.titulo} />
 
       <Card>
         <form action={updateJogoAction} className="flex flex-col gap-4">
@@ -60,7 +60,7 @@ export default async function EditJogoPage({ params }: { params: Promise<{ jogoI
             />
           </label>
           <label className="flex flex-col gap-2">
-            <span className="text-[14px] text-ink/70">Como esse jogo ajuda (explicação pedagógica)</span>
+            <span className="text-[14px] text-ink/70">Como essa atividade ajuda (explicação pedagógica)</span>
             <textarea
               name="como_ajuda"
               defaultValue={jogo.como_ajuda ?? ""}
@@ -113,7 +113,7 @@ export default async function EditJogoPage({ params }: { params: Promise<{ jogoI
 
       <Card>
         <div className="flex items-center justify-between gap-4 flex-wrap mb-4">
-          <h3 className="font-display font-bold text-[20px] text-ink">PDF do jogo</h3>
+          <h3 className="font-display font-bold text-[20px] text-ink">PDF da atividade</h3>
           <Badge tone={jogo.pdf_path ? "teal" : "coral"}>
             {jogo.pdf_path ? "PDF enviado" : "Sem PDF"}
           </Badge>

@@ -24,7 +24,7 @@ export default async function AdminDashboardPage() {
         </Card>
         <Card>
           <div className="text-[13px] tracking-[0.15em] uppercase text-teal-dark font-bold mb-2">
-            Jogos cadastrados
+            Atividades cadastradas
           </div>
           <p className="font-display text-[36px] text-ink">{jogos ?? 0}</p>
         </Card>

@@ -37,7 +37,7 @@ export default async function DashboardPage() {
     <div className="flex flex-col gap-8">
       <SectionHeading
         eyebrow="Biblioteca"
-        title="Busque um jogo pela queixa ou pela virtude que você quer trabalhar"
+        title="Busque uma atividade sem tela pela queixa ou pela virtude que você quer trabalhar"
       />
       <GameLibrary jogos={jogos} tags={tags ?? []} />
     </div>

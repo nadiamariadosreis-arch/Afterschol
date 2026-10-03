@@ -13,7 +13,7 @@ export function AdminHeader() {
           Tags
         </Link>
         <Link href="/admin/jogos" className="text-ink/80 hover:text-coral">
-          Jogos
+          Atividades
         </Link>
         <Link href="/admin/membros" className="text-ink/80 hover:text-coral">
           Membros

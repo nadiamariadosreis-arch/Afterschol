@@ -47,7 +47,7 @@ export default async function MembersAdminPage() {
         <h3 className="font-display font-bold text-[20px] text-ink mb-2">Convidar novo membro</h3>
         <p className="text-ink/60 text-[15px] mb-4">
           Um e-mail de convite é enviado para a família definir sua própria senha. Toda conta
-          convidada já nasce com acesso completo à biblioteca de jogos.
+          convidada já nasce com acesso completo à biblioteca de atividades.
         </p>
         <form action={inviteMemberAction} className="grid md:grid-cols-3 gap-3 items-end">
           <label className="flex flex-col gap-2">

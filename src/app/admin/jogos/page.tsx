@@ -12,7 +12,7 @@ export default async function JogosAdminPage() {
 
   return (
     <div>
-      <SectionHeading eyebrow="Conteúdo" title="Jogos" />
+      <SectionHeading eyebrow="Conteúdo" title="Atividades" />
 
       <div className="flex flex-col gap-4 mb-10">
         {(jogos ?? []).map((jogo) => (
@@ -26,14 +26,16 @@ export default async function JogosAdminPage() {
           </Link>
         ))}
 
-        {(jogos ?? []).length === 0 ? <p className="text-ink/60">Nenhum jogo cadastrado ainda.</p> : null}
+        {(jogos ?? []).length === 0 ? (
+          <p className="text-ink/60">Nenhuma atividade cadastrada ainda.</p>
+        ) : null}
       </div>
 
       <Card>
-        <h3 className="font-display font-bold text-[20px] text-ink mb-4">Cadastrar novo jogo</h3>
+        <h3 className="font-display font-bold text-[20px] text-ink mb-4">Cadastrar nova atividade</h3>
         <form action={createJogoAction} className="flex gap-3 items-end flex-wrap">
           <label className="flex flex-col gap-2 flex-1 min-w-[220px]">
-            <span className="text-[14px] text-ink/70">Título do jogo</span>
+            <span className="text-[14px] text-ink/70">Título da atividade</span>
             <input
               type="text"
               name="titulo"

@@ -6,10 +6,10 @@ export function DeleteJogoButton() {
       type="submit"
       className="text-coral-dark hover:underline underline-offset-4 text-[14px]"
       onClick={(e) => {
-        if (!confirm("Remover este jogo definitivamente?")) e.preventDefault();
+        if (!confirm("Remover esta atividade definitivamente?")) e.preventDefault();
       }}
     >
-      Remover jogo
+      Remover atividade
     </button>
   );
 }

@@ -13,7 +13,7 @@ export default async function AccountPage() {
 
       <Card>
         <h3 className="font-display font-bold text-[20px] text-ink mb-4">Meu acesso</h3>
-        <Badge tone="teal">Biblioteca completa de jogos</Badge>
+        <Badge tone="teal">Biblioteca completa de atividades</Badge>
       </Card>
 
       <Card>

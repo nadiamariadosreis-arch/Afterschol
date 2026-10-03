@@ -96,7 +96,7 @@ function NavContent({ isAdmin }: { isAdmin: boolean }) {
             isActive("/dashboard") ? "bg-coral text-white" : "text-ink/80 hover:bg-cream-dark"
           }`}
         >
-          <SearchIcon /> Buscar Jogos
+          <SearchIcon /> Buscar Atividades
         </Link>
       </div>
 
