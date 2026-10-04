@@ -111,6 +111,64 @@ export type Material = {
   created_at: string;
 };
 
+export type IgAccount = {
+  id: string;
+  handle: string;
+  name: string;
+  voice: string | null;
+  description: string | null;
+  sort_order: number;
+  created_at: string;
+};
+
+export type IgTheme = {
+  id: string;
+  account_id: string;
+  position: number;
+  name: string;
+  created_at: string;
+};
+
+export type IgPostFormat = "carrossel" | "reels" | "estatico" | "stories";
+
+export type IgPost = {
+  id: string;
+  account_id: string;
+  theme_id: string;
+  position: number;
+  title: string;
+  format: IgPostFormat;
+  scheduled_date: string | null;
+  notes: string | null;
+  uses_lead_magnet: boolean;
+  lead_magnet_description: string | null;
+  uses_manychat: boolean;
+  manychat_keyword: string | null;
+  sells_product: boolean;
+  product_name: string | null;
+  art_done: boolean;
+  caption_done: boolean;
+  lead_magnet_done: boolean;
+  manychat_done: boolean;
+  product_hosted_done: boolean;
+  checkout_done: boolean;
+  published: boolean;
+  published_at: string | null;
+  post_url: string | null;
+  reach: number | null;
+  likes: number | null;
+  comments: number | null;
+  saves: number | null;
+  shares: number | null;
+  new_followers: number | null;
+  mc_messages_sent: number | null;
+  mc_link_clicks: number | null;
+  mc_leads: number | null;
+  sales: number | null;
+  revenue_cents: number | null;
+  created_at: string;
+};
+
 type Relationships = { Relationships: [] };
 
 export type Database = {
@@ -170,6 +228,21 @@ export type Database = {
         Row: Material;
         Insert: Partial<Material>;
         Update: Partial<Material>;
+      } & Relationships;
+      ig_accounts: {
+        Row: IgAccount;
+        Insert: Partial<IgAccount>;
+        Update: Partial<IgAccount>;
+      } & Relationships;
+      ig_themes: {
+        Row: IgTheme;
+        Insert: Partial<IgTheme>;
+        Update: Partial<IgTheme>;
+      } & Relationships;
+      ig_posts: {
+        Row: IgPost;
+        Insert: Partial<IgPost>;
+        Update: Partial<IgPost>;
       } & Relationships;
     };
     Views: Record<string, never>;

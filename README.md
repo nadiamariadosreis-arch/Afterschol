@@ -87,6 +87,27 @@ Uma família só enxerga uma trilha se tiver o **entitlement**
 correspondente (comprou a trilha avulsa ou o pacote completo) — e dentro
 da trilha, só as semanas cuja `release_date` já passou.
 
+## Painel do Instagram
+
+Em `/admin/instagram` (só a administradora vê) fica o painel de produção de
+conteúdo. Para ativar, rode `supabase/migrations/0009_instagram_panel.sql`
+no SQL Editor.
+
+- **Perfis** — cadastre quantos @ quiser, cada um com a sua linguagem. Ao
+  cadastrar, o perfil já nasce com a matriz 6×5 vazia. Os botões no topo
+  alternam entre os perfis.
+- **Matriz 6×5** — 6 temas × 5 títulos, editados linha a linha.
+- **Calendário** — visão mensal dos posts; dá para datar um a um ou
+  distribuir automaticamente os posts sem data nos dias da semana escolhidos
+  (alternando os temas).
+- **Produção** — tabela-checklist de cada post: título, arte, legenda, isca,
+  fluxo do ManyChat, produto hospedado, checkout e publicado. Isca, ManyChat
+  e produto só contam quando ativados no post.
+- **Resultados** — métricas do post (alcance, curtidas, salvamentos,
+  compartilhamentos, novos seguidores) e do ManyChat (mensagens, cliques,
+  leads, vendas, faturamento), com funil, comparação por tema e ranking.
+  As métricas são preenchidas à mão em cada post.
+
 ## Marca d'água nos PDFs
 
 Os PDFs originais ficam num bucket privado do Supabase Storage, nunca

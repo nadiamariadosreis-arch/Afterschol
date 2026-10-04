@@ -9,6 +9,9 @@ export function AdminHeader() {
       </Link>
 
       <nav className="flex items-center gap-6 text-[15px] font-body">
+        <Link href="/admin/instagram" className="text-ink/80 hover:text-moss">
+          Instagram
+        </Link>
         <Link href="/admin/materiais" className="text-ink/80 hover:text-moss">
           Materiais
         </Link>
