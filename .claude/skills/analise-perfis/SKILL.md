@@ -6,7 +6,9 @@ description: Analisa prints de perfis estrangeiros (americanos, europeus etc.) d
 # Análise de Perfis Estrangeiros
 
 A usuária estuda perfis de fora (principalmente dos EUA) para se inspirar e adaptar
-ideias para os projetos dela: catequese no Instagram, cuidado do lar, finanças para
+ideias para os projetos dela. **Projeto principal hoje:** ensinar mães e mulheres a
+compartilhar o próprio conhecimento por meio de carrosséis e a criar e vender produtos
+digitais. Outros projetos: catequese no Instagram, cuidado do lar, finanças para
 famílias cristãs e infoprodutos em geral. Ela manda **prints** (bio, grade de posts,
 destaques, links da bio, carrosséis, Reels, páginas de venda) e quer uma análise
 completa, prática e em **português do Brasil**.
@@ -104,8 +106,9 @@ de cada um (ex.: "[Número] coisas que [público] faz e [consequência]").
 - **Pontos fortes** e **pontos fracos / oportunidades** que ele deixa passar
 
 ### 🇧🇷 8. Como adaptar para o Brasil
-Conecte com os projetos da usuária sempre que fizer sentido (catequese, cuidado do
-lar, finanças para famílias cristãs, infoprodutos):
+Priorize o projeto principal (mães e mulheres compartilhando conhecimento em
+carrosséis e vendendo produtos digitais) e conecte com os outros projetos quando fizer
+sentido (catequese, cuidado do lar, finanças para famílias cristãs):
 - **3 a 5 ideias de produto** inspiradas, com nome sugerido e faixa de preço em R$
 - **10 ideias de conteúdo** (título/gancho em PT-BR + formato)
 - **Uma bio modelo** em português seguindo a mesma fórmula
