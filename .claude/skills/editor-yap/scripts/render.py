@@ -30,13 +30,10 @@ RAIZ = os.path.dirname(AQUI)
 FONTES = os.path.join(RAIZ, "assets", "fonts")
 ESTILOS = json.load(open(os.path.join(RAIZ, "assets", "estilos.json"), encoding="utf-8"))
 
-ARQ_FONTE = {
-    "Anton": "Anton-Regular.ttf", "Bebas Neue": "BebasNeue-Regular.ttf",
-    "Poppins": "Poppins-Bold.ttf", "Poppins SemiBold": "Poppins-SemiBold.ttf",
-    "Poppins Bold": "Poppins-Bold.ttf", "Poppins Black": "Poppins-Black.ttf",
-    "Caveat": "Caveat-Variable.ttf", "Playfair Display": "PlayfairDisplay-Variable.ttf",
-    "Montserrat": "Montserrat-Variable.ttf",
-}
+CATALOGO = {k: v for k, v in json.load(open(os.path.join(RAIZ, "assets", "fontes.json"), encoding="utf-8")).items()
+            if not k.startswith("_")}
+APELIDOS = {"Poppins": "Poppins Bold"}
+PASTA_FONTES = FONTES  # trocada em main() por uma pasta de trabalho com as fontes baixadas
 
 GRADES = {
     "vibrante": "eq=saturation=1.22:contrast=1.06",
@@ -110,20 +107,69 @@ def ass_ts(s):
     return f"{h}:{m:02d}:{s % 60:05.2f}"
 
 
+def info_fonte(nome):
+    nome = APELIDOS.get(nome, nome)
+    if nome in CATALOGO:
+        return CATALOGO[nome]
+    for k, v in {" Black": 900, " Bold": 700, " SemiBold": 600}.items():
+        if nome.endswith(k):
+            return {"familia": nome[: -len(k)], "peso": v}
+    return {"familia": nome, "peso": 700}
+
+
+def arquivo_baixado(nome):
+    return os.path.join(PASTA_FONTES, re.sub(r"[^A-Za-z0-9]", "", nome) + ".ttf")
+
+
+def preparar_fontes(nomes, pasta):
+    """Copia as fontes da skill e baixa do Google Fonts as do catálogo que faltarem."""
+    global PASTA_FONTES
+    os.makedirs(pasta, exist_ok=True)
+    PASTA_FONTES = pasta
+    for f in os.listdir(FONTES):
+        if f.endswith((".ttf", ".otf")) and not os.path.exists(os.path.join(pasta, f)):
+            shutil.copy(os.path.join(FONTES, f), pasta)
+    for nome in {APELIDOS.get(n, n) for n in nomes if n}:
+        inf = info_fonte(nome)
+        if inf.get("arquivo") or os.path.exists(arquivo_baixado(nome)):
+            continue
+        fam = inf["familia"]
+        achou = subprocess.run(["fc-list", f":family={fam}", "file"], capture_output=True, text=True).stdout.strip()
+        if achou:
+            continue  # já instalada no sistema
+        import urllib.parse
+        import urllib.request
+        ok = False
+        for consulta in (f"{fam}:wght@{inf['peso']}", fam):
+            url = "https://fonts.googleapis.com/css2?family=" + urllib.parse.quote(consulta, safe=":@")
+            try:
+                req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/4.0"})
+                css = urllib.request.urlopen(req, timeout=20).read().decode()
+                ttf = re.search(r"url\((https://[^)]+\.ttf)\)", css).group(1)
+                urllib.request.urlretrieve(ttf, arquivo_baixado(nome))
+                ok = True
+                print(f"Fonte baixada: {nome}")
+                break
+            except Exception:
+                continue
+        if not ok:
+            print(f"AVISO: não consegui baixar a fonte '{nome}'; será usada uma parecida do sistema", file=sys.stderr)
+
+
 def caminho_fonte(nome):
-    if nome in ARQ_FONTE:
-        return os.path.join(FONTES, ARQ_FONTE[nome])
-    r = subprocess.run(["fc-match", "-f", "%{file}", nome], capture_output=True, text=True)
+    inf = info_fonte(nome)
+    if inf.get("arquivo"):
+        return os.path.join(FONTES, inf["arquivo"])
+    if os.path.exists(arquivo_baixado(APELIDOS.get(nome, nome))):
+        return arquivo_baixado(APELIDOS.get(nome, nome))
+    r = subprocess.run(["fc-match", "-f", "%{file}", f"{inf['familia']}:weight={inf['peso']}"], capture_output=True, text=True)
     return r.stdout.strip() or os.path.join(FONTES, "Poppins-Bold.ttf")
 
 
 def familia_ass(nome):
-    """Separa 'Poppins Black' em família 'Poppins' + peso, que é como o libass escolhe."""
-    pesos = {"Black": 900, "Bold": 700, "SemiBold": 600}
-    for k, v in pesos.items():
-        if nome.endswith(" " + k) and nome != "Bebas Neue":
-            return nome[: -len(k) - 1], v
-    return nome, 700 if nome in ("Montserrat", "Playfair Display", "Caveat") else 400
+    """Nome do catálogo -> (família, peso), que é como o libass escolhe a fonte."""
+    inf = info_fonte(nome)
+    return inf["familia"], inf["peso"]
 
 
 def mesclar(base, extra):
@@ -593,7 +639,7 @@ def passe_final(plano, est, base, total, ass_path, linha, palavras, trab, W, H, 
 
     # legendas + títulos
     esc_ass = ass_path.replace("\\", "/").replace(":", "\\:").replace("'", "\\'")
-    esc_fon = FONTES.replace(":", "\\:").replace("'", "\\'")
+    esc_fon = PASTA_FONTES.replace(":", "\\:").replace("'", "\\'")
     fc.append(f"{v}ass='{esc_ass}':fontsdir='{esc_fon}'[leg]")
     v = "[leg]"
 
@@ -685,6 +731,55 @@ def passe_final(plano, est, base, total, ass_path, linha, palavras, trab, W, H, 
     run(cmd)
 
 
+# ---------------------------------------------------------------- 5) post: texto e capa
+def exportar_post(plano, est, base, total, linha, palavras, saida, clipe_padrao, W, H):
+    from PIL import Image, ImageDraw, ImageFont
+    post = plano["post"]
+    raiz, _ = os.path.splitext(saida)
+    tags = " ".join(h if h.startswith("#") else "#" + h for h in post.get("hashtags", []))
+    texto = (post.get("legenda", "").strip() + ("\n\n" + tags if tags else "")).strip()
+    if texto:
+        open(f"{raiz}_post.txt", "w", encoding="utf-8").write(texto + "\n")
+        print(f"Texto do post: {raiz}_post.txt")
+    capa = post.get("capa")
+    if not capa:
+        return
+    t = resolver_tempo(capa, linha, palavras, clipe_padrao) if any(k in capa for k in ("t", "t_saida", "na_palavra")) else 0.5
+    t = min(max(0.0, t or 0.0), max(0.0, total - 0.1))
+    png = f"{raiz}_capa.png"
+    run(["ffmpeg", "-y", "-v", "error", "-ss", f"{t:.3f}", "-i", base, "-frames:v", "1", "-vf", f"scale={W}:{H}", png])
+    if capa.get("texto"):
+        img = Image.open(png).convert("RGBA")
+        e = mesclar(est["titulo"], {k: v for k, v in capa.items() if k in ("fonte", "cor", "contorno", "tamanho")})
+        txt = capa["texto"].upper() if e.get("maiusculas") else capa["texto"]
+        tam = int(capa.get("tamanho", e["tamanho"] * 1.25))
+        fonte = ImageFont.truetype(caminho_fonte(e["fonte"]), tam)
+        d = ImageDraw.Draw(img)
+        linhas, atual = [], ""
+        for palavra in txt.replace("*", "").split():
+            teste = (atual + " " + palavra).strip()
+            if d.textlength(teste, font=fonte) > W * 0.84 and atual:
+                linhas.append(atual)
+                atual = palavra
+            else:
+                atual = teste
+        linhas.append(atual)
+        alt = int(tam * 1.12)
+        pos = {"topo": 0.2, "centro": 0.45, "baixo": 0.72}.get(capa.get("posicao", "centro"), 0.45)
+        y = int(H * pos - alt * len(linhas) / 2)
+        destaque = {norm(w) for trecho in re.findall(r"\*([^*]+)\*", capa["texto"]) for w in trecho.split()}
+        for ln in linhas:
+            x = (W - d.textlength(ln, font=fonte)) / 2
+            for palavra in ln.split(" "):
+                cor = est["legenda"]["destaque"] if norm(palavra) in destaque else e["cor"]
+                d.text((x, y), palavra, font=fonte, fill=hexrgba(cor), stroke_width=max(4, tam // 14),
+                       stroke_fill=hexrgba(e.get("contorno", "#000000")))
+                x += d.textlength(palavra + " ", font=fonte)
+            y += alt
+        img.convert("RGB").save(png)
+    print(f"Capa: {png}")
+
+
 # ---------------------------------------------------------------- main
 def main():
     ap = argparse.ArgumentParser()
@@ -716,6 +811,10 @@ def main():
             print(f"AVISO: estilo '{nome_est}' não existe; usando 'viral'", file=sys.stderr)
         est = ESTILOS.get(nome_est, ESTILOS["viral"])
     clipe_padrao = next(iter(plano["clipes"]))
+    usadas = [est["legenda"]["fonte"], est["titulo"]["fonte"], est["selo"]["fonte"]]
+    usadas += [t.get("fonte") for t in plano.get("titulos", [])] + [s.get("fonte") for s in plano.get("stickers", [])]
+    usadas.append(plano.get("post", {}).get("capa", {}).get("fonte"))
+    preparar_fontes(usadas, os.path.join(trab, "fontes"))
 
     print(f"[1/3] Cortando e enquadrando {len(plano['segmentos'])} segmentos...")
     segs = render_segmentos(plano, trab, W, H, fps, preset, crf)
@@ -735,6 +834,8 @@ def main():
     passe_final(plano, est, base, total, ass_path, linha, palavras, trab, W, H, fps, escala,
                 preset, crf, saida, clipe_padrao, sfx)
     print(f"Pronto: {saida} ({total:.1f}s, {W}x{H})")
+    if plano.get("post"):
+        exportar_post(plano, est, base, total, linha, palavras, saida, clipe_padrao, Wf, Hf)
 
     if a.quadros:
         raiz, _ = os.path.splitext(saida)

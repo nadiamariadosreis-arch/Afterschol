@@ -1,0 +1,23 @@
+{
+  "_sobre": "Catálogo de fontes do editor. 'arquivo' = já vem na skill; as outras são baixadas do Google Fonts na hora de renderizar. 'peso' é o peso usado.",
+  "Anton":              {"familia": "Anton", "peso": 400, "categoria": "Impacto", "arquivo": "Anton-Regular.ttf"},
+  "Bebas Neue":         {"familia": "Bebas Neue", "peso": 400, "categoria": "Impacto", "arquivo": "BebasNeue-Regular.ttf"},
+  "Archivo Black":      {"familia": "Archivo Black", "peso": 400, "categoria": "Impacto"},
+  "Oswald":             {"familia": "Oswald", "peso": 700, "categoria": "Impacto"},
+  "Poppins SemiBold":   {"familia": "Poppins", "peso": 600, "categoria": "Moderna", "arquivo": "Poppins-SemiBold.ttf"},
+  "Poppins Bold":       {"familia": "Poppins", "peso": 700, "categoria": "Moderna", "arquivo": "Poppins-Bold.ttf"},
+  "Poppins Black":      {"familia": "Poppins", "peso": 900, "categoria": "Moderna", "arquivo": "Poppins-Black.ttf"},
+  "Montserrat":         {"familia": "Montserrat", "peso": 700, "categoria": "Moderna", "arquivo": "Montserrat-Variable.ttf"},
+  "Outfit":             {"familia": "Outfit", "peso": 700, "categoria": "Moderna"},
+  "Nunito":             {"familia": "Nunito", "peso": 800, "categoria": "Moderna"},
+  "Playfair Display":   {"familia": "Playfair Display", "peso": 700, "categoria": "Elegante", "arquivo": "PlayfairDisplay-Variable.ttf"},
+  "Lora":               {"familia": "Lora", "peso": 700, "categoria": "Elegante"},
+  "Cormorant Garamond": {"familia": "Cormorant Garamond", "peso": 700, "categoria": "Elegante"},
+  "DM Serif Display":   {"familia": "DM Serif Display", "peso": 400, "categoria": "Elegante"},
+  "Caveat":             {"familia": "Caveat", "peso": 700, "categoria": "Manuscrita", "arquivo": "Caveat-Variable.ttf"},
+  "Dancing Script":     {"familia": "Dancing Script", "peso": 700, "categoria": "Manuscrita"},
+  "Pacifico":           {"familia": "Pacifico", "peso": 400, "categoria": "Manuscrita"},
+  "Luckiest Guy":       {"familia": "Luckiest Guy", "peso": 400, "categoria": "Divertida"},
+  "Fredoka":            {"familia": "Fredoka", "peso": 700, "categoria": "Divertida"},
+  "Bangers":            {"familia": "Bangers", "peso": 400, "categoria": "Divertida"}
+}

@@ -1,0 +1,697 @@
+<title>Mesa de Edição Yap</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@500&display=swap">
+<link rel="stylesheet" id="fontes-video" href="">
+<style>
+/* Layout: mesa de edição — prévia 9:16 fixa à esquerda, abas de decisão à direita; empilha no celular */
+:root {
+  --bg: #F3F4F7;
+  --surface: #FFFFFF;
+  --sunk: #ECEEF3;
+  --ink: #171A21;
+  --muted: #5D6474;
+  --line: #D9DDE6;
+  --rec: #E0383E;
+  --rec-ink: #FFFFFF;
+  --rec-soft: #FCE4E4;
+  --ok: #157F57;
+  --warn: #9A6400;
+  --display: "Bricolage Grotesque", "Figtree", system-ui, sans-serif;
+  --body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #101217; --surface: #191C23; --sunk: #22262F; --ink: #ECEEF3; --muted: #9AA1B0;
+    --line: #2C313C; --rec: #FF5D63; --rec-ink: #1A0B0C; --rec-soft: #3A1C1F; --ok: #4CC994; --warn: #E3AE4A;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #101217; --surface: #191C23; --sunk: #22262F; --ink: #ECEEF3; --muted: #9AA1B0;
+  --line: #2C313C; --rec: #FF5D63; --rec-ink: #1A0B0C; --rec-soft: #3A1C1F; --ok: #4CC994; --warn: #E3AE4A;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 15px/1.5 var(--body); }
+.wrap { max-width: 1180px; margin: 0 auto; padding-inline: 16px; padding-block: 20px 120px; }
+header.topo { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px 20px; margin-bottom: 18px; }
+h1 { font: 800 clamp(24px, 4vw, 32px)/1.1 var(--display); margin: 0; letter-spacing: -0.02em; text-wrap: balance; }
+h1 .dot { display: inline-block; width: 0.42em; height: 0.42em; border-radius: 50%; background: var(--rec); margin-right: 0.3em; vertical-align: 0.12em; }
+.resumo { font: 500 13px var(--mono); color: var(--muted); display: flex; gap: 14px; flex-wrap: wrap; }
+.resumo b { color: var(--ink); font-weight: 500; }
+.mesa { display: grid; grid-template-columns: minmax(240px, 330px) minmax(0, 1fr); gap: 24px; align-items: start; }
+@media (max-width: 820px) { .mesa { grid-template-columns: minmax(0, 1fr); } }
+
+/* prévia */
+.previa-col { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); display: grid; gap: 10px; justify-items: center; }
+@media (max-width: 820px) { .previa-col { position: static; } }
+.tela { position: relative; width: 100%; max-width: 300px; aspect-ratio: 9 / 16; border-radius: 22px; overflow: hidden;
+  background: #222 center / cover no-repeat; border: 6px solid var(--ink); container-type: inline-size; }
+@media (max-width: 820px) { .tela { max-width: 230px; } }
+.tela .zona { position: absolute; inset: 12% 13% 20% 0; border: 1px dashed rgba(255,255,255,0.35); pointer-events: none; }
+.tela .camada { position: absolute; left: 6%; right: 6%; text-align: center; transform: translateY(-50%); line-height: 1.12; overflow-wrap: anywhere; }
+.tela .sticker { position: absolute; transform: translate(-50%, -50%); line-height: 1; }
+.tela .selo { padding: 0.25em 0.7em; border-radius: 999px; font-weight: 700; white-space: nowrap; }
+.legenda-previa { font-family: var(--body); color: var(--muted); font-size: 12px; text-align: center; max-width: 300px; }
+.legenda-previa label { display: inline-flex; gap: 6px; align-items: center; }
+
+/* abas */
+.abas { display: flex; gap: 4px; flex-wrap: wrap; border-bottom: 1px solid var(--line); margin-bottom: 18px; }
+.abas button { font: 600 14px var(--body); color: var(--muted); background: none; border: 0; padding: 10px 12px; border-bottom: 3px solid transparent; cursor: pointer; margin-bottom: -1px; }
+.abas button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--rec); }
+.abas button:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible { outline: 2px solid var(--rec); outline-offset: 2px; }
+section.painel { display: grid; gap: 18px; min-width: 0; }
+h2 { font: 800 19px/1.2 var(--display); margin: 0; letter-spacing: -0.01em; }
+h3 { font: 700 13px var(--body); text-transform: uppercase; letter-spacing: 0.06em; color: var(--muted); margin: 0; }
+.dica { color: var(--muted); font-size: 14px; margin: 0; max-width: 62ch; }
+.bloco { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.linha { display: flex; flex-wrap: wrap; gap: 10px 14px; align-items: end; }
+.campo { display: grid; gap: 4px; min-width: 0; flex: 1 1 140px; }
+.campo.largo { flex: 3 1 240px; }
+.campo.estreito { flex: 0 1 100px; }
+.campo > span { font-size: 12px; font-weight: 600; color: var(--muted); }
+input[type="text"], input[type="number"], select, textarea {
+  font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; width: 100%; min-width: 0; }
+textarea { min-height: 110px; resize: vertical; line-height: 1.55; }
+input[type="color"] { width: 44px; height: 38px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); padding: 3px; }
+input[type="range"] { width: 100%; accent-color: var(--rec); }
+input[type="checkbox"], input[type="radio"] { accent-color: var(--rec); width: 18px; height: 18px; }
+.check { display: inline-flex; gap: 8px; align-items: center; font-weight: 500; cursor: pointer; }
+button.btn { font: 600 14px var(--body); border-radius: 8px; border: 1px solid var(--line); background: var(--surface); color: var(--ink); padding: 8px 14px; cursor: pointer; }
+button.btn.principal { background: var(--rec); color: var(--rec-ink); border-color: var(--rec); }
+button.btn.mini { padding: 4px 9px; font-size: 13px; }
+button.btn.fantasma { background: none; border-color: transparent; color: var(--muted); }
+button.btn:disabled { opacity: 0.4; cursor: default; }
+
+/* roteiro */
+.gancho { display: flex; gap: 10px; align-items: start; padding: 10px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--bg); }
+.gancho:has(input:checked) { border-color: var(--rec); background: var(--rec-soft); }
+.gancho input[type="text"] { background: transparent; border-color: transparent; padding: 0 4px; }
+.estimativa { font: 500 13px var(--mono); color: var(--muted); }
+
+/* cortes */
+.trecho { border: 1px solid var(--line); border-radius: var(--r); background: var(--surface); padding: 12px 14px; display: grid; gap: 10px; min-width: 0; }
+.trecho.fora { opacity: 0.55; background: var(--sunk); }
+.trecho-cab { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.tc { font: 500 12px var(--mono); color: var(--muted); font-variant-numeric: tabular-nums; }
+.num { font: 800 15px var(--display); min-width: 2ch; }
+.palavras { display: flex; flex-wrap: wrap; gap: 4px; }
+.palavra { font: 500 15px var(--body); border: 1px solid transparent; background: var(--sunk); color: var(--ink); border-radius: 6px; padding: 2px 7px; cursor: pointer; }
+.palavra.suspeita { border-color: var(--warn); border-style: dashed; }
+.palavra.cortada { text-decoration: line-through; color: var(--rec); background: var(--rec-soft); }
+.legenda-cores { display: flex; gap: 16px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.legenda-cores i { display: inline-block; width: 22px; height: 14px; border-radius: 4px; vertical-align: -2px; margin-right: 6px; }
+
+/* estilos */
+.presets { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
+.preset { text-align: left; border: 2px solid var(--line); border-radius: var(--r); padding: 0; overflow: hidden; background: var(--surface); cursor: pointer; color: var(--ink); }
+.preset[aria-pressed="true"] { border-color: var(--rec); }
+.preset .amostra { height: 84px; display: grid; place-items: center; background: #2B2F38; padding: 8px; text-align: center; line-height: 1.05; }
+.preset .nome { font: 700 14px var(--body); padding: 8px 10px 0; text-transform: capitalize; }
+.preset .desc { font-size: 12px; color: var(--muted); padding: 2px 10px 10px; }
+.fontes { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; }
+.fonte { border: 1px solid var(--line); border-radius: 8px; background: var(--bg); padding: 10px; cursor: pointer; text-align: left; color: var(--ink); }
+.fonte[aria-pressed="true"] { border-color: var(--rec); background: var(--rec-soft); }
+.fonte .aa { font-size: 24px; line-height: 1.1; display: block; }
+.fonte .fn { font: 500 11px var(--mono); color: var(--muted); }
+
+/* listas editáveis */
+.item { border: 1px solid var(--line); border-radius: var(--r); padding: 12px; display: grid; gap: 10px; background: var(--bg); }
+.item-cab { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+
+/* barra inferior */
+.barra { position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--line);
+  padding: 12px 16px calc(12px + env(safe-area-inset-bottom, 0px)); display: flex; justify-content: center; }
+.barra-in { width: 100%; max-width: 1180px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; }
+.barra .status { font-size: 13px; color: var(--muted); }
+.barra .status.feito { color: var(--ok); font-weight: 600; }
+.saida { width: 100%; }
+.saida textarea { font: 12px/1.4 var(--mono); min-height: 140px; }
+.vazio { color: var(--muted); font-size: 14px; padding: 14px; border: 1px dashed var(--line); border-radius: var(--r); text-align: center; }
+.contador { font: 500 12px var(--mono); color: var(--muted); }
+.contador.alerta { color: var(--rec); }
+@media (prefers-reduced-motion: no-preference) { .palavra, .preset, .fonte { transition: background 120ms, border-color 120ms; } }
+</style>
+
+<div class="wrap">
+  <header class="topo">
+    <h1><span class="dot" aria-hidden="true"></span><span id="titulo-projeto">Mesa de Edição</span></h1>
+    <div class="resumo" id="resumo"></div>
+  </header>
+
+  <div class="mesa">
+    <div class="previa-col">
+      <div class="tela" id="tela" role="img" aria-label="Prévia do vídeo com título, legenda e stickers">
+        <div class="zona" id="zona"></div>
+      </div>
+      <div class="legenda-previa">
+        <label><input type="checkbox" id="ver-zona" checked> mostrar área segura do Reels</label>
+      </div>
+    </div>
+
+    <div style="min-width:0">
+      <nav class="abas" role="tablist" id="abas"></nav>
+      <div id="conteudo"></div>
+    </div>
+  </div>
+</div>
+
+<div class="barra">
+  <div class="barra-in">
+    <span class="status" id="status">As escolhas ficam salvas neste navegador enquanto você edita.</span>
+    <div class="linha" style="gap:8px">
+      <button class="btn" id="btn-ver">Ver plano</button>
+      <button class="btn principal" id="btn-copiar">Copiar escolhas para o Claude</button>
+    </div>
+    <div class="saida" id="saida" hidden>
+      <p class="dica">Se o botão de copiar não funcionar, selecione o texto abaixo, copie e cole no chat.</p>
+      <textarea id="saida-texto" readonly aria-label="Plano de edição em texto"></textarea>
+    </div>
+  </div>
+</div>
+
+<script>
+const DADOS = /*__DADOS__*/null;
+</script>
+<script>
+(function () {
+  "use strict";
+  // ---------- dados de exemplo (quando o painel é aberto sem um projeto) ----------
+  const EXEMPLO = {
+    nome: "Exemplo: finanças da família",
+    exemplo: true,
+    plano: {
+      clipes: { A: "video.mp4" }, transcricoes: { A: "trab/transcricao_A.json" },
+      formato: { largura: 1080, altura: 1920, fps: 30 }, estilo: "financas",
+      segmentos: [
+        { clipe: "A", inicio: 0.4, fim: 3.9, zoom: 1.0, foco: [0.5, 0.38] },
+        { clipe: "A", inicio: 4.6, fim: 9.2, zoom: 1.12, foco: [0.5, 0.38] },
+        { clipe: "A", inicio: 9.8, fim: 13.5, zoom: 1.0, foco: [0.5, 0.38] }
+      ],
+      legendas: { ativo: true, palavras_destaque: ["mercado"] },
+      titulos: [{ texto: "Seu dinheiro *some*?", t_saida: 0, duracao: 2.6, posicao: "topo", animacao: "pop", som: "whoosh" }],
+      stickers: [{ tipo: "emoji", valor: "🛒", na_palavra: "mercado", duracao: 1.5, x: 0.78, y: 0.3, tamanho: 200, animacao: "pop", som: "pop" }],
+      efeitos: [], sobreposicoes: [], audio: { normalizar: true }, barra_progresso: true
+    },
+    transcricoes: { A: { palavras: palavrasDe([
+      [0.4, "Você sabe quanto gastou no mercado esse mês?"],
+      [4.6, "É... a maioria das famílias não sabe, e não sabe mesmo."],
+      [9.8, "Hoje eu vou te mostrar como anotar tudo em cinco minutos."]
+    ]), suspeitas: [{ tipo: "muleta", palavra: "É...", inicio: 4.6, fim: 4.9 }] } },
+    quadros: {},
+    roteiro: { ganchos: ["Seu dinheiro some no fim do mês?", "O erro que esvazia a conta de muita família cristã", "3 minutos por dia que mudaram nossas finanças"], gancho: 0,
+      texto: "Você sabe quanto gastou no mercado esse mês? [TÍTULO: Seu dinheiro some?]\nA maioria das famílias não sabe.\nHoje eu vou te mostrar como anotar tudo em cinco minutos. [STICKER 📝]\nComenta EU QUERO que eu te mando a planilha." },
+    post: { legenda: "Você sabe pra onde vai o dinheiro da sua casa?\nSalva esse vídeo para fazer hoje à noite.", hashtags: ["financasfamiliares", "organizacaofinanceira", "familiacrista"], capa: { texto: "Seu dinheiro *some*?", t_saida: 0.5 }, plataformas: ["Instagram Reels"] }
+  };
+  function palavrasDe(frases) {
+    const out = [];
+    frases.forEach(([ini, frase]) => {
+      const ws = frase.split(" "); const passo = 3.2 / ws.length;
+      ws.forEach((w, i) => out.push({ w, inicio: +(ini + i * passo).toFixed(2), fim: +(ini + (i + 1) * passo).toFixed(2) }));
+    });
+    return out;
+  }
+
+  const BASE = Object.assign({ estilos: ESTILOS_PADRAO(), fontes: FONTES_PADRAO() }, DADOS || EXEMPLO);
+  if (!BASE.estilos || !Object.keys(BASE.estilos).length) BASE.estilos = ESTILOS_PADRAO();
+  const ESTILOS = BASE.estilos;
+  const FONTES = Object.fromEntries(Object.entries(BASE.fontes).filter(([k]) => !k.startsWith("_")));
+  const CHAVE = "mesa-yap:" + (BASE.nome || "projeto");
+
+  // ---------- estado ----------
+  let S = carregar() || {
+    plano: clone(BASE.plano),
+    cortadas: [],                       // ids "A:12" de palavras cortadas
+    fora: [],                           // índices de trechos desligados
+    roteiro: clone(BASE.roteiro || { ganchos: [], gancho: 0, texto: "" }),
+    post: clone(BASE.post || BASE.plano.post || { legenda: "", hashtags: [], capa: { texto: "", t_saida: 0.5 }, plataformas: ["Instagram Reels"] }),
+    aba: BASE.plano.segmentos.length ? "cortes" : "roteiro",
+    titSel: 0
+  };
+  S.plano.segmentos.forEach((s, i) => {
+    if (s._id === undefined) s._id = i;
+    if (s.suave === undefined) s.suave = !!(s.zoom_final && s.zoom_final !== s.zoom);
+  });
+  ["titulos", "stickers", "efeitos", "sobreposicoes"].forEach(k => { if (!S.plano[k]) S.plano[k] = []; });
+  if (!S.plano.legendas) S.plano.legendas = { ativo: true };
+  if (!S.plano.audio) S.plano.audio = { normalizar: true };
+
+  function clone(o) { return JSON.parse(JSON.stringify(o)); }
+  function salvar() { try { localStorage.setItem(CHAVE, JSON.stringify(S)); } catch (e) {} }
+  function carregar() { try { const s = localStorage.getItem(CHAVE); return s ? JSON.parse(s) : null; } catch (e) { return null; } }
+  function esc(t) { return String(t ?? "").replace(/[&<>"]/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c])); }
+  function norm(w) { return String(w).toLowerCase().normalize("NFKD").replace(/[̀-ͯ]/g, "").replace(/[^\w]/g, ""); }
+  function tc(s) { const m = Math.floor(s / 60); return `${m}:${(s % 60).toFixed(1).padStart(4, "0")}`; }
+  function mesclar(a, b) { const o = clone(a); for (const k in (b || {})) o[k] = (b[k] && typeof b[k] === "object" && !Array.isArray(b[k]) && o[k]) ? mesclar(o[k], b[k]) : b[k]; return o; }
+
+  function estiloAtual() {
+    const e = S.plano.estilo;
+    if (e && typeof e === "object") { const { base, ...resto } = e; return mesclar(ESTILOS[base] || ESTILOS.viral, resto); }
+    return ESTILOS[e] || ESTILOS.viral;
+  }
+  function nomeBase() { const e = S.plano.estilo; return typeof e === "object" ? (e.base || "viral") : (e || "viral"); }
+  function ajustarEstilo(parte, chave, valor) {
+    let e = S.plano.estilo;
+    if (typeof e !== "object") e = { base: e || "viral" };
+    e[parte] = Object.assign({}, e[parte], { [chave]: valor });
+    S.plano.estilo = e;
+  }
+
+  // ---------- palavras por trecho ----------
+  function palavrasDoTrecho(seg) {
+    const t = (BASE.transcricoes || {})[seg.clipe];
+    if (!t) return [];
+    const sus = (t.suspeitas || []);
+    return t.palavras.map((p, i) => ({ ...p, id: seg.clipe + ":" + i,
+      suspeita: sus.some(s => s.inicio <= p.inicio + 0.01 && p.fim <= s.fim + 0.01) }))
+      .filter(p => { const m = (p.inicio + p.fim) / 2; return m >= seg.inicio && m < seg.fim; });
+  }
+  function pedacos(seg) {
+    // devolve [[ini, fim], ...] do trecho sem as palavras cortadas
+    const ps = palavrasDoTrecho(seg);
+    const cortes = [];
+    for (let i = 0; i < ps.length; i++) {
+      if (!S.cortadas.includes(ps[i].id)) continue;
+      let j = i; while (j + 1 < ps.length && S.cortadas.includes(ps[j + 1].id)) j++;
+      cortes.push([i === 0 ? seg.inicio : ps[i].inicio, j === ps.length - 1 ? seg.fim : ps[j + 1].inicio]);
+      i = j;
+    }
+    const out = []; let cur = seg.inicio;
+    cortes.forEach(([a, b]) => { if (a - cur > 0.15) out.push([cur, a]); cur = Math.max(cur, b); });
+    if (seg.fim - cur > 0.15) out.push([cur, seg.fim]);
+    return out;
+  }
+  function duracoes() {
+    const orig = S.plano.segmentos.reduce((s, x) => s + (x.fim - x.inicio), 0);
+    const fin = S.plano.segmentos.reduce((s, x, i) => S.fora.includes(x._id) ? s : s + pedacos(x).reduce((a, [p, q]) => a + q - p, 0), 0);
+    return { orig, fin };
+  }
+  function todasPalavras() {
+    const vistas = new Set(); const out = [];
+    S.plano.segmentos.forEach(s => palavrasDoTrecho(s).forEach(p => { if (!S.cortadas.includes(p.id)) { const n = p.w.replace(/[^\p{L}\p{N}$%]/gu, ""); if (n.length > 2 && !vistas.has(n.toLowerCase())) { vistas.add(n.toLowerCase()); out.push(n); } } }));
+    return out;
+  }
+
+  // ---------- plano final ----------
+  function planoFinal() {
+    const p = clone(S.plano);
+    const segs = [];
+    S.plano.segmentos.forEach(seg => {
+      if (S.fora.includes(seg._id)) return;
+      pedacos(seg).forEach(([a, b], k) => {
+        const z = seg.zoom || 1;
+        // pedaços de um mesmo trecho alternam o zoom para o corte não parecer um pulo
+        const zoom = k % 2 === 0 ? z : (z >= 1.1 ? 1.0 : z + 0.12);
+        const n = Object.assign({}, seg, { inicio: +a.toFixed(3), fim: +b.toFixed(3), zoom: +zoom.toFixed(2), foco: seg.foco || [0.5, 0.4] });
+        delete n._id; delete n.suave; delete n.zoom_final;
+        if (seg.suave) n.zoom_final = +(k === 0 && seg.zoom_final && seg.zoom_final !== seg.zoom ? seg.zoom_final : zoom + 0.08).toFixed(2);
+        segs.push(n);
+      });
+    });
+    p.segmentos = segs;
+    p.post = clone(S.post);
+    if (typeof p.post.hashtags === "string") p.post.hashtags = p.post.hashtags.split(/[\s,]+/).filter(Boolean);
+    const r = S.roteiro;
+    if (r && (r.texto || (r.ganchos || []).length)) p.roteiro = { gancho_escolhido: (r.ganchos || [])[r.gancho] || "", texto: r.texto };
+    return p;
+  }
+
+  // ---------- prévia ----------
+  const tela = document.getElementById("tela");
+  function pxs(n) { return `calc(${n} * 100cqw / 1080)`; }
+  function textoEstilizado(e, texto, destaque) {
+    const sombra = e.caixa ? "" : `-webkit-text-stroke: ${pxs((e.espessura_contorno || 0) * 2)} ${e.contorno || "#000"}; paint-order: stroke fill;`;
+    const fundo = e.caixa ? `background:${caixaCss(e.cor_caixa)}; padding: 0.1em 0.35em; box-decoration-break: clone; -webkit-box-decoration-break: clone;` : "";
+    const f = FONTES[e.fonte] || { familia: e.fonte, peso: 700 };
+    const html = esc(e.maiusculas ? texto.toUpperCase() : texto).replace(/\*(.+?)\*/g, `<span style="color:${destaque}">$1</span>`);
+    return `<span style="font-family:'${f.familia}', sans-serif; font-weight:${f.peso}; font-size:${pxs(e.tamanho)}; color:${e.cor}; ${sombra} ${fundo}">${html}</span>`;
+  }
+  function caixaCss(c) {
+    if (!c) return "rgba(0,0,0,.6)";
+    const h = c.replace("#", ""); if (h.length === 8) { const a = parseInt(h.slice(6), 16) / 255; return `rgba(${parseInt(h.slice(0, 2), 16)},${parseInt(h.slice(2, 4), 16)},${parseInt(h.slice(4, 6), 16)},${a.toFixed(2)})`; }
+    return c;
+  }
+  function desenharPrevia() {
+    const e = estiloAtual();
+    const seg = S.plano.segmentos.find(s => !S.fora.includes(s._id));
+    const q = seg && (BASE.quadros || {})[seg.clipe];
+    tela.style.backgroundImage = q ? `url(${q})` : "linear-gradient(160deg,#59627A,#2A2F3B 55%,#1B1E26)";
+    if (seg && seg.foco) tela.style.backgroundPosition = `${seg.foco[0] * 100}% ${seg.foco[1] * 100}%`;
+    tela.style.backgroundSize = seg ? `auto ${100 * (seg.zoom || 1)}%` : "cover";
+    if (!q) tela.style.backgroundSize = "cover";
+    let html = `<div class="zona" id="zona" ${document.getElementById("ver-zona").checked ? "" : "hidden"}></div>`;
+    const tit = S.plano.titulos[S.titSel] || S.plano.titulos[0];
+    if (tit) {
+      const et = mesclar(e.titulo, tit.estilo || {});
+      if (tit.fonte) et.fonte = tit.fonte;
+      if (tit.tamanho) et.tamanho = tit.tamanho;
+      const y = { topo: 17, centro: 45, baixo: 84 }[tit.posicao || "topo"] ?? 17;
+      html += `<div class="camada" style="top:${y}%">${textoEstilizado(et, tit.texto || "", tit.cor_destaque || e.legenda.destaque)}</div>`;
+    }
+    if (S.plano.legendas.ativo !== false) {
+      const ps = seg ? palavrasDoTrecho(seg).filter(p => !S.cortadas.includes(p.id)) : [];
+      const n = S.plano.legendas.palavras_por_bloco || e.legenda.palavras_por_bloco || 3;
+      const bloco = (ps.length ? ps.slice(0, n).map(p => p.w) : ["Sua", "legenda", "aqui"]).map(w => S.plano.legendas.remover_pontuacao === false ? w : w.replace(/[,.;:]+$/, ""));
+      const destaques = (S.plano.legendas.palavras_destaque || []).map(norm);
+      const txt = bloco.map((w, i) => (i === 0 || destaques.includes(norm(w))) ? `*${w}*` : w).join(" ");
+      const y = (S.plano.legendas.posicao_y || e.legenda.posicao_y) * 100;
+      html += `<div class="camada" style="top:${y}%">${textoEstilizado(e.legenda, txt, e.legenda.destaque)}</div>`;
+    }
+    S.plano.stickers.forEach(st => {
+      const left = (st.x ?? 0.8) * 100, top = (st.y ?? 0.3) * 100;
+      if (st.tipo === "selo") {
+        const sf = FONTES[e.selo.fonte] || { familia: "Poppins", peso: 700 };
+        html += `<div class="sticker selo" style="left:${left}%;top:${top}%;background:${st.cor_fundo || e.selo.cor_fundo};color:${st.cor_texto || e.selo.cor_texto};font-family:'${sf.familia}';font-size:${pxs(st.tamanho_fonte || 64)}">${esc((st.texto || "").toUpperCase())}</div>`;
+      } else if (st.tipo === "seta") {
+        const rot = { direita: 0, baixo: 90, esquerda: 180, cima: -90 }[st.direcao || "direita"];
+        html += `<div class="sticker" style="left:${left}%;top:${top}%;font-size:${pxs(st.tamanho || 160)};color:${st.cor || e.legenda.destaque};transform:translate(-50%,-50%) rotate(${rot}deg)">➜</div>`;
+      } else if (st.tipo === "emoji") {
+        html += `<div class="sticker" style="left:${left}%;top:${top}%;font-size:${pxs((st.tamanho || 200) * 0.8)}">${esc(st.valor || "")}</div>`;
+      }
+    });
+    if (S.plano.barra_progresso) html += `<div style="position:absolute;left:0;bottom:0;height:${pxs(12)};width:38%;background:${e.legenda.destaque}"></div>`;
+    tela.innerHTML = html;
+  }
+
+  // ---------- abas ----------
+  const ABAS = [
+    ["roteiro", "Roteiro"], ["cortes", "Cortes"], ["estilo", "Estilo e fontes"],
+    ["textos", "Títulos e legendas"], ["extras", "Stickers e efeitos"], ["post", "Post"]
+  ];
+  function desenharAbas() {
+    document.getElementById("abas").innerHTML = ABAS.map(([id, nome]) =>
+      `<button role="tab" id="aba-${id}" aria-selected="${S.aba === id}" data-aba="${id}">${nome}</button>`).join("");
+  }
+  function desenharResumo() {
+    const { orig, fin } = duracoes();
+    const nTit = S.plano.titulos.length, nSt = S.plano.stickers.length;
+    document.getElementById("resumo").innerHTML = BASE.plano.segmentos.length
+      ? `<span>bruto <b>${tc(orig)}</b></span><span>editado <b>${tc(fin)}</b></span><span><b>${nTit}</b> títulos</span><span><b>${nSt}</b> stickers</span>`
+      : `<span>roteiro antes de gravar</span>`;
+    document.getElementById("titulo-projeto").textContent = BASE.nome || "Mesa de Edição";
+  }
+
+  const SONS = [["", "sem som"], ["pop", "pop"], ["whoosh", "whoosh"], ["ding", "ding"], ["click", "click"], ["boom", "boom"]];
+  const ANIM_TIT = [["pop", "Pop"], ["subir", "Subir"], ["deslizar", "Deslizar"], ["fade", "Aparecer devagar"], ["digitar", "Máquina de escrever"], ["nenhuma", "Sem animação"]];
+  const ANIM_ST = [["pop", "Pop"], ["fade", "Aparecer devagar"], ["flutuar", "Flutuar"], ["balancar", "Balançar"], ["nenhuma", "Parado"]];
+  const EFEITOS = [["zoom_impacto", "Zoom de impacto"], ["tremor", "Tremor"], ["flash", "Flash branco"], ["pb", "Preto e branco"], ["vinheta", "Vinheta (vídeo todo)"]];
+  function opts(lista, atual) {
+    const a = String(atual ?? "");
+    const extra = a && !lista.some(([v]) => v === a) ? `<option value="${esc(a)}" selected>personalizado (${esc(a)})</option>` : "";
+    return lista.map(([v, n]) => `<option value="${esc(v)}" ${a === v ? "selected" : ""}>${esc(n)}</option>`).join("") + extra;
+  }
+  function optsFontes(atual, comPadrao) {
+    const cats = {};
+    Object.entries(FONTES).forEach(([n, f]) => (cats[f.categoria || "Outras"] = cats[f.categoria || "Outras"] || []).push(n));
+    return (comPadrao ? `<option value="">Fonte do estilo</option>` : "") + Object.entries(cats).map(([c, ns]) =>
+      `<optgroup label="${c}">${ns.map(n => `<option value="${esc(n)}" ${atual === n ? "selected" : ""}>${esc(n)}</option>`).join("")}</optgroup>`).join("");
+  }
+  function quando(item, base) {
+    const modo = "na_palavra" in item ? "palavra" : ("t" in item ? "original" : ((item.t_saida || 0) === 0 ? "inicio" : "segundo"));
+    return `<label class="campo"><span>Quando aparece</span><select data-quando="${base}">
+        <option value="inicio" ${modo === "inicio" ? "selected" : ""}>No começo do vídeo</option>
+        <option value="palavra" ${modo === "palavra" ? "selected" : ""}>Quando eu falar a palavra…</option>
+        <option value="segundo" ${modo === "segundo" ? "selected" : ""}>Num segundo do vídeo final</option>
+        ${modo === "original" ? `<option value="original" selected>Momento marcado pelo Claude (${item.t}s do bruto)</option>` : ""}
+      </select></label>
+      ${modo === "palavra" ? `<label class="campo"><span>Palavra</span><input type="text" list="lista-palavras" data-k="${base}.na_palavra" value="${esc(item.na_palavra)}"></label>` : ""}
+      ${modo === "segundo" ? `<label class="campo estreito"><span>Segundo</span><input type="number" min="0" step="0.1" data-k="${base}.t_saida" data-tipo="num" value="${item.t_saida ?? 0}"></label>` : ""}`;
+  }
+
+  function abaRoteiro() {
+    const r = S.roteiro;
+    const palavras = (r.texto || "").replace(/\[[^\]]*\]/g, "").trim().split(/\s+/).filter(Boolean).length;
+    return `<section class="painel">
+      <div><h2>O que você vai falar</h2><p class="dica">Escolha o gancho, os primeiros 3 segundos que fazem a pessoa parar de rolar. Depois ajuste o texto do seu jeito. As marcações entre colchetes, como [TÍTULO: …] ou [STICKER 🙏], viram edição depois.</p></div>
+      <div class="bloco"><h3>Gancho</h3>
+        ${(r.ganchos || []).map((g, i) => `<label class="gancho"><input type="radio" name="gancho" data-gancho="${i}" ${r.gancho === i ? "checked" : ""}><input type="text" data-k-rot="ganchos.${i}" value="${esc(g)}" aria-label="Gancho ${i + 1}"></label>`).join("") || `<p class="vazio">Nenhum gancho ainda. Adicione um ou peça opções ao Claude.</p>`}
+        <div><button class="btn mini" data-acao="add-gancho">+ Adicionar gancho</button></div>
+      </div>
+      <div class="bloco"><div class="item-cab"><h3>Roteiro</h3><span class="estimativa">${palavras} palavras · cerca de ${Math.round(palavras / 2.5)} s falando</span></div>
+        <textarea id="rot-texto" data-k-rot="texto" style="min-height:240px" placeholder="Escreva ou cole aqui o que você vai falar, frase por frase.">${esc(r.texto)}</textarea>
+      </div></section>`;
+  }
+
+  function abaCortes() {
+    const segs = S.plano.segmentos;
+    if (!segs.length) return `<section class="painel"><h2>Cortes</h2><p class="vazio">Ainda não tem vídeo. Grave seguindo o roteiro e mande para o Claude: os trechos aparecem aqui.</p></section>`;
+    return `<section class="painel">
+      <div><h2>Escolha o que fica no vídeo</h2><p class="dica">Toque numa palavra para cortá-la e toque de novo para devolver. Desligue trechos inteiros ou mude a ordem: dá para trazer a frase mais forte para o começo.</p></div>
+      <div class="legenda-cores"><span><i style="background:var(--sunk)"></i>fica</span><span><i style="background:var(--rec-soft)"></i>cortada</span><span><i style="border:1px dashed var(--warn)"></i>possível muleta ou repetição</span></div>
+      ${segs.map((s, i) => {
+        const ps = palavrasDoTrecho(s); const fora = S.fora.includes(s._id);
+        return `<div class="trecho ${fora ? "fora" : ""}">
+          <div class="trecho-cab">
+            <span class="num">${i + 1}</span><span class="tc">${tc(s.inicio)} → ${tc(s.fim)} · ${(s.fim - s.inicio).toFixed(1)} s · clipe ${esc(s.clipe)}</span>
+            <label class="check" style="margin-left:auto"><input type="checkbox" data-fora="${s._id}" ${fora ? "" : "checked"}> manter</label>
+            <button class="btn mini" data-mover="${i}" data-dir="-1" ${i === 0 ? "disabled" : ""} aria-label="Subir trecho">↑</button>
+            <button class="btn mini" data-mover="${i}" data-dir="1" ${i === segs.length - 1 ? "disabled" : ""} aria-label="Descer trecho">↓</button>
+          </div>
+          <div class="palavras">${ps.length ? ps.map(p => `<button class="palavra ${S.cortadas.includes(p.id) ? "cortada" : ""} ${p.suspeita ? "suspeita" : ""}" data-palavra="${p.id}">${esc(p.w)}</button>`).join("") : `<span class="dica">Sem transcrição neste trecho.</span>`}</div>
+          <div class="linha">
+            <label class="campo estreito"><span>Zoom</span><select data-k="segmentos.${i}.zoom" data-tipo="num">${opts([["1", "normal"], ["1.12", "perto"], ["1.25", "mais perto"], ["1.4", "close"]], String(s.zoom || 1))}</select></label>
+            <label class="check"><input type="checkbox" data-k="segmentos.${i}.suave" data-tipo="bool" ${s.suave ? "checked" : ""}> aproximar devagar</label>
+          </div></div>`;
+      }).join("")}</section>`;
+  }
+
+  function abaEstilo() {
+    const e = estiloAtual(); const base = nomeBase();
+    const fontesGrade = (parte, atual) => `<div class="fontes">${Object.entries(FONTES).map(([n, f]) =>
+      `<button class="fonte" aria-pressed="${atual === n}" data-fonte="${parte}" data-nome="${esc(n)}"><span class="aa" style="font-family:'${f.familia}';font-weight:${f.peso}">Aa Fé Lar</span><span class="fn">${esc(n)}</span></button>`).join("")}</div>`;
+    return `<section class="painel">
+      <div><h2>Estilo e fontes</h2><p class="dica">Comece por um estilo pronto e depois troque o que quiser: fonte, cor, tamanho. A prévia ao lado mostra o resultado.</p></div>
+      <div class="presets">${Object.entries(ESTILOS).map(([n, p]) => {
+        const ft = FONTES[p.titulo.fonte] || { familia: p.titulo.fonte, peso: 700 };
+        return `<button class="preset" aria-pressed="${base === n}" data-preset="${n}"><div class="amostra"><span style="font-family:'${ft.familia}';font-weight:${ft.peso};font-size:24px;color:${p.titulo.cor};${p.titulo.caixa ? `background:${caixaCss(p.titulo.cor_caixa)};padding:2px 6px` : ""}">${p.titulo.maiusculas ? "TÍTULO" : "Título"} <span style="color:${p.legenda.destaque}">${p.titulo.maiusculas ? "AQUI" : "aqui"}</span></span></div><div class="nome">${esc(p.nome || ({ financas: "Finanças", lar: "Lar" }[n]) || n)}</div><div class="desc">${esc(p.descricao || "")}</div></button>`;
+      }).join("")}</div>
+      <div class="bloco"><h3>Fonte dos títulos</h3>${fontesGrade("titulo", e.titulo.fonte)}
+        <div class="linha">
+          <label class="campo"><span>Tamanho</span><input type="range" min="60" max="170" data-est="titulo.tamanho" value="${e.titulo.tamanho}"></label>
+          <label class="campo estreito"><span>Cor</span><input type="color" data-est="titulo.cor" value="${e.titulo.cor.slice(0, 7)}"></label>
+          <label class="campo estreito"><span>Contorno</span><input type="color" data-est="titulo.contorno" value="${(e.titulo.contorno || "#000000").slice(0, 7)}"></label>
+          <label class="check"><input type="checkbox" data-est="titulo.caixa" ${e.titulo.caixa ? "checked" : ""}> faixa atrás</label>
+          <label class="campo estreito"><span>Cor da faixa</span><input type="color" data-est="titulo.cor_caixa" value="${(e.titulo.cor_caixa || "#000000").slice(0, 7)}"></label>
+          <label class="check"><input type="checkbox" data-est="titulo.maiusculas" ${e.titulo.maiusculas ? "checked" : ""}> CAIXA ALTA</label>
+        </div></div>
+      <div class="bloco"><h3>Fonte das legendas</h3>${fontesGrade("legenda", e.legenda.fonte)}
+        <div class="linha">
+          <label class="campo"><span>Tamanho</span><input type="range" min="44" max="120" data-est="legenda.tamanho" value="${e.legenda.tamanho}"></label>
+          <label class="campo estreito"><span>Cor</span><input type="color" data-est="legenda.cor" value="${e.legenda.cor.slice(0, 7)}"></label>
+          <label class="campo estreito"><span>Destaque</span><input type="color" data-est="legenda.destaque" value="${e.legenda.destaque.slice(0, 7)}"></label>
+          <label class="campo estreito"><span>Contorno</span><input type="color" data-est="legenda.contorno" value="${(e.legenda.contorno || "#000000").slice(0, 7)}"></label>
+          <label class="campo"><span>Palavras por vez</span><select data-est="legenda.palavras_por_bloco" data-tipo="num">${opts([["1", "1"], ["2", "2"], ["3", "3"], ["4", "4"], ["5", "5"], ["6", "6"]], String(e.legenda.palavras_por_bloco))}</select></label>
+          <label class="campo"><span>Altura na tela</span><input type="range" min="0.55" max="0.82" step="0.01" data-est="legenda.posicao_y" data-tipo="num" value="${e.legenda.posicao_y}"></label>
+          <label class="check"><input type="checkbox" data-est="legenda.maiusculas" ${e.legenda.maiusculas ? "checked" : ""}> CAIXA ALTA</label>
+          <label class="check"><input type="checkbox" data-est="legenda.caixa" ${e.legenda.caixa ? "checked" : ""}> faixa atrás</label>
+        </div></div>
+      <div class="bloco"><h3>Imagem</h3><div class="linha">
+        <label class="campo"><span>Cor do vídeo</span><select data-k="cor">${opts([["", "do estilo"], ["vibrante", "Vibrante"], ["quente", "Quente"], ["frio", "Frio"], ["suave", "Suave"], ["pb", "Preto e branco"], ["neutro", "Sem filtro"]], S.plano.cor || "")}</select></label>
+        <label class="campo"><span>Formato</span><select data-formato>${opts([["1080x1920", "Vertical 9:16 (Reels, TikTok, Shorts)"], ["1080x1350", "Retrato 4:5 (feed)"], ["1080x1080", "Quadrado 1:1"], ["1920x1080", "Horizontal 16:9 (YouTube)"]], `${S.plano.formato.largura}x${S.plano.formato.altura}`)}</select></label>
+        <label class="check"><input type="checkbox" data-k="barra_progresso" data-tipo="bool" ${S.plano.barra_progresso ? "checked" : ""}> barra de progresso</label>
+      </div></div></section>`;
+  }
+
+  function abaTextos() {
+    const L = S.plano.legendas;
+    const corr = Object.entries(L.correcoes || {});
+    return `<section class="painel">
+      <div><h2>Títulos e legendas</h2><p class="dica">Use *asteriscos* para pintar uma palavra com a cor de destaque. Toque num título para vê-lo na prévia.</p></div>
+      ${S.plano.titulos.map((t, i) => `<div class="item" data-sel-tit="${i}">
+        <div class="item-cab"><h3>Título ${i + 1}</h3><button class="btn mini fantasma" data-remover="titulos.${i}">Remover</button></div>
+        <label class="campo largo"><span>Texto</span><input type="text" data-k="titulos.${i}.texto" value="${esc(t.texto)}"></label>
+        <div class="linha">${quando(t, "titulos." + i)}
+          <label class="campo estreito"><span>Duração (s)</span><input type="number" min="0.5" step="0.1" data-k="titulos.${i}.duracao" data-tipo="num" value="${t.duracao ?? 3}"></label></div>
+        <div class="linha">
+          <label class="campo"><span>Posição</span><select data-k="titulos.${i}.posicao">${opts([["topo", "Em cima"], ["centro", "No meio"], ["baixo", "Embaixo"]], t.posicao || "topo")}</select></label>
+          <label class="campo"><span>Animação</span><select data-k="titulos.${i}.animacao">${opts(ANIM_TIT, t.animacao || "pop")}</select></label>
+          <label class="campo"><span>Fonte</span><select data-k="titulos.${i}.fonte">${optsFontes(t.fonte || "", true)}</select></label>
+          <label class="campo"><span>Som</span><select data-k="titulos.${i}.som">${opts(SONS, t.som || "")}</select></label>
+        </div></div>`).join("") || `<p class="vazio">Nenhum título ainda.</p>`}
+      <div><button class="btn" data-acao="add-titulo">+ Adicionar título</button></div>
+      <div class="bloco"><h3>Legendas automáticas</h3>
+        <label class="check"><input type="checkbox" data-k="legendas.ativo" data-tipo="bool" ${L.ativo !== false ? "checked" : ""}> mostrar legendas da fala</label>
+        <label class="campo largo"><span>Palavras sempre em destaque (separe por vírgula)</span><input type="text" data-k="legendas.palavras_destaque" data-tipo="lista" value="${esc((L.palavras_destaque || []).join(", "))}"></label>
+        <h3>Corrigir palavras da transcrição</h3>
+        ${corr.map(([a, b], i) => `<div class="linha"><label class="campo"><span>Está escrito</span><input type="text" data-corr="${i}" data-lado="0" value="${esc(a)}"></label><label class="campo"><span>Trocar por (vazio = apagar)</span><input type="text" data-corr="${i}" data-lado="1" value="${esc(b)}"></label><button class="btn mini fantasma" data-corr-rem="${i}">Remover</button></div>`).join("")}
+        <div><button class="btn mini" data-acao="add-corr">+ Adicionar correção</button></div>
+      </div></section>`;
+  }
+
+  function abaExtras() {
+    const A = S.plano.audio;
+    return `<section class="painel">
+      <div><h2>Stickers, efeitos e música</h2><p class="dica">Prenda cada sticker a uma palavra que você fala: assim ele aparece no momento certo mesmo se os cortes mudarem.</p></div>
+      ${S.plano.stickers.map((s, i) => `<div class="item">
+        <div class="item-cab"><h3>Sticker ${i + 1}</h3><button class="btn mini fantasma" data-remover="stickers.${i}">Remover</button></div>
+        <div class="linha">
+          <label class="campo"><span>Tipo</span><select data-k="stickers.${i}.tipo" data-rerender>${opts([["emoji", "Emoji"], ["selo", "Selo com texto"], ["seta", "Seta"]], s.tipo || "emoji")}</select></label>
+          ${s.tipo === "selo" ? `<label class="campo"><span>Texto do selo</span><input type="text" data-k="stickers.${i}.texto" value="${esc(s.texto)}"></label>`
+          : s.tipo === "seta" ? `<label class="campo"><span>Direção</span><select data-k="stickers.${i}.direcao">${opts([["direita", "→"], ["esquerda", "←"], ["cima", "↑"], ["baixo", "↓"]], s.direcao || "direita")}</select></label>`
+          : `<label class="campo estreito"><span>Emoji</span><input type="text" data-k="stickers.${i}.valor" value="${esc(s.valor)}"></label>`}
+          ${quando(s, "stickers." + i)}
+        </div><div class="linha">
+          <label class="campo"><span>Lado</span><select data-k="stickers.${i}.x" data-tipo="num">${opts([["0.22", "Esquerda"], ["0.5", "Centro"], ["0.78", "Direita"]], String(s.x ?? 0.78))}</select></label>
+          <label class="campo"><span>Altura</span><select data-k="stickers.${i}.y" data-tipo="num">${opts([["0.28", "Alto"], ["0.42", "Meio"], ["0.58", "Baixo"]], String(s.y ?? 0.28))}</select></label>
+          <label class="campo"><span>Animação</span><select data-k="stickers.${i}.animacao">${opts(ANIM_ST, s.animacao || "pop")}</select></label>
+          <label class="campo estreito"><span>Duração (s)</span><input type="number" min="0.5" step="0.1" data-k="stickers.${i}.duracao" data-tipo="num" value="${s.duracao ?? 2}"></label>
+          <label class="campo"><span>Som</span><select data-k="stickers.${i}.som">${opts(SONS, s.som || "")}</select></label>
+        </div></div>`).join("") || `<p class="vazio">Nenhum sticker ainda.</p>`}
+      <div class="linha"><button class="btn" data-acao="add-emoji">+ Emoji</button><button class="btn" data-acao="add-selo">+ Selo</button><button class="btn" data-acao="add-seta">+ Seta</button></div>
+      <div class="bloco"><h3>Efeitos</h3>
+        ${S.plano.efeitos.map((f, i) => `<div class="linha">
+          <label class="campo"><span>Efeito</span><select data-k="efeitos.${i}.tipo" data-rerender>${opts(EFEITOS, f.tipo)}</select></label>
+          ${f.tipo === "vinheta" ? "" : quando(f, "efeitos." + i)}
+          ${f.tipo === "vinheta" ? "" : `<label class="campo"><span>Som</span><select data-k="efeitos.${i}.som">${opts(SONS, f.som || "")}</select></label>`}
+          <button class="btn mini fantasma" data-remover="efeitos.${i}">Remover</button></div>`).join("") || `<p class="dica">Nenhum efeito. Zoom de impacto numa palavra-chave costuma bastar.</p>`}
+        <div><button class="btn mini" data-acao="add-efeito">+ Adicionar efeito</button></div>
+      </div>
+      <div class="bloco"><h3>Música</h3>
+        <p class="dica">Mande o arquivo da música no chat junto com o vídeo e escreva o nome dele aqui. Use só músicas que você tem direito de usar.</p>
+        <div class="linha">
+          <label class="campo largo"><span>Arquivo da música</span><input type="text" data-k="audio.musica" placeholder="ex.: trilha_calma.mp3" value="${esc(A.musica || "")}"></label>
+          <label class="campo"><span>Volume da música</span><input type="range" min="0.03" max="0.35" step="0.01" data-k="audio.volume_musica" data-tipo="num" value="${A.volume_musica ?? 0.12}"></label>
+          <label class="check"><input type="checkbox" data-k="audio.ducking" data-tipo="bool" ${A.ducking !== false ? "checked" : ""}> abaixar quando eu falo</label>
+        </div></div></section>`;
+  }
+
+  function abaPost() {
+    const P = S.post; P.capa = P.capa || {};
+    const tags = Array.isArray(P.hashtags) ? P.hashtags.join(" ") : (P.hashtags || "");
+    const nTags = tags.split(/[\s,]+/).filter(Boolean).length;
+    const plats = ["Instagram Reels", "TikTok", "YouTube Shorts", "Status do WhatsApp"];
+    return `<section class="painel">
+      <div><h2>O que vai ser postado</h2><p class="dica">O texto que acompanha o vídeo, as hashtags e a capa. O Claude entrega tudo pronto junto com o vídeo.</p></div>
+      <div class="bloco"><div class="item-cab"><h3>Legenda do post</h3><span class="contador ${(P.legenda || "").length > 2200 ? "alerta" : ""}" id="cont-leg">${(P.legenda || "").length}/2200</span></div>
+        <textarea data-k-post="legenda" placeholder="Gancho na primeira linha, uma ou duas linhas de valor e o convite para comentar, salvar ou seguir.">${esc(P.legenda)}</textarea>
+        <div class="item-cab"><h3>Hashtags</h3><span class="contador ${nTags > 5 ? "alerta" : ""}" id="cont-tags">${nTags} (ideal: 3 a 5)</span></div>
+        <input type="text" data-k-post="hashtags" value="${esc(tags)}" placeholder="#familiacrista #organizacao">
+      </div>
+      <div class="bloco"><h3>Capa</h3><div class="linha">
+        <label class="campo largo"><span>Texto da capa (até 5 palavras funciona melhor)</span><input type="text" data-k-post="capa.texto" value="${esc(P.capa.texto || "")}"></label>
+        <label class="campo estreito"><span>Quadro do segundo</span><input type="number" min="0" step="0.1" data-k-post="capa.t_saida" data-tipo="num" value="${P.capa.t_saida ?? 0.5}"></label>
+        <label class="campo"><span>Fonte</span><select data-k-post="capa.fonte">${optsFontes(P.capa.fonte || "", true)}</select></label>
+      </div></div>
+      <div class="bloco"><h3>Onde vai postar</h3><div class="linha">
+        ${plats.map(p => `<label class="check"><input type="checkbox" data-plat="${esc(p)}" ${(P.plataformas || []).includes(p) ? "checked" : ""}> ${esc(p)}</label>`).join("")}
+      </div></div></section>`;
+  }
+
+  function desenharConteudo() {
+    const f = { roteiro: abaRoteiro, cortes: abaCortes, estilo: abaEstilo, textos: abaTextos, extras: abaExtras, post: abaPost }[S.aba];
+    document.getElementById("conteudo").innerHTML = f() + `<datalist id="lista-palavras">${todasPalavras().map(w => `<option value="${esc(w)}">`).join("")}</datalist>`;
+  }
+  function tudo() { desenharAbas(); desenharConteudo(); desenharResumo(); desenharPrevia(); salvar(); }
+  function leve() { desenharResumo(); desenharPrevia(); salvar(); marcarAlterado(); }
+  function marcarAlterado() { const s = document.getElementById("status"); s.textContent = "Alterações não copiadas ainda."; s.classList.remove("feito"); }
+
+  // ---------- caminhos ----------
+  function setPath(obj, path, val) {
+    const ks = path.split("."); let o = obj;
+    ks.slice(0, -1).forEach((k, i) => { if (o[k] === undefined) o[k] = /^\d+$/.test(ks[i + 1]) ? [] : {}; o = o[k]; });
+    const ult = ks[ks.length - 1];
+    if (val === "" || val === undefined) delete o[ult]; else o[ult] = val;
+  }
+  function valor(el) {
+    const t = el.dataset.tipo;
+    if (el.type === "checkbox") return el.checked;
+    if (t === "num") return el.value === "" ? "" : parseFloat(el.value);
+    if (t === "lista") return el.value.split(",").map(x => x.trim()).filter(Boolean);
+    return el.value;
+  }
+
+  // ---------- eventos ----------
+  document.addEventListener("click", ev => {
+    const b = ev.target.closest("button, [data-sel-tit]");
+    if (!b) return;
+    const d = b.dataset;
+    if (d.aba) { S.aba = d.aba; tudo(); return; }
+    if (d.palavra) { const i = S.cortadas.indexOf(d.palavra); i >= 0 ? S.cortadas.splice(i, 1) : S.cortadas.push(d.palavra); b.classList.toggle("cortada"); leve(); return; }
+    if (d.mover !== undefined) { const i = +d.mover, j = i + +d.dir; const a = S.plano.segmentos; [a[i], a[j]] = [a[j], a[i]]; tudo(); marcarAlterado(); return; }
+    if (d.preset) { S.plano.estilo = d.preset; tudo(); marcarAlterado(); return; }
+    if (d.fonte) { ajustarEstilo(d.fonte, "fonte", d.nome); tudo(); marcarAlterado(); return; }
+    if (d.remover) { const [lista, i] = d.remover.split("."); S.plano[lista].splice(+i, 1); S.titSel = 0; tudo(); marcarAlterado(); return; }
+    if (d.corrRem !== undefined) { const c = Object.entries(S.plano.legendas.correcoes || {}); c.splice(+d.corrRem, 1); S.plano.legendas.correcoes = Object.fromEntries(c); tudo(); return; }
+    if (d.selTit !== undefined && S.titSel !== +d.selTit) { S.titSel = +d.selTit; desenharPrevia(); return; }
+    const acoes = {
+      "add-gancho": () => S.roteiro.ganchos.push("Novo gancho"),
+      "add-titulo": () => { S.plano.titulos.push({ texto: "Novo *título*", t_saida: 0, duracao: 2.5, posicao: "topo", animacao: "pop" }); S.titSel = S.plano.titulos.length - 1; },
+      "add-emoji": () => S.plano.stickers.push({ tipo: "emoji", valor: "🙏", t_saida: 1, duracao: 1.5, x: 0.78, y: 0.28, tamanho: 200, animacao: "pop", som: "pop" }),
+      "add-selo": () => S.plano.stickers.push({ tipo: "selo", texto: "Dica", t_saida: 1, duracao: 2, x: 0.22, y: 0.28, animacao: "balancar" }),
+      "add-seta": () => S.plano.stickers.push({ tipo: "seta", direcao: "baixo", t_saida: 1, duracao: 1.5, x: 0.5, y: 0.58, tamanho: 160, animacao: "flutuar" }),
+      "add-efeito": () => S.plano.efeitos.push({ tipo: "zoom_impacto", t_saida: 1 }),
+      "add-corr": () => { S.plano.legendas.correcoes = Object.assign({}, S.plano.legendas.correcoes, { ["palavra" + (Object.keys(S.plano.legendas.correcoes || {}).length + 1)]: "" }); }
+    };
+    if (d.acao && acoes[d.acao]) { acoes[d.acao](); tudo(); marcarAlterado(); }
+  });
+
+  document.addEventListener("change", ev => {
+    const el = ev.target; const d = el.dataset;
+    if (el.id === "ver-zona") { desenharPrevia(); return; }
+    if (d.fora !== undefined) { const id = +d.fora; const i = S.fora.indexOf(id); el.checked ? (i >= 0 && S.fora.splice(i, 1)) : S.fora.push(id); tudo(); marcarAlterado(); return; }
+    if (d.gancho !== undefined) { S.roteiro.gancho = +d.gancho; tudo(); marcarAlterado(); return; }
+    if (d.quando) {
+      const it = d.quando.split(".").reduce((o, k) => o[k], S.plano);
+      delete it.t; delete it.na_palavra; delete it.t_saida; delete it.clipe;
+      if (el.value === "inicio") it.t_saida = 0;
+      if (el.value === "segundo") it.t_saida = 1;
+      if (el.value === "palavra") it.na_palavra = todasPalavras()[0] || "";
+      tudo(); marcarAlterado(); return;
+    }
+    if (d.formato) { const [w, h] = el.value.split("x").map(Number); S.plano.formato.largura = w; S.plano.formato.altura = h; tudo(); marcarAlterado(); return; }
+    if (d.plat) { const P = S.post; P.plataformas = P.plataformas || []; const i = P.plataformas.indexOf(d.plat); el.checked ? (i < 0 && P.plataformas.push(d.plat)) : P.plataformas.splice(i, 1); leve(); return; }
+    if (d.k && el.tagName === "SELECT" && d.rerender !== undefined) { setPath(S.plano, d.k, valor(el)); tudo(); marcarAlterado(); return; }
+    if (d.k && (el.tagName === "SELECT" || el.type === "checkbox")) { setPath(S.plano, d.k, valor(el)); leve(); return; }
+    if (d.est && (el.tagName === "SELECT" || el.type === "checkbox")) { const [p, k] = d.est.split("."); ajustarEstilo(p, k, valor(el)); leve(); return; }
+    if (d.kPost && el.tagName === "SELECT") { setPath(S.post, d.kPost, el.value); leve(); return; }
+  });
+
+  document.addEventListener("input", ev => {
+    const el = ev.target; const d = el.dataset;
+    if (el.tagName === "SELECT" || el.type === "checkbox") return;
+    if (d.k) { setPath(S.plano, d.k, valor(el)); leve(); return; }
+    if (d.est) { const [p, k] = d.est.split("."); ajustarEstilo(p, k, d.tipo === "num" || el.type === "range" ? parseFloat(el.value) : el.value); leve(); return; }
+    if (d.kRot) { setPath(S.roteiro, d.kRot, el.value); salvar(); marcarAlterado(); return; }
+    if (d.kPost) {
+      setPath(S.post, d.kPost, d.tipo === "num" ? parseFloat(el.value) : el.value);
+      if (d.kPost === "legenda") { const c = document.getElementById("cont-leg"); c.textContent = `${el.value.length}/2200`; c.classList.toggle("alerta", el.value.length > 2200); }
+      if (d.kPost === "hashtags") { const n = el.value.split(/[\s,]+/).filter(Boolean).length; const c = document.getElementById("cont-tags"); c.textContent = `${n} (ideal: 3 a 5)`; c.classList.toggle("alerta", n > 5); }
+      salvar(); marcarAlterado(); return;
+    }
+    if (d.corr !== undefined) {
+      const c = Object.entries(S.plano.legendas.correcoes || {}); c[+d.corr][+d.lado] = el.value;
+      S.plano.legendas.correcoes = Object.fromEntries(c.filter(([a]) => a)); salvar(); marcarAlterado();
+    }
+  });
+
+  // ---------- exportar ----------
+  function textoExportado() {
+    return "PLANO-YAP (cole no chat do Claude para renderizar)\n" + JSON.stringify(planoFinal(), (k, v) => k === "_id" || k === "suave" ? undefined : v, 1);
+  }
+  document.getElementById("btn-ver").addEventListener("click", () => {
+    const s = document.getElementById("saida"); s.hidden = !s.hidden;
+    document.getElementById("saida-texto").value = textoExportado();
+  });
+  document.getElementById("btn-copiar").addEventListener("click", () => {
+    const txt = textoExportado(); const st = document.getElementById("status");
+    document.getElementById("saida-texto").value = txt;
+    const ok = () => { st.textContent = "Copiado. Agora cole no chat do Claude."; st.classList.add("feito"); };
+    const falha = () => { const s = document.getElementById("saida"); s.hidden = false; const ta = document.getElementById("saida-texto"); ta.focus(); ta.select(); st.textContent = "Não deu para copiar sozinho: o texto está selecionado abaixo."; };
+    try { navigator.clipboard.writeText(txt).then(ok, falha); } catch (e) { falha(); }
+  });
+
+  // fontes do vídeo para a prévia (Google Fonts)
+  const fams = [...new Set(Object.values(FONTES).map(f => f.familia))];
+  document.getElementById("fontes-video").href = "https://fonts.googleapis.com/css2?" +
+    fams.map(f => "family=" + f.replace(/ /g, "+") + ":wght@" + [...new Set(Object.values(FONTES).filter(x => x.familia === f).map(x => x.peso))].sort().join(";")).join("&") + "&display=swap";
+
+  if (BASE.exemplo) document.getElementById("status").textContent = "Projeto de exemplo. Peça ao Claude para abrir este painel com o seu vídeo.";
+  tudo();
+
+  function ESTILOS_PADRAO() { return /*__ESTILOS__*/{}; }
+  function FONTES_PADRAO() { return /*__FONTES__*/{}; }
+})();
+</script>

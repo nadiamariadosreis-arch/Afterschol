@@ -13,7 +13,8 @@ Tudo é opcional, exceto `clipes` e `segmentos`.
 7. sobreposicoes (b-roll)
 8. efeitos
 9. audio e efeitos_sonoros
-10. Exemplo completo
+10. post e roteiro
+11. Exemplo completo
 
 ---
 
@@ -108,8 +109,9 @@ Lista, **na ordem em que aparecem no vídeo final**. Cada item é um trecho mant
 - `posicao`: `topo` | `centro` | `baixo` | número de 0 a 1.
 - `animacao`: `pop` (padrão), `subir`, `deslizar`, `fade`, `digitar` (máquina de escrever), `nenhuma`.
 - `som`: toca um efeito sonoro junto (ver seção 9).
-- Fontes disponíveis: Anton, Bebas Neue, Poppins / Poppins SemiBold / Poppins Bold / Poppins Black,
-  Montserrat, Playfair Display, Caveat (manuscrita) + qualquer fonte instalada no sistema.
+- Fontes: use um nome de `assets/fontes.json` (20 fontes em 5 categorias: Impacto, Moderna, Elegante,
+  Manuscrita, Divertida). As que não vêm na skill são baixadas do Google Fonts na hora de renderizar.
+  Qualquer fonte instalada no sistema também funciona pelo nome da família.
 
 ## 6. stickers
 
@@ -168,7 +170,23 @@ Lista, **na ordem em que aparecem no vídeo final**. Cada item é um trecho mant
 - Sons embutidos (sintetizados, sem direitos autorais): `pop`, `ding`, `click`, `boom`, `whoosh`.
 - Música: só use arquivos que a pessoa forneceu ou que ela tenha direito de usar.
 
-## 10. Exemplo completo
+## 10. post e roteiro
+
+```json
+"post": {
+  "legenda": "Você sabe pra onde vai o dinheiro da sua casa?\nSalva para fazer hoje à noite.",
+  "hashtags": ["financasfamiliares", "familiacrista"],
+  "capa": {"texto": "Seu dinheiro *some*?", "t_saida": 0.5, "posicao": "centro", "fonte": "Anton"},
+  "plataformas": ["Instagram Reels", "TikTok"]
+},
+"roteiro": {"gancho_escolhido": "...", "texto": "..."}
+```
+
+- Com `post`, o `render.py` também gera `<saida>_post.txt` (legenda + hashtags prontas para colar)
+  e `<saida>_capa.png` (quadro do vídeo com o texto da capa, sem legendas por cima).
+- `roteiro` é só registro do que a pessoa escolheu no painel; o render ignora.
+
+## 11. Exemplo completo
 
 ```json
 {
