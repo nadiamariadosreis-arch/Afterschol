@@ -1,0 +1,201 @@
+{
+  "viral": {
+    "descricao": "Alto impacto, estilo Hormozi: caixa alta, contorno grosso, palavra ativa em amarelo.",
+    "legenda": {
+      "fonte": "Poppins Black",
+      "tamanho": 92,
+      "cor": "#FFFFFF",
+      "destaque": "#FFD400",
+      "contorno": "#000000",
+      "espessura_contorno": 6,
+      "sombra": 0,
+      "caixa": false,
+      "maiusculas": true,
+      "palavras_por_bloco": 3,
+      "posicao_y": 0.68,
+      "pop": true
+    },
+    "titulo": {
+      "fonte": "Anton",
+      "tamanho": 104,
+      "cor": "#FFFFFF",
+      "contorno": "#000000",
+      "espessura_contorno": 7,
+      "caixa": false,
+      "cor_caixa": "#000000",
+      "maiusculas": true
+    },
+    "selo": {
+      "fonte": "Poppins Black",
+      "cor_fundo": "#FFD400",
+      "cor_texto": "#000000"
+    },
+    "cor": "vibrante"
+  },
+  "clean": {
+    "descricao": "Moderno e limpo: branco com sombra suave, destaque em verde-menta, sem caixa alta.",
+    "legenda": {
+      "fonte": "Montserrat",
+      "tamanho": 78,
+      "cor": "#FFFFFF",
+      "destaque": "#7CF2B4",
+      "contorno": "#000000",
+      "espessura_contorno": 2,
+      "sombra": 3,
+      "caixa": false,
+      "maiusculas": false,
+      "palavras_por_bloco": 4,
+      "posicao_y": 0.7,
+      "pop": true
+    },
+    "titulo": {
+      "fonte": "Montserrat",
+      "tamanho": 84,
+      "cor": "#111111",
+      "contorno": "#FFFFFF",
+      "espessura_contorno": 0,
+      "caixa": true,
+      "cor_caixa": "#FFFFFF",
+      "maiusculas": false
+    },
+    "selo": {
+      "fonte": "Poppins Bold",
+      "cor_fundo": "#FFFFFF",
+      "cor_texto": "#111111"
+    },
+    "cor": "neutro"
+  },
+  "catequese": {
+    "descricao": "Sereno e reverente: títulos em serifa elegante, dourado suave, legendas em faixa translúcida.",
+    "legenda": {
+      "fonte": "Poppins SemiBold",
+      "tamanho": 68,
+      "cor": "#FFFFFF",
+      "destaque": "#F2CC6B",
+      "contorno": "#000000",
+      "espessura_contorno": 0,
+      "sombra": 0,
+      "caixa": true,
+      "cor_caixa": "#00000099",
+      "maiusculas": false,
+      "palavras_por_bloco": 4,
+      "posicao_y": 0.72,
+      "pop": false
+    },
+    "titulo": {
+      "fonte": "Playfair Display",
+      "tamanho": 88,
+      "cor": "#FFF8E7",
+      "contorno": "#3B2A12",
+      "espessura_contorno": 3,
+      "caixa": false,
+      "cor_caixa": "#3B2A12",
+      "maiusculas": false
+    },
+    "selo": {
+      "fonte": "Poppins Bold",
+      "cor_fundo": "#F2CC6B",
+      "cor_texto": "#3B2A12"
+    },
+    "cor": "quente"
+  },
+  "lar": {
+    "descricao": "Aconchegante: títulos manuscritos (Caveat), tons terracota, ideal para casa, rotina e organização.",
+    "legenda": {
+      "fonte": "Poppins Bold",
+      "tamanho": 80,
+      "cor": "#FFFFFF",
+      "destaque": "#FFB38A",
+      "contorno": "#5A2E1E",
+      "espessura_contorno": 4,
+      "sombra": 0,
+      "caixa": false,
+      "maiusculas": false,
+      "palavras_por_bloco": 3,
+      "posicao_y": 0.7,
+      "pop": true
+    },
+    "titulo": {
+      "fonte": "Caveat",
+      "tamanho": 120,
+      "cor": "#FFFFFF",
+      "contorno": "#E07A5F",
+      "espessura_contorno": 5,
+      "caixa": false,
+      "cor_caixa": "#E07A5F",
+      "maiusculas": false
+    },
+    "selo": {
+      "fonte": "Poppins Bold",
+      "cor_fundo": "#E07A5F",
+      "cor_texto": "#FFFFFF"
+    },
+    "cor": "quente"
+  },
+  "financas": {
+    "descricao": "Confiável e direto: Bebas Neue nos títulos, destaque verde-dinheiro, ótimo para números.",
+    "legenda": {
+      "fonte": "Poppins Bold",
+      "tamanho": 86,
+      "cor": "#FFFFFF",
+      "destaque": "#2EE59D",
+      "contorno": "#0B1F17",
+      "espessura_contorno": 5,
+      "sombra": 0,
+      "caixa": false,
+      "maiusculas": true,
+      "palavras_por_bloco": 3,
+      "posicao_y": 0.68,
+      "pop": true
+    },
+    "titulo": {
+      "fonte": "Bebas Neue",
+      "tamanho": 120,
+      "cor": "#FFFFFF",
+      "contorno": "#0B1F17",
+      "espessura_contorno": 0,
+      "caixa": true,
+      "cor_caixa": "#0E7C55",
+      "maiusculas": true
+    },
+    "selo": {
+      "fonte": "Poppins Black",
+      "cor_fundo": "#2EE59D",
+      "cor_texto": "#0B1F17"
+    },
+    "cor": "frio"
+  },
+  "minimal": {
+    "descricao": "Discreto: legendas pequenas na parte de baixo, sem destaque, para conteúdos calmos e reflexivos.",
+    "legenda": {
+      "fonte": "Montserrat",
+      "tamanho": 58,
+      "cor": "#FFFFFF",
+      "destaque": "#FFFFFF",
+      "contorno": "#000000",
+      "espessura_contorno": 0,
+      "sombra": 2,
+      "caixa": false,
+      "maiusculas": false,
+      "palavras_por_bloco": 6,
+      "posicao_y": 0.8,
+      "pop": false
+    },
+    "titulo": {
+      "fonte": "Montserrat",
+      "tamanho": 72,
+      "cor": "#FFFFFF",
+      "contorno": "#000000",
+      "espessura_contorno": 0,
+      "caixa": false,
+      "cor_caixa": "#000000",
+      "maiusculas": false
+    },
+    "selo": {
+      "fonte": "Poppins SemiBold",
+      "cor_fundo": "#FFFFFF",
+      "cor_texto": "#000000"
+    },
+    "cor": "suave"
+  }
+}

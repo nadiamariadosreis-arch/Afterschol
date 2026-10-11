@@ -1,0 +1,4 @@
+Todas as fontes desta pasta vêm do Google Fonts (github.com/google/fonts) e são
+distribuídas sob a SIL Open Font License 1.1 (ver OFL.txt). Podem ser usadas em
+vídeos comerciais e redistribuídas junto com a skill.
+Anton, Bebas Neue, Poppins (SemiBold/Bold/Black), Caveat, Playfair Display, Montserrat.
