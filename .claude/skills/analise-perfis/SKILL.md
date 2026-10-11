@@ -77,19 +77,36 @@ Depois:
 - **Qual pilar vende** (conecta com produto), **qual atrai** (alcance) e **qual conecta**
   (bastidores, vida pessoal, fé, valores)
 
-### 🎣 5. Ganchos
+### 🎣 5. Ganchos (o carro-chefe da análise)
+Os ganchos das gringas são a parte mais importante da análise e o carro-chefe do
+trabalho da usuária. Dedique a esta seção o maior cuidado.
+
 Tabela com cada gancho visível (capa de carrossel, texto na tela de Reel, primeira
-linha da legenda):
+linha da legenda), do mais forte para o mais fraco:
 
-| Gancho original | Tradução | Tipo de gancho | Versão adaptada em PT-BR |
-|---|---|---|---|
+| Gancho original | Tradução | Tipo | Força (1 a 5) | Por que funciona | Modelo para adaptar | Visualizações |
+|---|---|---|---|---|---|---|
 
-Tipos: curiosidade, erro comum, lista/número, "pare de...", identificação ("se você é
-a mãe que..."), antes e depois, segredo/revelação, contraintuitivo, POV, pergunta,
-desafio, urgência, autoridade ("depois de 10 anos...").
+- **Modelo para adaptar:** a estrutura do gancho com lacunas, sem os dados da gringa
+  (ex.: "[N] dias para [resultado]: dia [X]").
+- **Visualizações:** só se aparecer no print; senão, "não aparece".
 
-Depois: **os padrões de gancho mais usados pelo perfil** e uma **fórmula reutilizável**
-de cada um (ex.: "[Número] coisas que [público] faz e [consequência]").
+**Régua do gancho forte** (dê a nota de força por ela):
+1. Tem tensão? Frase cortada, contraste, confissão ou pergunta que incomoda.
+2. É específico? Número, prazo, preço, cena real.
+3. Diz para quem é? A pessoa se reconhece.
+4. É inesperado? Vai contra o que todo mundo fala no nicho.
+5. Tem prova ou verdade por trás?
+6. Cabe em 12 palavras?
+
+Depois da tabela:
+- **⭐ Ganchos para o banco:** liste só os de força 4 ou 5, prontos para anotar no
+  Banco das Gringas (original + tradução + por que funciona + modelo + visualizações).
+- **Padrões de gancho** que o perfil mais repete.
+- **3 versões em PT-BR** para cada gancho de força 4 ou 5, com a mesma força do
+  original. Nada de clichê: proibido "dicas para", "você sabia", "ninguém te conta",
+  "aprenda a", "confira". Se a adaptação ficar mais fraca que o original, refaça.
+- Nunca invente números para a versão adaptada: use [preencher].
 
 ### 🎬 6. Formatos e estética
 - Formatos que dominam (Reels falados, trends, carrossel educativo, foto, meme,
@@ -110,7 +127,8 @@ Priorize o projeto principal (mães e mulheres compartilhando conhecimento em
 carrosséis e vendendo produtos digitais) e conecte com os outros projetos quando fizer
 sentido (catequese, cuidado do lar, finanças para famílias cristãs):
 - **3 a 5 ideias de produto** inspiradas, com nome sugerido e faixa de preço em R$
-- **10 ideias de conteúdo** (título/gancho em PT-BR + formato)
+- **10 ideias de conteúdo** (gancho forte em PT-BR + formato), de preferência
+  derivadas dos ganchos de força 4 ou 5 desta análise
 - **Uma bio modelo** em português seguindo a mesma fórmula
 - O que **não** copiar (algo que não funcionaria aqui ou que fere a identidade cristã)
 
