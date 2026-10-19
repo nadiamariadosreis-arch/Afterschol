@@ -3,39 +3,36 @@
 <head>
 <meta charset="utf-8">
 <style>
-  @font-face { font-family:'Fredoka'; src:url('fontes/FredokaOne-Regular.ttf'); }
-  @font-face { font-family:'Amatic'; src:url('fontes/AmaticSC-Bold.ttf'); font-weight:700; }
-  :root { --creme:#FFF3B0; --rosa:#F0689B; --branco:#FFFBEF; }
+  @font-face { font-family:'Playfair'; src:url('fontes/playfair-display-latin-800-normal.woff2'); font-weight:800; }
+  @font-face { font-family:'Playfair'; src:url('fontes/playfair-display-latin-900-normal.woff2'); font-weight:900; }
+  @font-face { font-family:'Playfair'; src:url('fontes/playfair-display-latin-800-italic.woff2'); font-weight:800; font-style:italic; }
+  @font-face { font-family:'Caveat'; src:url('fontes/caveat-latin-700-normal.woff2'); font-weight:700; }
+  @font-face { font-family:'Montserrat'; src:url('fontes/montserrat-latin-700-normal.woff2'); font-weight:700; }
+  :root { --creme:#FDF3E7; --laranja:#F97316; --marrom:#3B2A20; --ferrugem:#B5451B; --verde:#4F6B3F; }
   * { box-sizing:border-box; margin:0; padding:0; }
   html, body { width:1080px; height:960px; overflow:hidden; }
-  body { background:#2A1A10; font-family:'Fredoka',sans-serif; color:var(--creme); position:relative; }
-  /* fundo: mesa aconchegante, luz dourada de fim de tarde */
-  .fundo { position:absolute; inset:0;
-    background:
-      radial-gradient(ellipse at 85% 8%, rgba(255,196,96,.55) 0%, rgba(255,196,96,0) 45%),
-      radial-gradient(ellipse at 10% 100%, rgba(240,104,155,.16) 0%, rgba(240,104,155,0) 50%),
-      linear-gradient(180deg, #4A2E1B 0%, #2A1A10 100%); }
-  .luz { position:absolute; border-radius:50%; background:rgba(255,214,130,.20); filter:blur(6px); }
+  body { font-variant-numeric:lining-nums; background:var(--creme); font-family:'Playfair',serif; color:var(--marrom); position:relative; }
+  .fundo { position:absolute; inset:0; background:radial-gradient(ellipse at 90% 0%, #FFE6CC 0%, rgba(255,230,204,0) 55%); }
+  .estrela { position:absolute; right:70px; top:60px; font-size:64px; color:var(--laranja); }
   .scene { position:absolute; inset:0; padding:60px 80px; display:flex; flex-direction:column;
            justify-content:center; align-items:center; text-align:center; gap:30px; opacity:0; }
   .item { opacity:0; }
-  .num { font-size:60px; color:var(--rosa); line-height:1; }
-  .titulo { font-size:100px; line-height:1.12; text-transform:lowercase; letter-spacing:-1px; }
+  .num { width:96px; height:96px; border-radius:50%; background:var(--laranja); color:#fff; font-family:'Montserrat'; font-weight:700;
+         font-size:54px; display:flex; align-items:center; justify-content:center; }
+  .titulo { font-weight:800; font-size:100px; line-height:1.12; letter-spacing:-1px; }
   .titulo .w { display:inline-block; opacity:0; margin:0 .12em; }
-  .titulo em { font-style:normal; font-size:1.3em; background:linear-gradient(transparent 62%, rgba(255,243,176,.30) 62% 90%, transparent 90%); }
-  .mao { font-family:'Amatic'; font-weight:700; font-size:92px; line-height:1; color:var(--branco); }
-  .mao u { text-decoration:none; background:linear-gradient(transparent 80%, var(--rosa) 80% 92%, transparent 92%); padding:0 6px; }
-  .valor { font-size:170px; line-height:1; color:var(--creme); }
-  .valor small { font-size:.42em; }
-  .estrela { color:var(--creme); font-size:54px; }
+  .titulo em { font-style:italic; color:var(--laranja); background:linear-gradient(transparent 86%, var(--laranja) 86% 94%, transparent 94%); }
+  .mao { font-family:'Caveat'; font-weight:700; font-size:92px; line-height:1; color:var(--laranja); }
+  .mao u { text-decoration:none; color:var(--marrom); background:linear-gradient(transparent 84%, var(--laranja) 84% 94%, transparent 94%); padding:0 6px; }
+  .valor { font-weight:900; font-size:170px; line-height:1; color:var(--laranja); }
   .moldura { position:relative; width:860px; }
-  .moldura img { display:block; width:100%; border-radius:30px; box-shadow:0 20px 50px rgba(0,0,0,.45); }
+  .moldura img { display:block; width:100%; border-radius:30px; box-shadow:0 14px 40px rgba(59,42,32,.22); }
   .moldura svg { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
-  .capa { height:880px; width:auto; border-radius:26px; box-shadow:0 20px 50px rgba(0,0,0,.5); display:block; }
+  .capa { height:880px; width:auto; border-radius:26px; box-shadow:0 14px 40px rgba(59,42,32,.28); display:block; }
 </style>
 </head>
 <body>
-<div class="fundo"></div>
+<div class="fundo"></div><div class="estrela">✦</div>
 <script>
 const ease = {
   out: x => 1 - Math.pow(1 - x, 3),
@@ -45,13 +42,6 @@ const clamp = (x, a = 0, b = 1) => Math.min(b, Math.max(a, x));
 const fmt = (v, dec) => v.toLocaleString('pt-BR', { minimumFractionDigits: dec, maximumFractionDigits: dec });
 const FADE = 0.9;      // entrada/saída de cada cena: lenta e suave
 const ITEM = 0.9;      // entrada de cada item
-
-// bolinhas de luz douradas, bem lentas
-[[120,140,150],[880,90,110],[960,720,170],[60,820,120],[520,40,90]].forEach(([x,y,r],i) => {
-  const d = document.createElement('div'); d.className = 'luz';
-  d.style.cssText = `left:${x - r/2}px;top:${y - r/2}px;width:${r}px;height:${r}px`;
-  d.dataset.i = i; document.body.appendChild(d);
-});
 
 let scenes = [];
 
@@ -73,7 +63,7 @@ function build(cfg) {
       else if (it.type === 'capa') { n.innerHTML = '<img class="capa" src="' + it.src + '">'; }
       else if (it.type === 'print') {
         n.classList.add('moldura'); n.style.width = (it.w || 860) + 'px';
-        n.innerHTML = '<img src="' + it.src + '"><svg viewBox="' + it.vb + '" fill="none" stroke="#F0689B" stroke-width="9" stroke-linecap="round">' +
+        n.innerHTML = '<img src="' + it.src + '"><svg viewBox="' + it.vb + '" fill="none" stroke="#F97316" stroke-width="9" stroke-linecap="round">' +
           it.ovais.map(o => '<ellipse cx="' + o.cx + '" cy="' + o.cy + '" rx="' + o.rx + '" ry="' + o.ry + '" pathLength="1" stroke-dasharray="1" stroke-dashoffset="1" transform="rotate(-2 ' + o.cx + ' ' + o.cy + ')"/>').join('') + '</svg>';
         it.svgs = n.querySelectorAll('ellipse');
       }
@@ -89,11 +79,7 @@ function build(cfg) {
 }
 
 function setT(t) {
-  document.querySelectorAll('.luz').forEach(d => {
-    const i = +d.dataset.i;
-    d.style.transform = `translate(${Math.sin(t / 5 + i) * 14}px, ${Math.cos(t / 6 + i) * 10}px)`;
-    d.style.opacity = .7 + .3 * Math.sin(t / 3 + i);
-  });
+  document.querySelector('.estrela').style.opacity = .75 + .25 * Math.sin(t * 1.2);
   scenes.forEach(sc => {
     const o = ease.inout(clamp((t - sc.in) / FADE)) * (sc.out === undefined ? 1 : ease.inout(clamp((sc.out - t) / FADE)));
     sc.el.style.opacity = o;

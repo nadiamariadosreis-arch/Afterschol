@@ -49,7 +49,7 @@ PARTE2 = dict(nome="parte2-explicacao", dur=16.1675, scenes=[
     dict(**{"in": 8.5}, items=[
         dict(type="mao", html="e o resultado?", t0=8.6),
         dict(type="print", src="print-painel-vendas.png", vb=VB, w=720, ovais=OVAIS(10.1, 12.5), t0=9.4, zoom=0.03, zoomDur=6),
-        dict(type="mao", html="só do material da <u>Santa Missa</u>", t0=14.4),
+        dict(type="mao", html="só deste <u>material</u>", t0=14.4),
     ]),
 ])
 
