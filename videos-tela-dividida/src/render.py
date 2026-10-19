@@ -8,47 +8,48 @@ FPS = 30
 
 CAPA = "capa-carrossel.png"
 
+VB = "0 0 1220 1064"
+OVAIS = lambda t1, t2: [dict(cx=350, cy=158, rx=200, ry=48, t0=t1), dict(cx=253, cy=415, rx=108, ry=42, t0=t2)]
+
 PARTE1 = dict(nome="parte1-explicacao", dur=34.125, scenes=[
-    dict(**{"in": 0.15}, out=10.4, items=[
-        dict(type="badge", text="1", t0=0.2),
-        dict(type="words", html="Um título ligado ao <em>seu material</em>", t0=0.6, dur=2.4),
-        dict(type="tag", html="Ex.: e-book sobre a Santa Missa", t0=4.8, cls="tag"),
-        dict(type="sub", html="Meu título era:", t0=8.7, cls="sub"),
+    dict(**{"in": 0.2}, out=10.4, items=[
+        dict(type="num", html="1", t0=0.3),
+        dict(type="titulo", html="título ligado ao seu <em>material</em>", t0=0.7, dur=2.6),
+        dict(type="mao", html="ex.: e-book da <u>Santa Missa</u>", t0=5.0),
     ]),
-    dict(**{"in": 10.5}, out=14.6, items=[
-        dict(type="img", src=CAPA, t0=10.6),
+    dict(**{"in": 10.6}, out=14.5, items=[
+        dict(type="capa", src=CAPA, t0=10.7, zoom=0.04, zoomDur=4),
     ]),
     dict(**{"in": 14.7}, out=21.3, items=[
-        dict(type="sub", html="Só esse post me trouxe:", t0=14.8, cls="sub"),
-        dict(type="count", to=2500, prefix="+", t0=16.3, dur=1.2),
-        dict(type="tag", html="seguidores no 1º dia", t0=17.1, cls="tag"),
-        dict(type="count", to=600, prefix="+R$ ", t0=19.0, dur=0.9, xl=True),
-        dict(type="tag", html="em vendas", t0=20.0, cls="tag"),
+        dict(type="mao", html="esse post me trouxe", t0=14.9),
+        dict(type="valor", to=2500, prefix="+", t0=16.3, dur=1.6),
+        dict(type="mao", html="seguidores no 1º dia", t0=17.3),
+        dict(type="valor", to=600, prefix="+R$ ", t0=19.0, dur=1.2),
+        dict(type="mao", html="em <u>vendas</u>", t0=20.0),
     ]),
-    dict(**{"in": 21.4}, out=31.8, items=[
-        dict(type="badge", text="2", t0=21.5),
-        dict(type="words", html="Um <em>passo a passo</em> aplicável", t0=21.9, dur=2.4),
-        dict(type="gold", html="Eu não escondi o ouro", t0=25.4, cls="gold"),
-        dict(type="check", html="Só de ler, a pessoa já sabia o que fazer", t0=27.0, cls=""),
+    dict(**{"in": 21.5}, out=31.8, items=[
+        dict(type="num", html="2", t0=21.6),
+        dict(type="titulo", html="um <em>passo a passo</em> aplicável", t0=22.0, dur=2.8),
+        dict(type="mao", html="eu não escondi <u>o ouro</u>", t0=25.4),
+        dict(type="mao", html="só de ler, já sabia o que fazer", t0=27.2),
     ]),
     dict(**{"in": 32.0}, items=[
-        dict(type="badge", text="3", t0=32.1),
-        dict(type="words", html="Um caminho <em>ainda mais fácil</em>", t0=32.4, dur=1.5),
+        dict(type="num", html="3", t0=32.1),
+        dict(type="titulo", html="um caminho <em>ainda mais fácil</em>", t0=32.4, dur=1.6),
     ]),
 ])
 
 PARTE2 = dict(nome="parte2-explicacao", dur=16.1675, scenes=[
-    dict(**{"in": -1}, out=8.2, items=[
-        dict(type="badge", text="3", t0=-1),
-        dict(type="words", html="Um caminho <em>ainda mais fácil</em>", t0=-2, dur=1.0),
-        dict(type="sub", html="para conseguir o que o título prometia", t0=3.6, cls="sub"),
-        dict(type="gold", html="O meu material", t0=6.6, cls="gold"),
+    dict(**{"in": -3}, out=8.3, items=[
+        dict(type="num", html="3", t0=-3),
+        dict(type="titulo", html="um caminho <em>ainda mais fácil</em>", t0=-4, dur=1.0),
+        dict(type="mao", html="para conseguir o que o título prometia", t0=3.8),
+        dict(type="mao", html="o meu <u>material</u>", t0=6.6),
     ]),
-    dict(**{"in": 8.3}, items=[
-        dict(type="sub", html="E o resultado?", t0=8.4, cls="sub"),
-        dict(type="count", to=38769.26, dec=2, prefix="R$ ", t0=9.6, dur=2.0, xl=True),
-        dict(type="count", to=1900, prefix="+", suffix=" vendas", t0=12.4, dur=1.3),
-        dict(type="tag", html="só do material da Santa Missa", t0=14.2, cls="tag"),
+    dict(**{"in": 8.5}, items=[
+        dict(type="mao", html="e o resultado?", t0=8.6),
+        dict(type="print", src="print-painel-vendas.png", vb=VB, w=720, ovais=OVAIS(10.1, 12.5), t0=9.4, zoom=0.03, zoomDur=6),
+        dict(type="mao", html="só do material da <u>Santa Missa</u>", t0=14.4),
     ]),
 ])
 
