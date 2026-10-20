@@ -44,6 +44,11 @@
   .post .foto.b { background:linear-gradient(160deg,#FFE6CC,#B5451B); }
   .post .foto.c { background:linear-gradient(160deg,#F9E3B4,#4F6B3F); }
   .post .co { margin-top:14px; color:var(--laranja); font-size:34px; line-height:1; }
+  /* modo transparente: sem fundo; as letras ganham um halo creme para aparecer sobre o vídeo */
+  html.alpha, html.alpha body { background:transparent; }
+  html.alpha .fundo { display:none; }
+  html.alpha .titulo, html.alpha .mao, html.alpha .valor, html.alpha .bol .nome {
+    text-shadow:0 0 6px #FDF3E7, 0 0 14px #FDF3E7, 0 0 26px rgba(253,243,231,.95), 0 2px 10px rgba(59,42,32,.25); }
 </style>
 </head>
 <body>
@@ -158,6 +163,7 @@ function setT(t) {
     });
   });
 }
+if (location.search.includes('alpha')) document.documentElement.classList.add('alpha');
 window.start = cfg => { build(cfg); setT(0); };
 </script>
 </body>

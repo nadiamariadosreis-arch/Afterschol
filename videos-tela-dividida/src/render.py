@@ -5,6 +5,7 @@ from playwright.sync_api import sync_playwright
 AQUI = os.path.dirname(os.path.abspath(__file__))
 SAIDA = os.path.dirname(AQUI)
 FPS = 30
+ALPHA = os.environ.get("ALPHA") == "1"   # ALPHA=1: fundo transparente (.mov e .webm)
 
 CAPA = "capa-carrossel.png"
 
@@ -86,7 +87,15 @@ def renderiza(cfg, pagina, tmp):
     pagina.evaluate("cfg => window.start(cfg)", cfg)
     for i in range(total):
         pagina.evaluate("t => setT(t)", i / FPS)
-        pagina.screenshot(path=f"{tmp}/f{i:05d}.png")
+        pagina.screenshot(path=f"{tmp}/f{i:05d}.png", omit_background=ALPHA)
+    if ALPHA:
+        base = os.path.join(SAIDA, cfg["nome"] + "-transparente")
+        ent = ["ffmpeg", "-y", "-loglevel", "error", "-framerate", str(FPS), "-i", f"{tmp}/f%05d.png"]
+        subprocess.run(ent + ["-c:v", "prores_ks", "-profile:v", "4444", "-pix_fmt", "yuva444p10le", base + ".mov"], check=True)
+        subprocess.run(ent + ["-c:v", "libvpx-vp9", "-pix_fmt", "yuva420p", "-b:v", "0", "-crf", "20", "-auto-alt-ref", "0", base + ".webm"], check=True)
+        shutil.rmtree(tmp, ignore_errors=True)
+        print("ok", base)
+        return
     saida = os.path.join(SAIDA, cfg["nome"] + ".mp4")
     subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-framerate", str(FPS), "-i", f"{tmp}/f%05d.png",
                     "-c:v", "libx264", "-pix_fmt", "yuv420p", "-crf", "17", "-movflags", "+faststart", saida], check=True)
@@ -101,6 +110,6 @@ if __name__ == "__main__":
         b = p.chromium.launch(executable_path="/opt/pw-browsers/chromium-1194/chrome-linux/chrome")
         for n in escolha:
             pg = b.new_page(viewport={"width": 1080, "height": 960})
-            pg.goto("file://" + os.path.join(AQUI, "painel.html"))
+            pg.goto("file://" + os.path.join(AQUI, "painel.html") + ("?alpha=1" if ALPHA else ""))
             renderiza({"1": PARTE1, "2": PARTE2, "3": PARTE3}[n], pg, tmp)
         b.close()
