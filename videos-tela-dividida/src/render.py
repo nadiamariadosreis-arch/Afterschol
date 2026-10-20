@@ -54,6 +54,28 @@ PARTE2 = dict(nome="parte2-explicacao", dur=16.1675, scenes=[
 ])
 
 
+PARTE3 = dict(nome="parte3-explicacao", dur=17.0, scenes=[
+    dict(**{"in": 0.2}, out=4.3, items=[
+        dict(type="mao", html="foi aí que eu percebi", t0=0.4),
+        dict(type="titulo", html="uma coisa muito <em>interessante</em>", t0=1.4, dur=2.2),
+    ]),
+    dict(**{"in": 4.5}, out=7.6, items=[
+        dict(type="titulo", html="comecei a <em>seguir</em> outra pessoa", t0=4.7, dur=2.2),
+        dict(type="mao", html="no <u>Instagram</u>", t0=6.5),
+    ]),
+    dict(**{"in": 7.8}, out=11.5, items=[
+        dict(type="mao", html="os conteúdos dela", t0=8.0),
+        dict(type="cards", ts=[8.9, 9.6, 10.3]),
+        dict(type="mao", html="um atrás do outro", t0=10.6),
+    ]),
+    dict(**{"in": 11.7}, items=[
+        dict(type="mao", html="os stories dela ficavam", t0=11.9),
+        dict(type="stories", ts=[12.4, 12.8, 13.2], tm=14.3, dur=1.6),
+        dict(type="mao", html="<u>na frente</u> dos outros", t0=14.8),
+    ]),
+])
+
+
 def renderiza(cfg, pagina, tmp):
     for it in [i for s in cfg["scenes"] for i in s["items"]]:
         pass
@@ -80,5 +102,5 @@ if __name__ == "__main__":
         for n in escolha:
             pg = b.new_page(viewport={"width": 1080, "height": 960})
             pg.goto("file://" + os.path.join(AQUI, "painel.html"))
-            renderiza(PARTE1 if n == "1" else PARTE2, pg, tmp)
+            renderiza({"1": PARTE1, "2": PARTE2, "3": PARTE3}[n], pg, tmp)
         b.close()

@@ -29,6 +29,21 @@
   .moldura img { display:block; width:100%; border-radius:30px; box-shadow:0 14px 40px rgba(59,42,32,.22); }
   .moldura svg { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
   .capa { height:880px; width:auto; border-radius:26px; box-shadow:0 14px 40px rgba(59,42,32,.28); display:block; }
+  .stories { margin-top:44px; position:relative; width:900px; height:350px; }
+  .bol { position:absolute; top:0; width:270px; text-align:center; opacity:0; }
+  .bol .anel { width:270px; height:270px; border-radius:50%; padding:7px;
+               background:conic-gradient(from 200deg, #F9A825, #F97316, #E1306C, #C13584, #F9A825); }
+  .bol .anel img { width:100%; height:100%; border-radius:50%; border:7px solid #FDF3E7; display:block; background:#fff; }
+  .bol .nome { font-family:'Montserrat'; font-weight:700; font-size:28px; margin-top:16px; color:var(--marrom); }
+  .cards { display:flex; gap:34px; }
+  .post { width:230px; height:300px; border-radius:26px; background:#fff; box-shadow:0 12px 30px rgba(59,42,32,.18); padding:18px; opacity:0; }
+  .post .topo { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+  .post .av { width:38px; height:38px; border-radius:50%; background:linear-gradient(135deg,#F9A825,#F97316); }
+  .post .li { height:12px; border-radius:6px; background:#EBDCCB; flex:1; }
+  .post .foto { height:170px; border-radius:16px; background:linear-gradient(160deg,#FFD9B0,#F97316); }
+  .post .foto.b { background:linear-gradient(160deg,#FFE6CC,#B5451B); }
+  .post .foto.c { background:linear-gradient(160deg,#F9E3B4,#4F6B3F); }
+  .post .co { margin-top:14px; color:var(--laranja); font-size:34px; line-height:1; }
 </style>
 </head>
 <body>
@@ -57,6 +72,17 @@ function build(cfg) {
         n.classList.add('titulo');
         it.ws = it.html.split(' ').map(w => { const s = document.createElement('span'); s.className = 'w'; s.innerHTML = w; n.appendChild(s); n.appendChild(document.createTextNode(' ')); return s; });
         n.style.opacity = 1;
+      }
+      else if (it.type === 'stories') {
+        n.classList.add('stories');
+        const quem = [['story-jun.png','jun_yuh'],['story-abigail.png','abigailpeugh'],['story-eleva.png','elevaconapo']];
+        it.bol = quem.map(([src, nome]) => { const b = document.createElement('div'); b.className = 'bol';
+          b.innerHTML = '<div class="anel"><img src="' + src + '"></div><div class="nome">' + nome + '</div>'; n.appendChild(b); return b; });
+      }
+      else if (it.type === 'cards') {
+        n.classList.add('cards');
+        it.cs = ['', 'b', 'c'].map(k => { const c = document.createElement('div'); c.className = 'post';
+          c.innerHTML = '<div class="topo"><div class="av"></div><div class="li"></div></div><div class="foto ' + k + '"></div><div class="co">♡</div>'; n.appendChild(c); return c; });
       }
       else if (it.type === 'mao') { n.classList.add('mao'); n.innerHTML = it.html; }
       else if (it.type === 'valor') { n.classList.add('valor'); }
@@ -91,6 +117,29 @@ function setT(t) {
           w.style.opacity = p;
           w.style.transform = 'translateY(' + (1 - p) * 18 + 'px)';
         });
+        return;
+      }
+      if (it.type === 'stories') {
+        const ini = [0, 1, 2], fim = [1, 2, 0], pitch = 315;
+        const q = ease.inout(clamp((t - it.tm) / it.dur)), arco = Math.sin(Math.PI * q);
+        it.bol.forEach((b, i) => {
+          const a = ease.out(clamp((t - it.ts[i]) / ITEM));
+          const slot = ini[i] + (fim[i] - ini[i]) * q;
+          const mov = i === 2;
+          b.style.opacity = a;
+          b.style.left = slot * pitch + 'px';
+          b.style.transform = 'translateY(' + ((1 - a) * 24 + (mov ? -22 * arco : 0)) + 'px) scale(' + (mov ? 1 + .14 * arco : 1) + ')';
+          b.style.zIndex = mov ? 5 : 1; b.lastChild.style.opacity = mov ? 1 - arco : 1;
+          const g = mov ? clamp((t - (it.tm - .5)) / .5) * (1 - clamp((t - (it.tm + it.dur + .6)) / 1)) : 0;
+          b.firstChild.style.boxShadow = '0 0 ' + 46 * g + 'px ' + 10 * g + 'px rgba(249,115,22,' + .55 * g + ')';
+        });
+        it.el.style.opacity = 1; it.el.style.transform = 'none';
+        return;
+      }
+      if (it.type === 'cards') {
+        it.cs.forEach((c, i) => { const a = ease.out(clamp((t - it.ts[i]) / ITEM));
+          c.style.opacity = a; c.style.transform = 'translateX(' + (1 - a) * -60 + 'px) rotate(' + (i - 1) * 2.5 + 'deg)'; });
+        it.el.style.opacity = 1; it.el.style.transform = 'none';
         return;
       }
       const p = ease.out(clamp((t - it.t0) / ITEM));
