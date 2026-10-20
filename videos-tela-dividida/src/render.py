@@ -3,6 +3,7 @@ import os, shutil, subprocess, sys
 from playwright.sync_api import sync_playwright
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, AQUI)
 SAIDA = os.path.dirname(AQUI)
 FPS = 30
 ALPHA = os.environ.get("ALPHA") == "1"   # ALPHA=1: fundo transparente (.mov e .webm)
@@ -77,87 +78,7 @@ PARTE3 = dict(nome="parte3-explicacao", dur=17.0, scenes=[
 ])
 
 
-PARTE4 = dict(nome="parte4-explicacao", dur=79.5, scenes=[
-    # "se as pessoas me seguissem, o Instagram mostraria outros conteúdos meus"
-    dict(**{"in": 0.2}, out=5.2, items=[
-        dict(type="mao", html="se a pessoa me seguisse", t0=0.5),
-        dict(type="titulo", html="o Instagram mostraria <em>outros conteúdos</em> meus", t0=1.6, dur=3.0),
-    ]),
-    # "precisaria postar todo santo dia"
-    dict(**{"in": 5.4}, out=10.4, items=[
-        dict(type="mao", html="foi aqui que eu entendi", t0=5.6),
-        dict(type="titulo", html="preciso postar <em>todo santo dia</em>", t0=7.0, dur=2.4),
-    ]),
-    # "como eu vou fazer a pessoa me seguir?"
-    dict(**{"in": 10.5}, out=17.3, items=[
-        dict(type="mao", html="tá bom, entendi...", t0=10.7),
-        dict(type="titulo", html="e como faço a pessoa <em>me seguir</em>?", t0=12.6, dur=3.2),
-    ]),
-    # "estratégia de turbinar os meus carrosséis"
-    dict(**{"in": 17.4}, out=22.7, items=[
-        dict(type="mao", html="foi aí que comecei a", t0=17.6),
-        dict(type="titulo", html="<em>turbinar</em> meus carrosséis", t0=19.0, dur=3.0),
-    ]),
-    # "investir o mínimo, ter o máximo de retorno"
-    dict(**{"in": 22.8}, out=27.9, items=[
-        dict(type="mao", html="a regra era simples", t0=23.0),
-        dict(type="titulo", html="investir o <em>mínimo</em>", t0=24.6, dur=1.6),
-        dict(type="titulo", html="ter o <em>máximo</em> de retorno", t0=26.2, dur=1.8),
-    ]),
-    # "teste de um dia só; se não saiu bem, retirava"
-    dict(**{"in": 28.1}, out=35.0, items=[
-        dict(type="mao", html="o teste de cada post", t0=28.3),
-        dict(type="valor", texto="1 dia só", t0=29.6),
-        dict(type="mao", html="não saiu bem? <u>já retirava</u>", t0=32.4),
-    ]),
-    # "pagar até R$ 1 por seguidor"
-    dict(**{"in": 35.1}, out=40.0, items=[
-        dict(type="mao", html="a meta era pagar até", t0=35.3),
-        dict(type="valor", texto="R$ 1", t0=36.6),
-        dict(type="mao", html="por seguidor", t0=37.6),
-    ]),
-    # "cheguei a pagar R$ 0,23"
-    dict(**{"in": 40.1}, out=41.9, items=[
-        dict(type="mao", html="mas cheguei a pagar", t0=40.2),
-        dict(type="valor", to=0.23, dec=2, prefix="R$ ", t0=40.9, dur=1.0),
-    ]),
-    # "o custo mais alto foi 58 centavos"
-    dict(**{"in": 42.0}, out=46.9, items=[
-        dict(type="mao", html="o custo mais alto", t0=42.2),
-        dict(type="valor", to=0.58, dec=2, prefix="R$ ", t0=44.2, dur=1.2),
-        dict(type="mao", html="por seguidor", t0=45.6),
-    ]),
-    # "de 10 a 25 pessoas por dia, a um custo de R$ 6"
-    dict(**{"in": 47.0}, out=54.0, items=[
-        dict(type="mao", html="isso significava", t0=47.2),
-        dict(type="valor", texto="10 a 25", t0=48.4),
-        dict(type="mao", html="pessoas por dia no meu perfil", t0=49.8),
-        dict(type="mao", html="a um custo de", t0=52.0),
-        dict(type="valor", texto="R$ 6", t0=52.9),
-    ]),
-    # "o que aconteceu depois me surpreendeu"
-    dict(**{"in": 54.1}, out=58.4, items=[
-        dict(type="titulo", html="o que aconteceu depois me <em>surpreendeu</em>", t0=54.4, dur=3.2),
-    ]),
-    # "200, 300 seguidores chegando no orgânico"
-    dict(**{"in": 58.5}, out=63.4, items=[
-        dict(type="valor", texto="200 a 300", t0=58.9),
-        dict(type="mao", html="seguidores chegando no <u>orgânico</u>", t0=60.0),
-        dict(type="mao", html="por causa da estratégia", t0=61.9),
-    ]),
-    # "chegavam nos posts que eu não turbinava"
-    dict(**{"in": 63.5}, out=70.4, items=[
-        dict(type="mao", html="e eles chegavam nos posts", t0=63.8),
-        dict(type="mao", html="que eu <u>não turbinei</u>", t0=65.7),
-        dict(type="mao", html="isso fica para o próximo vídeo", t0=67.9),
-    ]),
-    # "então já me segue..."
-    dict(**{"in": 70.6}, items=[
-        dict(type="titulo", html="<em>me segue</em> para ficar por dentro", t0=70.9, dur=3.2),
-        dict(type="mao", html="e aprender a empreender", t0=75.0),
-        dict(type="mao", html="mesmo sem <u>aparecer</u>", t0=77.0),
-    ]),
-])
+from cenas import PARTE4
 
 
 def renderiza(cfg, pagina, tmp):

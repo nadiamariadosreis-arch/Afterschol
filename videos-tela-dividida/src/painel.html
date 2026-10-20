@@ -49,6 +49,33 @@
   html.alpha .fundo { display:none; }
   html.alpha .titulo, html.alpha .mao, html.alpha .valor, html.alpha .bol .nome {
     text-shadow:0 0 6px #FDF3E7, 0 0 14px #FDF3E7, 0 0 26px rgba(253,243,231,.95), 0 2px 10px rgba(59,42,32,.25); }
+  /* ---- desenhos e anotações (tipo "cena") ---- */
+  .lin { display:flex; align-items:center; justify-content:center; gap:26px; }
+  .col { display:flex; flex-direction:column; align-items:center; gap:14px; }
+  svg [data-d] { stroke-dasharray:1; stroke-dashoffset:1; fill:none; stroke:var(--laranja); stroke-width:9; stroke-linecap:round; stroke-linejoin:round; opacity:0; }
+  svg [data-d].dk { stroke:var(--marrom); }
+  svg [data-d].gr { stroke:var(--verde); stroke-width:11; }
+  .anelado { position:relative; display:inline-block; padding:0 .12em; }
+  .anelado svg.rg { position:absolute; left:-9%; top:-16%; width:118%; height:132%; overflow:visible; pointer-events:none; }
+  .btn { position:relative; font-family:'Montserrat'; font-weight:700; font-size:34px; color:#fff; background:var(--laranja); padding:14px 40px; border-radius:40px; }
+  .btn .b { display:none; }
+  .btn.on { background:var(--verde); }
+  .btn.on .a { display:none; } .btn.on .b { display:inline; }
+  .rip { position:absolute; left:50%; top:50%; width:100px; height:100px; margin:-50px 0 0 -50px; border-radius:50%; border:6px solid var(--marrom); opacity:0; }
+  .nomep { font-family:'Montserrat'; font-weight:700; font-size:28px; color:var(--marrom); }
+  .dia { position:relative; width:104px; height:104px; border-radius:22px; background:#fff; box-shadow:0 8px 22px rgba(59,42,32,.16);
+         font-family:'Montserrat'; font-weight:700; font-size:34px; color:var(--marrom); display:flex; align-items:center; justify-content:center; }
+  .dia svg { position:absolute; inset:14px; width:76px; height:76px; overflow:visible; }
+  .mp { position:relative; width:130px; height:170px; border-radius:18px; background:#fff; box-shadow:0 10px 24px rgba(59,42,32,.18); padding:12px; }
+  .mp .foto { height:104px; border-radius:10px; background:linear-gradient(160deg,#FFD9B0,#F97316); }
+  .mp .foto.b { background:linear-gradient(160deg,#FFE6CC,#B5451B); } .mp .foto.c { background:linear-gradient(160deg,#F9E3B4,#4F6B3F); }
+  .mp .li { height:10px; border-radius:5px; background:#EBDCCB; margin-top:14px; width:70%; }
+  .mp .bd { position:absolute; top:-14px; right:-14px; width:44px; height:44px; border-radius:50%; background:var(--laranja); color:#fff; font-family:'Montserrat'; font-weight:700; font-size:28px; display:flex; align-items:center; justify-content:center; }
+  .mp svg.x { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
+  .barras { display:flex; align-items:flex-end; gap:20px; height:210px; }
+  .barras div { width:78px; border-radius:14px 14px 0 0; background:var(--laranja); opacity:0; }
+  .pq { width:84px; height:84px; opacity:0; }
+  .estr { color:var(--laranja); font-size:70px; opacity:0; }
 </style>
 </head>
 <body>
@@ -89,6 +116,7 @@ function build(cfg) {
         it.cs = ['', 'b', 'c'].map(k => { const c = document.createElement('div'); c.className = 'post';
           c.innerHTML = '<div class="topo"><div class="av"></div><div class="li"></div></div><div class="foto ' + k + '"></div><div class="co">♡</div>'; n.appendChild(c); return c; });
       }
+      else if (it.type === 'cena') { n.innerHTML = it.html; n.querySelectorAll('[data-d]').forEach(e => e.setAttribute('pathLength', 1)); }
       else if (it.type === 'mao') { n.classList.add('mao'); n.innerHTML = it.html; }
       else if (it.type === 'valor') { n.classList.add('valor'); if (it.texto) n.innerHTML = it.texto; }
       else if (it.type === 'capa') { n.innerHTML = '<img class="capa" src="' + it.src + '">'; }
@@ -122,6 +150,24 @@ function setT(t) {
           w.style.opacity = p;
           w.style.transform = 'translateY(' + (1 - p) * 18 + 'px)';
         });
+        return;
+      }
+      if (it.type === 'cena') {
+        it.el.style.opacity = 1; it.el.style.transform = 'none';
+        it.el.querySelectorAll('.anelado').forEach(a => { const s = a.querySelector('svg.rg'), W = a.offsetWidth * 1.18, H = a.offsetHeight * 1.32;
+          if (!W || s.dataset.w == W + 'x' + H) return; s.dataset.w = W + 'x' + H; s.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+          const cx = W / 2, cy = H / 2, rx = W / 2 - 8, ry = H / 2 - 8;
+          s.querySelector('path').setAttribute('d', `M ${cx - rx} ${cy + ry * .1} C ${cx - rx} ${cy - ry * 1.35}, ${cx + rx} ${cy - ry * 1.35}, ${cx + rx} ${cy - ry * .05} C ${cx + rx} ${cy + ry * 1.3}, ${cx - rx * .95} ${cy + ry * 1.25}, ${cx - rx * 1.02} ${cy - ry * .15}`); });
+        it.el.querySelectorAll('[data-t]').forEach(e => { const T = +e.dataset.t, q = ease.out(clamp((t - T) / ITEM));
+          e.style.opacity = q; e.style.transform = 'translateY(' + (1 - q) * 18 + 'px) scale(' + (.94 + .06 * q) + ')'; });
+        it.el.querySelectorAll('[data-d]').forEach(e => { const T = +e.dataset.d, D = +(e.dataset.dur || .9);
+          e.style.strokeDashoffset = 1 - ease.inout(clamp((t - T) / D)); e.style.opacity = t >= T ? 1 : 0; });
+        it.el.querySelectorAll('[data-swap]').forEach(e => e.classList.toggle('on', t >= +e.dataset.swap));
+        it.el.querySelectorAll('[data-rip]').forEach(e => { const q = clamp((t - +e.dataset.rip) / .8);
+          e.style.opacity = (t >= +e.dataset.rip) ? (1 - q) * .9 : 0; e.style.transform = 'scale(' + (.5 + 1.1 * q) + ')'; });
+        it.el.querySelectorAll('[data-count]').forEach(e => { const [to, dec, pre, T, D] = e.dataset.count.split('|');
+          const q = ease.inout(clamp((t - +T) / +D)); e.style.opacity = ease.out(clamp((t - +T + .6) / ITEM));
+          e.textContent = pre + fmt(+to * q, +dec); });
         return;
       }
       if (it.type === 'stories') {
