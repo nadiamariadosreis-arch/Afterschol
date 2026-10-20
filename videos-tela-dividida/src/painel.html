@@ -90,7 +90,7 @@ function build(cfg) {
           c.innerHTML = '<div class="topo"><div class="av"></div><div class="li"></div></div><div class="foto ' + k + '"></div><div class="co">♡</div>'; n.appendChild(c); return c; });
       }
       else if (it.type === 'mao') { n.classList.add('mao'); n.innerHTML = it.html; }
-      else if (it.type === 'valor') { n.classList.add('valor'); }
+      else if (it.type === 'valor') { n.classList.add('valor'); if (it.texto) n.innerHTML = it.texto; }
       else if (it.type === 'capa') { n.innerHTML = '<img class="capa" src="' + it.src + '">'; }
       else if (it.type === 'print') {
         n.classList.add('moldura'); n.style.width = (it.w || 860) + 'px';
@@ -153,7 +153,7 @@ function setT(t) {
       if (it.zoom) s = 1 + it.zoom * clamp((t - it.t0) / (it.zoomDur || 4));   // aproximação lenta
       else s = 0.96 + 0.04 * p;
       it.el.style.transform = 'scale(' + s + ') translateY(' + ty + 'px)';
-      if (it.type === 'valor') {
+      if (it.type === 'valor' && !it.texto) {
         const q = ease.inout(clamp((t - it.t0) / it.dur));
         it.el.innerHTML = (it.prefix || '') + fmt(it.to * q, it.dec || 0) + (it.suffix || '');
       }
