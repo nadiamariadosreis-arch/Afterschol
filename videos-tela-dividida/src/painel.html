@@ -70,6 +70,7 @@
   .mp .foto { height:104px; border-radius:10px; background:linear-gradient(160deg,#FFD9B0,#F97316); }
   .mp .foto.b { background:linear-gradient(160deg,#FFE6CC,#B5451B); } .mp .foto.c { background:linear-gradient(160deg,#F9E3B4,#4F6B3F); }
   .mp .li { height:10px; border-radius:5px; background:#EBDCCB; margin-top:14px; width:70%; }
+  .mp.g { width:170px; height:220px; padding:14px; } .mp.g .foto { height:140px; } .mp.g .li { margin-top:18px; }
   .mp .bd { position:absolute; top:-14px; right:-14px; width:44px; height:44px; border-radius:50%; background:var(--laranja); color:#fff; font-family:'Montserrat'; font-weight:700; font-size:28px; display:flex; align-items:center; justify-content:center; }
   .mp svg.x { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
   .barras { display:flex; align-items:flex-end; gap:20px; height:210px; }
@@ -159,7 +160,10 @@ function setT(t) {
           const cx = W / 2, cy = H / 2, rx = W / 2 - 8, ry = H / 2 - 8;
           s.querySelector('path').setAttribute('d', `M ${cx - rx} ${cy + ry * .1} C ${cx - rx} ${cy - ry * 1.35}, ${cx + rx} ${cy - ry * 1.35}, ${cx + rx} ${cy - ry * .05} C ${cx + rx} ${cy + ry * 1.3}, ${cx - rx * .95} ${cy + ry * 1.25}, ${cx - rx * 1.02} ${cy - ry * .15}`); });
         it.el.querySelectorAll('[data-t]').forEach(e => { const T = +e.dataset.t, q = ease.out(clamp((t - T) / ITEM));
-          e.style.opacity = q; e.style.transform = 'translateY(' + (1 - q) * 18 + 'px) scale(' + (.94 + .06 * q) + ')'; });
+          const svgFilho = e instanceof SVGElement && e.tagName.toLowerCase() !== 'svg';
+          const o = e.dataset.out ? clamp((t - +e.dataset.out) / .7) : 0, so = ease.inout(o);
+          e.style.opacity = q * (1 - so);
+          if (!svgFilho) e.style.transform = 'translateY(' + ((1 - q) * 18 + so * 70) + 'px) rotate(' + so * 14 + 'deg) scale(' + (.94 + .06 * q) * (1 - .25 * so) + ')'; });
         it.el.querySelectorAll('[data-d]').forEach(e => { const T = +e.dataset.d, D = +(e.dataset.dur || .9);
           e.style.strokeDashoffset = 1 - ease.inout(clamp((t - T) / D)); e.style.opacity = t >= T ? 1 : 0; });
         it.el.querySelectorAll('[data-swap]').forEach(e => e.classList.toggle('on', t >= +e.dataset.swap));

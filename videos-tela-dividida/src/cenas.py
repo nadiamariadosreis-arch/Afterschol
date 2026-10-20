@@ -30,6 +30,15 @@ def calendario(t0, t_checks):
                  % (t0 + .12 * i, d, t_checks[i]) for i, d in enumerate(DIAS))
     return '<div class="lin" style="gap:12px">%s</div>' % cx
 
+def pessoas():
+    """25 pessoinhas: as 10 primeiras entram uma a uma, depois as outras 15 até completar 25."""
+    t = [48.8 + .13 * i for i in range(10)] + [50.4 + .09 * i for i in range(15)]
+    lin1 = "".join(av(60, round(t[i], 2)) for i in range(13))
+    lin2 = "".join(av(60, round(t[i], 2)) for i in range(13, 25))
+    tag = lambda txt, tt, out="": '<div class="mao" data-t="%s" %s style="position:absolute;top:142px;left:0;width:100%%;text-align:center;font-size:66px">%s</div>' % (tt, out, txt)
+    return ('<div style="position:relative;width:900px;height:220px"><div class="lin" style="gap:9px">%s</div><div class="lin" style="gap:9px;margin-top:8px">%s</div>'
+            '%s%s</div>') % (lin1, lin2, tag("10 pessoas", 49.9, 'data-out="50.5"'), tag("25 pessoas", 51.7))
+
 def cena(html): return dict(type="cena", html=html)
 
 PARTE4 = dict(nome="parte4-explicacao", dur=79.5, scenes=[
@@ -61,27 +70,34 @@ PARTE4 = dict(nome="parte4-explicacao", dur=79.5, scenes=[
              '<svg style="position:absolute;left:-30px;top:-30px;overflow:visible" width="360" height="240" viewBox="0 0 360 240">'
              '<path class="dk" data-d="21.3" data-dur="1.0" d="M20 190 C110 170 190 120 300 40"/><path class="dk" data-d="22.1" data-dur=".4" d="M240 36 L304 36 L304 100"/></svg></div>'),
     ]),
-    # 5a) "investir o mínimo, ter o máximo de retorno"
+    # 5a) "a regra era simples: investir o mínimo possível... ter o máximo de retorno possível"
     dict(**{"in": 22.8}, out=27.9, items=[
         dict(type="mao", html="a regra era simples", t0=23.0),
-        dict(type="titulo", html="investir o <em>mínimo</em>", t0=24.4, dur=1.4),
-        cena('<div class="lin">%s</div>' % seta("baixo", 70, 90, 25.9, .7)),
-        dict(type="titulo", html="ter o <em>máximo</em> de retorno", t0=26.4, dur=1.6),
+        cena('<div class="lin" style="gap:90px;align-items:flex-start"><div class="col"><div class="mao" data-t="24.2">investir o</div>%s'
+             '<div class="titulo" style="color:var(--laranja)" data-t="25.0">mínimo</div></div>'
+             '<div class="col"><div class="mao" data-t="26.0">ter o</div>%s<div class="titulo" style="color:var(--laranja)" data-t="26.8">máximo</div>'
+             '<div class="mao" data-t="27.1" style="font-size:70px">de retorno</div></div></div>' % (
+             seta("baixo", 90, 130, 24.6, .8), seta("cima", 90, 130, 26.3, .8))),
     ]),
-    # 5b) "teste de um dia só; se não saiu bem, eu já retirava"
+    # 5b) "teste de qual post ia melhor era de um dia só; se não saiu bem, eu já retirava"
     dict(**{"in": 28.1}, out=35.0, items=[
-        dict(type="mao", html="o teste de cada post", t0=28.3),
-        cena('<div class="valor" data-t="29.6">%s</div>' % anel("1 dia só", 30.6)),
-        cena('<div class="lin" style="gap:34px">%s<div class="mao" data-t="32.2">não saiu bem?<br><u>já retirava</u></div></div>' % (
-            minicard(31.6, "", '<svg class="x" viewBox="0 0 130 170"><path class="dk" data-d="33.4" data-dur=".4" d="M22 34 L108 134"/>'
-                              '<path class="dk" data-d="33.8" data-dur=".4" d="M108 34 L22 134"/></svg>'))),
+        dict(type="mao", html="teste de qual post vai melhor", t0=28.3),
+        cena('<div class="lin" style="gap:30px">%s%s%s</div>' % (
+            minicard(29.2).replace('class="mp"', 'class="mp g"'),
+            minicard(29.6, "b", '<svg class="x" viewBox="0 0 170 220"><path class="dk" data-d="33.2" data-dur=".4" d="M26 40 L144 180"/>'
+                                '<path class="dk" data-d="33.6" data-dur=".4" d="M144 40 L26 180"/></svg>').replace('class="mp"', 'class="mp g" data-out="34.2"').replace('data-t="29.6"', 'data-t="29.6"'),
+            minicard(30.0, "c").replace('class="mp"', 'class="mp g"'))),
+        cena('<div class="valor" data-t="31.0">%s</div>' % anel("1 dia só", 31.8)),
+        dict(type="mao", html="não saiu bem? <u>já retirava</u>", t0=32.5),
     ]),
     # 6) "a meta era pagar até R$ 1 por seguidor"
     dict(**{"in": 35.1}, out=40.0, items=[
         dict(type="mao", html="a meta era pagar até", t0=35.3),
-        cena('<div class="valor" data-t="36.6">%s</div>' % anel("R$ 1", 37.6)),
-        cena('<div class="lin">%s</div>' % seta("baixo", 60, 80, 37.9, .7)),
-        cena('<div class="lin" style="gap:18px">%s<div class="mao" data-t="38.4">por seguidor</div></div>' % av(100, 38.2)),
+        cena('<div class="valor" data-t="36.4">%s</div>' % anel("R$ 1", 37.4)),
+        cena('<div style="position:relative;width:760px;height:110px"><svg width="760" height="110" viewBox="0 0 760 110" style="overflow:visible"><path class="dk" data-d="37.0" data-dur="1.0" d="M10 96 C200 90 420 100 700 94"/>'
+             '<path class="dk" data-d="37.9" data-dur=".4" d="M700 96 L700 8"/><path data-t="38.2" fill="#F97316" stroke="none" d="M700 8 L762 30 L700 54 Z" style="stroke:none;fill:#F97316"/></svg>'
+             '<div class="mao" style="position:absolute;left:560px;top:-4px;font-size:64px" data-t="38.4">meta</div></div>'),
+        cena('<div class="lin" style="gap:18px">%s<div class="mao" data-t="38.8">por seguidor</div></div>' % av(100, 38.6)),
     ]),
     # 7) "cheguei a pagar R$ 0,23"
     dict(**{"in": 40.1}, out=42.1, items=[
@@ -97,10 +113,9 @@ PARTE4 = dict(nome="parte4-explicacao", dur=79.5, scenes=[
     # 9) "de 10 a 25 pessoas entrando por dia, a um custo de R$ 6"
     dict(**{"in": 47.0}, out=54.0, items=[
         dict(type="mao", html="isso significava", t0=47.2),
-        cena('<div class="valor" data-t="48.2">%s</div>' % anel("10 a 25", 49.4)),
-        cena('<div class="lin" style="gap:12px">%s<div class="mao" style="margin-left:16px" data-t="50.6">por dia</div></div>' %
-             "".join(av(78, 49.8 + .25 * i) for i in range(5))),
-        cena('<div class="lin" style="gap:24px"><div class="mao" data-t="52.1">a um custo de</div><div class="valor" data-t="52.9">%s</div></div>' % anel("R$ 6", 53.4)),
+        cena('<div class="valor" data-t="48.0">%s</div>' % anel("10 a 25", 51.6)),
+        cena(pessoas()),
+        cena('<div class="lin" style="gap:24px"><div class="mao" data-t="52.2">a um custo de</div><div class="valor" data-t="52.9">%s</div></div>' % anel("R$ 6", 53.3)),
     ]),
     # 10) "o que aconteceu depois me surpreendeu"
     dict(**{"in": 54.1}, out=58.4, items=[
